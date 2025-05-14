@@ -1,0 +1,159 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title class="dialog-title">Nova Transação</h2>
+  <mat-dialog-content class="dialog-content">
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="form-grid">
+      <!-- Cell 1: Ticker, Asset Type -->
+      <div class="grid-cell cell-1">
+        <mat-form-field appearance="outline" class="form-field ticker-field">
+          <mat-label>Ticker</mat-label>
+          <input matInput formControlName="ticker" placeholder="Ex: PETR4" aria-required="true">
+          <mat-hint class="form-hint">Ex: PETR4</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('ticker')?.hasError('required')">
+            Informe
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('ticker')?.hasError('pattern')">
+            Formato PETR4
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field asset-type-field">
+          <mat-label>Tipo de Ativo</mat-label>
+          <mat-select formControlName="assetType" aria-required="true">
+            <mat-option *ngFor="let type of assetTypes" [value]="type.value">
+              {{ type.label }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>arrow_drop_down</mat-icon>
+          <mat-hint class="form-hint">Tipo</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('assetType')?.hasError('required')">
+            Selecione
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Cell 2: Transaction Type, Description -->
+      <div class="grid-cell cell-2">
+        <mat-form-field appearance="outline" class="form-field transaction-type-field">
+          <mat-label>Transação</mat-label>
+          <mat-select formControlName="transactionType" aria-required="true">
+            <mat-option *ngFor="let type of transactionTypes" [value]="type.value">
+              {{ type.label }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>arrow_drop_down</mat-icon>
+          <mat-hint class="form-hint">Operação</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('transactionType')?.hasError('required')">
+            Selecione
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field description-field">
+          <mat-label>
+            {{ transactionForm.get('assetType')?.value === 'TÍTULO' ? 'Rentabilidade' :
+               transactionForm.get('assetType')?.value === 'MOEDA' ? 'Cotação' : 'Descrição' }}
+          </mat-label>
+          <input matInput
+                 formControlName="description"
+                 [placeholder]="transactionForm.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5%' :
+                                transactionForm.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ex: Petrobras'"
+                 aria-required="true">
+          <mat-hint class="form-hint">
+            {{ transactionForm.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5' :
+               transactionForm.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ativo' }}
+          </mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('description')?.hasError('required')">
+            Obrigatório
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('description')?.hasError('invalidPercentage')">
+            Positivo
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('description')?.hasError('invalidCurrency')">
+            Positivo
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Cell 3: Quantity, Average Price -->
+      <div class="grid-cell cell-3">
+        <mat-form-field appearance="outline" class="form-field quantity-field">
+          <mat-label>Quantidade</mat-label>
+          <input matInput type="number" formControlName="quantity" min="1" aria-required="true">
+          <mat-hint class="form-hint">Ex: 100</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('quantity')?.hasError('required')">
+            Informe
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('quantity')?.hasError('min')">
+            Mínimo 1
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field price-field">
+          <mat-label>Preço Médio($)</mat-label>
+          <input matInput type="number" step="0.01" formControlName="averagePrice" min="0.01" aria-required="true">
+          <mat-hint class="form-hint">Ex: 14.50</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('averagePrice')?.hasError('required')">
+            Informe
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('averagePrice')?.hasError('min')">
+            Mínimo 0,01
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+
+
+      <div class="grid-cell cell-4">
+        <mat-form-field appearance="outline" class="form-field ticker-field">
+          <mat-label>Corretora</mat-label>
+          <input matInput formControlName="corretora" placeholder="Ex: XP Investimentos" aria-required="true">
+          <mat-hint class="form-hint">Ex: XP Investimentos</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('ticker')?.hasError('required')">
+            Informe
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('ticker')?.hasError('pattern')">
+            Formato
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field date-field">
+          <mat-label>Data da Transação</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="date" aria-required="true">
+          <mat-datepicker-toggle matSuffix [for]="picker">
+            <mat-icon matDatepickerToggleIcon>calendar_today</mat-icon>
+          </mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+          <mat-hint class="form-hint">Ex: 18/04/2025</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('date')?.hasError('required')">
+            Informe
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+
+
+      <!-- Cell 4: Transaction Value, Date -->
+      <div class="grid-cell cell-4">
+        <mat-form-field appearance="outline" class="form-field value-field">
+          <mat-label>Valor da Transação ($)</mat-label>
+          <input matInput type="number" step="0.01" formControlName="transactionValue" min="0.01" aria-required="true">
+          <mat-hint class="form-hint">Ex: 1450.00</mat-hint>
+          <mat-error class="form-error" *ngIf="transactionForm.get('description')?.hasError('required')">
+            Informe
+          </mat-error>
+          <mat-error class="form-error" *ngIf="transactionForm.get('description')?.hasError('min')">
+            Mínimo 0,01
+          </mat-error>
+        </mat-form-field>
+
+
+      </div>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions class="dialog-actions">
+
+    <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="transactionForm.invalid || isSubmitting" aria-label="Salvar transação">Salvar</button>
+    <button mat-button color="warn" (click)="onCancel()" aria-label="Cancelar">Cancelar</button>
+    <button mat-button color="warn" (click)="onClean()" aria-label="Cancelar">Limpar</button>
+
+  </mat-dialog-actions>
+</div>

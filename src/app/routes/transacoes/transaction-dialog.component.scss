@@ -1,0 +1,386 @@
+
+.dialog-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.dialog-content {
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dialog-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: var(--background-card);
+  border-radius: 1px;
+}
+
+
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 6px;
+  height: 100%;
+  box-sizing: border-box;
+  /* Removed debug border */
+  border: none;
+}
+
+.grid-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  /* Removed debug border */
+  border: none;
+}
+
+
+
+.form-field {
+  width: 100%;
+  min-height: 50px;
+  margin-bottom: 2px;
+  background-color: var(--background-card);
+}
+
+mat-form-field {
+  font-size: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--background-card);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  line-height: 1.3;
+}
+
+mat-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 9px;
+}
+
+.form-hint {
+  font-size: 8px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  display: block;
+  line-height: 1.2;
+}
+
+.form-error {
+  font-size: 8px;
+  color: var(--text-danger);
+  margin-top: 2px;
+  display: block;
+  line-height: 1.2;
+  min-height: 9px;
+}
+
+mat-icon {
+  color: var(--text-muted);
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 15px 0;
+  padding-right: 10px;
+}
+
+button[mat-button][color="warn"] {
+  color: var(--text-danger);
+  font-weight: 500;
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+button[mat-raised-button][color="primary"] {
+  background-color: var(--primary);
+  color: #ffffff;
+  padding: 5px 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+button[mat-raised-button][color="primary"]:hover:enabled {
+  background-color: var(--primary-hover);
+}
+
+button[mat-raised-button][color="primary"]:disabled {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .dialog-container {
+    padding: 8px;
+  }
+
+  .dialog-title {
+    font-size: 1rem;
+  }
+
+  .form-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px;
+    border: none;
+  }
+
+  .grid-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: none;
+  }
+
+  .cell-1, .cell-2, .cell-3, .cell-4 {
+    grid-column: unset !important;
+    grid-row: unset !important;
+  }
+
+  .form-field {
+    min-height: 48px;
+    margin-bottom: 2px;
+  }
+
+  mat-form-field {
+    font-size: 9px;
+  }
+
+  mat-label {
+    font-size: 8px;
+  }
+
+  .form-hint, .form-error {
+    font-size: 7px;
+    min-height: 8px;
+  }
+
+  .dialog-actions {
+    gap: 5px;
+    padding: 5px 0;
+  }
+
+  button[mat-button], button[mat-raised-button] {
+    padding: 5px 10px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 400px) {
+  .dialog-container {
+    padding: 6px;
+  }
+
+  .dialog-content {
+    max-height: 80vh;
+  }
+
+  .dialog-title {
+    font-size: 0.875rem;
+  }
+
+  .form-grid {
+    gap: 4px;
+  }
+
+  .grid-cell {
+    gap: 4px;
+  }
+
+  .form-field {
+    min-height: 46px;
+    margin-bottom: 1px;
+  }
+
+  mat-form-field {
+    font-size: 8px;
+  }
+
+  mat-label {
+    font-size: 7px;
+  }
+
+  .form-hint, .form-error {
+    font-size: 6px;
+    min-height: 7px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  button[mat-button], button[mat-raised-button] {
+    width: 100%;
+    padding: 6px;
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 320px) {
+  .dialog-container {
+    padding: 4px;
+  }
+
+  .dialog-title {
+    font-size: 0.75rem;
+  }
+
+  .form-grid {
+    gap: 3px;
+  }
+
+  .grid-cell {
+    gap: 3px;
+  }
+
+  .form-field {
+    min-height: 44px;
+    margin-bottom: 0px;
+  }
+
+  mat-form-field {
+    font-size: 7px;
+  }
+
+  mat-label {
+    font-size: 6px;
+  }
+
+  .form-hint, .form-error {
+    font-size: 5px;
+    min-height: 6px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  button[mat-button], button[mat-raised-button] {
+    width: auto;
+    padding: 5px;
+    font-size: 7px;
+  }
+}
+
+
+
+@media (max-width: 280px) {
+  .dialog-container {
+    padding: 2px;
+  }
+
+  .dialog-title {
+    font-size: 0.625rem;
+  }
+
+  .form-grid {
+    gap: 2px;
+  }
+
+  .grid-cell {
+    gap: 2px;
+  }
+
+  .form-field {
+    min-height: 42px;
+    margin-bottom: 0px;
+  }
+
+  mat-form-field {
+    font-size: 6px;
+  }
+
+  mat-label {
+    font-size: 5px;
+  }
+
+  .form-hint, .form-error {
+    font-size: 4px;
+    min-height: 5px;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+
+
+  button[mat-button], button[mat-raised-button] {
+    width: auto;
+    padding: 4px;
+    font-size: 6px;
+  }
+
+
+  button[mat-button][color="warn"] {
+    padding: 4px 8px;
+  }
+
+
+  button[mat-raised-button][color="primary"] {
+    padding: 4px 10px;
+  }
+
+  button[mat-raised-button][color="primary"]:hover:enabled {
+    padding: 4px 10px;
+  }
+
+
+
+
+  button[mat-raised-button][color="primary"]:disabled {
+    padding: 4px 10px;
+  }
+
+  button[mat-raised-button][color="primary"]:disabled:hover {
+    padding: 4px 10px;
+  }
+
+
+  button[mat-raised-button][color="primary"]:disabled:active {
+    padding: 4px 10px;
+  }
+
+  button[mat-raised-button][color="primary"]:disabled:focus {
+    padding: 4px 10px;
+  }
+}
+
+
+
+/* SnackBar Styles */
+.success-snackbar {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+.error-snackbar {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+}

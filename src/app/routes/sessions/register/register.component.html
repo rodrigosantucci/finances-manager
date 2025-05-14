@@ -1,0 +1,82 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header class="register-header">
+      <mat-card-title class="register-title">
+        {{ 'register_welcome' | translate }},
+      </mat-card-title>
+      <mat-card-subtitle class="register-subtitle">
+        {{ 'register_title' | translate }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form class="register-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'username' | translate }}</mat-label>
+          <input matInput formControlName="username" required />
+          @if (registerForm.get('username')?.hasError('required') && registerForm.get('username')?.touched) {
+            <mat-error>
+              <span>{{ 'validation.required' | translate }}</span>
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'email' | translate }}</mat-label>
+          <input matInput formControlName="email" required />
+          @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+            <mat-error>
+              <span>{{ 'validation.required' | translate }}</span>
+            </mat-error>
+          }
+          @if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+            <mat-error>
+              <span>{{ 'validation.invalid_email' | translate }}</span>
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'password' | translate }}</mat-label>
+          <input matInput type="password" formControlName="password" required />
+          @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+            <mat-error>
+              <span>{{ 'validation.required' | translate }}</span>
+            </mat-error>
+          }
+          @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+            <mat-error translate="validation.min_length" [translateParams]="{ number: registerForm.get('password')?.getError('minlength')?.requiredLength }">
+              </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'confirm_password' | translate }}</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" required />
+          @if (registerForm.get('confirmPassword')?.hasError('required') && registerForm.get('confirmPassword')?.touched) {
+            <mat-error>
+              <span>{{ 'validation.required' | translate }}</span>
+            </mat-error>
+          }
+          @if (registerForm.get('confirmPassword')?.hasError('mismatch') && registerForm.get('confirmPassword')?.touched) {
+            <mat-error translate="validation.inconsistent" [translateParams]="{ value: ('password' | translate) }">
+              </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-checkbox class="read-and-agree-checkbox">{{ 'read_and_agree' | translate }}</mat-checkbox>
+
+        <button class="register-button" mat-flat-button color="primary" type="submit" [disabled]="registerForm.invalid || loading">
+            <span >{{ 'register' | translate }}</span>
+            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        </button>
+
+        <div class="login-link-container">
+          <span>{{ 'have_an_account' | translate }}? </span>
+          <a routerLink="/auth/login">{{ 'login' | translate }}</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

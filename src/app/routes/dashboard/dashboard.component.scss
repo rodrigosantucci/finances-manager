@@ -1,0 +1,381 @@
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 32px 0;
+
+  .mat-mdc-progress-spinner {
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 16px;
+  color: #d32f2f;
+
+  p {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  button {
+    margin-top: 8px;
+  }
+}
+
+.dashboard-container {
+  padding: 16px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+}
+
+.chart-card {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+
+  @media (max-width: 768px) {
+    min-height: 250px;
+  }
+
+  @media (max-width: 576px) {
+    min-height: 200px;
+  }
+
+  .mat-mdc-card-content {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 16px;
+  }
+
+  #chart1,
+  #chart2 {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+.table-card {
+  height: 100%;
+  overflow-x: auto;
+
+  .mat-mdc-card-content {
+    padding: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th {
+      color: var(--text-secondary);
+      padding: 12px 8px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    td {
+      color: var(--table-cell-text);
+    }
+
+    .text-success {
+      color: #13d11c;
+    }
+
+    .text-danger {
+      color: #d32f2f;
+    }
+  }
+}
+
+.no-data-text {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.button-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+
+  button.mat-icon-button {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+
+    .mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+    }
+  }
+}
+
+.resumo-section {
+  padding: 1rem 0;
+}
+
+.summary-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 8px rgba(179, 174, 174, 0.1);
+  border-radius: 8px;
+
+  .mat-mdc-card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .button-controls {
+    justify-content: center;
+    margin-bottom: 16px;
+
+    button.mat-icon-button {
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+
+      .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+      }
+    }
+  }
+
+  .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .metric {
+    .metric-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 4px 0 0;
+    }
+
+    .text-primary {
+      color: var(--success-text);
+    }
+
+    .text-success {
+      color: #12c41b;
+    }
+
+    .text-danger {
+      color: #d32f2f;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .chart-card {
+    min-height: 250px;
+  }
+
+  .table-card {
+    table {
+      th,
+      td {
+        font-size: 12px;
+        padding: 8px 4px;
+      }
+    }
+  }
+
+  .button-controls {
+    justify-content: center;
+  }
+
+  .loading-indicator {
+    margin: 24px 0;
+
+    .mat-mdc-progress-spinner {
+      width: 32px;
+      height: 32px;
+    }
+
+    p {
+      font-size: 12px;
+    }
+  }
+
+  .summary-card {
+    .mat-mdc-card-content {
+      padding: 12px;
+    }
+
+    .button-controls {
+      margin-bottom: 12px;
+
+      button.mat-icon-button {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+
+        .mat-icon {
+          font-size: 16px;
+          width: 26px;
+          height: 16px;
+          line-height: 16px;
+        }
+      }
+    }
+
+    .metric {
+      .metric-label {
+        font-size: 12px;
+      }
+
+      .metric-value {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .resumo-section .col-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+
+
+:root {
+  /* Light Mode */
+  [data-theme="light"] {
+    --background: #f8fafc; /* Background color for the light theme */
+    --background-card: #ffffff; /* Card background color for the light theme */
+    --primary: #3b82f6; /* Primary color for buttons and links */
+    --primary-hover: #2563eb; /* Hover state for primary color */
+    --primary-hover-bg: rgba(59, 130, 246, 0.1); /* Hover background color for light mode */
+    --text-primary: #11161d; /* Primary text color */
+    --text-secondary: #d4dbe6; /* Secondary text color */
+    --text-muted: #6b7280; /* Muted text color for less emphasis */
+    --table-cell-text: #bbbbbb; /* Text color for table cells */
+    --disabled-bg: #d1d5db; /* Background color for disabled elements */
+    --disabled-text: #9ca3af; /* Text color for disabled elements */
+    --success-bg: #22c55e; /* Background color for success messages */
+    --success-text: #ffffff; /* Text color for success messages */
+    --error-bg: #ef4444; /* Background color for error messages */
+    --error-text: #ffffff; /* Text color for error messages */
+  }
+  /* Dark Mode */
+  [data-theme="dark"] {
+    --background: #1e293b; /* Background color for the dark theme */
+    --background-card: #2d3748; /* Card background color for the dark theme */
+    --primary: #8b5cf6; /* Primary color for buttons and links */
+    --primary-hover: #7c3aed; /* Hover state for primary color */
+    --primary-hover-bg: rgba(139, 92, 246, 0.1); /* Hover background color for primary buttons */
+    --text-primary: #f1f5f9; /* Primary text color */
+    --text-secondary: #d1d5db; /* Secondary text color */
+    --text-muted: #9ca3af; /* Muted text color for less emphasis */
+    --table-cell-text: #bbbbbb; /* Text color for table cells */
+    --disabled-bg: #4b5563; /* Background color for disabled elements */
+    --disabled-text: #6b7280; /* Text color for disabled elements */
+    --success-bg: #16a34a; /* Background color for success messages */
+    --success-text: #ffffff; /* Text color for success messages */
+    --error-bg: #f87171; /* Background color for error messages */
+    --error-text: #ffffff; /* Text color for error messages */
+  }
+
+
+
+.dashboard-container {
+  padding: 16px;
+  background: var(--background);
+  min-height: 100dvh; /* Use dynamic viewport height for better mobile compatibility */
+}
+
+button[mat-icon-button][color="primary"] {
+  color: var(--primary);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+button[mat-icon-button][color="primary"]:hover:enabled {
+  color: var(--primary-hover);
+  background-color: var(--primary-hover-bg); /* Light mode hover */
+}
+
+button[mat-icon-button][color="primary"]:disabled {
+  color: var(--disabled-text);
+  background-color: transparent;
+}
+[data-theme="dark"] button[mat-icon-button][color="primary"]:hover:enabled {
+  background-color: var(--primary-hover-bg); /* Dark mode hover */
+}
+
+
+mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+/* Reuse SnackBar styles from transaction-dialog */
+.success-snackbar {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+.error-snackbar {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+}
+.header-section {
+  top: 0;
+  padding-bottom: 10px; /* Adjusted to avoid negative margin issues */
+  /* If negative margin is necessary, uncomment the line below and document its purpose */
+  /* margin-bottom: -10px; */
+}
+}
