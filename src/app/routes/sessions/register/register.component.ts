@@ -18,6 +18,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; /
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Import MatSnackBar and MatSnackBarModule
 import { catchError, finalize, tap } from 'rxjs/operators'; // Import operators
 import { throwError } from 'rxjs'; // Import throwError
+import {CommonModule} from '@angular/common'; // Import CommonModule for ngIf and ngFor
 
 @Component({
   selector: 'app-register',
@@ -26,6 +27,7 @@ import { throwError } from 'rxjs'; // Import throwError
   standalone: true, // Assuming it's a standalone component based on imports
   imports: [
     RouterLink,
+    CommonModule, // Add CommonModule for ngIf and ngFor
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
