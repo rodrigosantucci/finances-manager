@@ -40,7 +40,7 @@ import { FormlyConfigModule } from './formly-config';
 
 // Required for AOT compilation
 function TranslateHttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, 'http://localhost:4200/i18n/', '.json');
+  return new TranslateHttpLoader(http, './i18n/', '.json');
 }
 
 // Http interceptor providers in outside-in order
