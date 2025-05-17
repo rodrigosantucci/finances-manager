@@ -46,8 +46,9 @@ export class TransactionDialogComponent implements OnInit {
   // Asset type options with tipoAtivo mapping
   assetTypes = [
     { value: 'AÇÃO', label: 'Ação', tipoAtivo: 1 },
-    { value: 'TÍTULO', label: 'Título', tipoAtivo: 2 },
-    { value: 'MOEDA', label: 'Moeda', tipoAtivo: 3 },
+    { value: 'FUNDO', label: 'Fundo', tipoAtivo: 2 },
+    { value: 'TÍTULO', label: 'Título', tipoAtivo: 3 },
+    { value: 'MOEDA', label: 'Moeda', tipoAtivo: 4 },
   ];
 
   constructor(

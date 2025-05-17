@@ -618,18 +618,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy { //
   }
 
 
-  // PERCENTUAIS RF X RV
+   // PERCENTUAIS RF X RV
   // Estes cálculos de percentual devem usar o VALOR ATUAL, não o valor investido,
   // para refletir a distribuição atual do patrimônio.
   getPercentualRF(): number {
     const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
     const rf = this.getTotalValorAtualCaixa(); // Assumindo Caixa = Renda Fixa
-    return totalValorAtualGeral > 0 ? (rf / totalValorAtualGeral) * 100 : 0;
+    const percentual = totalValorAtualGeral > 0 ? (rf / totalValorAtualGeral) * 100 : 0;
+    return Math.round(percentual); // Arredonda para o inteiro mais próximo
   }
+
   getPercentualRV(): number {
     const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
     const rv = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualAssets(); // Assumindo Ações, Fundos, Assets = Renda Variável
-     return totalValorAtualGeral > 0 ? (rv / totalValorAtualGeral) * 100 : 0;
+    const percentual = totalValorAtualGeral > 0 ? (rv / totalValorAtualGeral) * 100 : 0;
+    return Math.round(percentual); // Arredonda para o inteiro mais próximo
   }
 
 
