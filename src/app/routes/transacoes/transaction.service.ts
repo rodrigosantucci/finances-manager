@@ -20,7 +20,7 @@ export interface Transacao {
   providedIn: 'root',
 })
 export class TransacaoService {
-  private readonly apiUrl = 'http://localhost:8080/api/transacoes/1/criarTransacao';
+  private readonly apiUrl = 'https://137.131.186.39:8443/api/transacoes/1/criarTransacao';
 
   constructor(private http: HttpClient) {}
 

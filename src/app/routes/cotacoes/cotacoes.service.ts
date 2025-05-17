@@ -14,7 +14,7 @@ export interface Cotacao {
 })
 export class CotacaoService {
 
-  private readonly apiUrl = 'http://localhost:8080/api/cotacoes/ticker';
+  private readonly apiUrl = 'https://137.131.186.39:8443/api/cotacoes/ticker';
 
   constructor(private http: HttpClient) {}
 
