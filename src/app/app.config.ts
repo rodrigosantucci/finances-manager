@@ -96,10 +96,10 @@ export const appConfig: ApplicationConfig = {
     },
     provideDateFnsAdapter({
       parse: {
-        dateInput: 'yyyy-MM-dd',
+        dateInput: 'dd/MM/yyyy',
       },
       display: {
-        dateInput: 'yyyy-MM-dd',
+        dateInput: 'dd/MM/yyyy',
         monthYearLabel: 'yyyy MMM',
         dateA11yLabel: 'LL',
         monthYearA11yLabel: 'yyyy MMM',
@@ -107,17 +107,17 @@ export const appConfig: ApplicationConfig = {
     }),
     provideDateFnsDatetimeAdapter({
       parse: {
-        dateInput: 'yyyy-MM-dd',
+        dateInput: 'dd/MM/yyyy',
         yearInput: 'yyyy',
         monthInput: 'MMMM',
-        datetimeInput: 'yyyy-MM-dd HH:mm',
+        datetimeInput: 'dd/MM/yyyy HH:mm',
         timeInput: 'HH:mm',
       },
       display: {
-        dateInput: 'yyyy-MM-dd',
+        dateInput: 'dd/MM/yyyy',
         yearInput: 'yyyy',
         monthInput: 'MMMM',
-        datetimeInput: 'yyyy-MM-dd HH:mm',
+        datetimeInput: 'dd/MM/yyyy HH:mm',
         timeInput: 'HH:mm',
         monthYearLabel: 'yyyy MMMM',
         dateA11yLabel: 'LL',

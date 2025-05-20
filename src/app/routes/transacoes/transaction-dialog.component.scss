@@ -1,10 +1,61 @@
+/* Variáveis de tema (garanta que estão definidas globalmente, ex: styles.scss) */
+
+:root {
+  --background-card: #ffffff;
+  --background-dialog: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-danger: #f44336;
+  --border-color: #cccccc;
+  --primary: #3f51b5;
+  --primary-hover: #303f9f;
+  --disabled-bg: #e0e0e0;
+  --disabled-text: #a0a0a0;
+  --success-bg: #4caf50;
+  --success-text: #ffffff;
+  --error-bg: #f44336;
+  --error-text: #ffffff;
+
+  // Cores específicas para o stepper
+  --stepper-header-bg: transparent;
+  --stepper-label-color: var(--text-secondary);
+  --stepper-active-color: var(--primary);
+  --stepper-done-color: #4caf50; // Verde para passo concluído
+}
+
+[data-theme='dark'] { // Ou body.dark se estiver alternando no body
+  --background-card: #303030;
+  --background-dialog: #424242;
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #aaaaaa;
+  --text-danger: #ff5252;
+  --border-color: #616161;
+  --primary: #9fa8da;
+  --primary-hover: #7986cb;
+  --disabled-bg: #5a5a5a;
+  --disabled-text: #888888;
+  --success-bg: #66bb6a;
+  --success-text: #ffffff;
+  --error-bg: #ff5252;
+  --error-text: #ffffff;
+
+  // Cores específicas para o stepper no modo escuro
+  --stepper-header-bg: transparent;
+  --stepper-label-color: var(--text-secondary);
+  --stepper-active-color: var(--primary);
+  --stepper-done-color: #81c784; // Verde mais claro para passo concluído no dark mode
+}
+
 
 .dialog-title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1.5rem; /* Aumentado para melhor visibilidade */
+  font-weight: 700; /* Mais negrito */
   color: var(--text-primary);
-  margin: 0 0 10px;
+  margin: 0 0 20px; /* Mais espaço */
   line-height: 1.2;
+  text-align: center; /* Centraliza o título do diálogo */
 }
 
 .dialog-content {
@@ -17,370 +68,292 @@
 .dialog-container {
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 14px; /* Mais padding */
   width: 100%;
-  max-width: 600px;
+  max-width: 700px; /* Aumenta a largura máxima para o stepper */
   max-height: 90vh;
   overflow-y: auto;
-  background-color: var(--background-card);
-  border-radius: 1px;
+  border-radius: 8px; /* Bordas mais suaves */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
 }
 
-
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 6px;
-  height: 100%;
-  box-sizing: border-box;
-  /* Removed debug border */
-  border: none;
+/* Estilos para o Stepper */
+.transaction-stepper {
+  background-color: transparent; /* Deixa o stepper transparente para herdar o fundo do diálogo */
+  color: var(--text-primary);
 }
 
-.grid-cell {
+/* Estilo para o conteúdo de cada passo do stepper */
+.form-step-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  box-sizing: border-box;
-  /* Removed debug border */
-  border: none;
+  gap: 20px; /* Espaçamento entre os campos */
+  padding: 20px 0;
 }
-
-
 
 .form-field {
   width: 100%;
-  min-height: 50px;
-  margin-bottom: 2px;
-  background-color: var(--background-card);
+  margin-bottom: 0; /* Removido margin-bottom aqui, o gap do flexbox já controla */
 }
 
 mat-form-field {
-  font-size: 10px;
+  font-size: 14px; /* Tamanho da fonte dos campos aumentado */
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--background-card);
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  line-height: 1.3;
+  background-color: var(--background-card); /* Fundo dos campos */
+  border-radius: 8px; /* Bordas mais suaves para os campos */
+  border: 1px solid var(--border-color); /* Borda para visibilidade */
+  line-height: 1.5;
+  padding: 10px 15px; /* Adicionado padding interno */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Sombra leve nos campos */
+}
+
+/* Estilo para a label flutuante */
+mat-form-field.mat-form-field-appearance-outline .mat-form-field-label-wrapper {
+  padding-top: 8px; /* Ajuste para centralizar a label */
 }
 
 mat-label {
   color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 9px;
+  font-weight: 600; /* Mais negrito */
+  font-size: 12px; /* Tamanho da label */
+  transition: color 0.2s ease-in-out; /* Transição suave para mudança de cor */
 }
 
+/* Estilo para quando o campo está focado */
+mat-form-field.mat-focused .mat-form-field-label {
+  color: var(--primary); /* Cor da label ao focar */
+}
+mat-form-field.mat-focused .mat-form-field-outline-thick {
+  color: var(--primary); /* Cor da borda ao focar */
+}
+
+
 .form-hint {
-  font-size: 8px;
+  font-size: 10px; /* Tamanho do hint */
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 4px; /* Mais espaço */
   display: block;
   line-height: 1.2;
 }
 
 .form-error {
-  font-size: 8px;
+  font-size: 10px; /* Tamanho do erro */
   color: var(--text-danger);
-  margin-top: 2px;
+  margin-top: 4px; /* Mais espaço */
   display: block;
   line-height: 1.2;
-  min-height: 9px;
+  min-height: 12px; /* Aumentar para evitar "saltos" */
+  font-weight: 500;
 }
 
 mat-icon {
-  color: var(--text-muted);
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
+  color: var(--text-secondary); /* Ícones mais visíveis */
+  font-size: 18px; /* Aumenta o tamanho dos ícones */
+  width: 18px;
+  height: 18px;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 4px;
-  margin-top: 10px;
+  gap: 10px; /* Mais espaço entre os botões */
+  margin-top: 20px;
   padding: 15px 0;
   padding-right: 10px;
+  border-top: 1px solid var(--border-color); /* Linha divisória */
 }
 
-button[mat-button][color="warn"] {
-  color: var(--text-danger);
-  font-weight: 500;
-  padding: 5px 10px;
-  font-size: 10px;
+.stepper-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px; /* Espaço entre campos e botões do stepper */
 }
+
+.stepper-actions.final-actions {
+  justify-content: space-between; /* Botões voltar e salvar separados */
+}
+
+
+button[mat-button][color="warn"] {
+
+  color: var(--primary);
+  background-color: var(--background-card); /* Fundo branco */
+  border: 1px solid var(--text-danger); /* Borda vermelha */
+  font-weight: 600; /* Mais negrito */
+  padding: 8px 16px; /* Aumenta padding */
+  font-size: 12px; /* Aumenta fonte */
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para botões de aviso */
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+
+button[mat-raised-button][color="danger"] {
+  background-color: var(--text-danger);
+  color: #ff1818;
+  padding: 8px 20px; /* Aumenta padding */
+  font-weight: 600; /* Mais negrito */
+  border-radius: 4px;
+  font-size: 12px; /* Aumenta fonte */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para botões primários */
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: none; /* Remove borda padrão */
+}
+
+button[mat-raised-button][color="warn"] {
+  background-color: var(--warn);
+  color: #503636;
+  padding: 8px 20px; /* Aumenta padding */
+  font-weight: 600; /* Mais negrito */
+  border-radius: 4px;
+  font-size: 12px; /* Aumenta fonte */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para botões primários */
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: none; /* Remove borda padrão */
+}
+
 
 button[mat-raised-button][color="primary"] {
   background-color: var(--primary);
-  color: #ffffff;
-  padding: 5px 14px;
-  font-weight: 500;
+  color: #1856ff;
+  padding: 8px 20px; /* Aumenta padding */
+  font-weight: 600; /* Mais negrito */
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 12px; /* Aumenta fonte */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para botões primários */
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: none; /* Remove borda padrão */
 }
+
+
+
 
 button[mat-raised-button][color="primary"]:hover:enabled {
   background-color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 button[mat-raised-button][color="primary"]:disabled {
   background-color: var(--disabled-bg);
+
   color: var(--disabled-text);
   cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7; /* Diminui a opacidade para indicar desabilitado */
+
+
+
 }
-
-@media (max-width: 600px) {
-  .dialog-container {
-    padding: 8px;
-  }
-
-  .dialog-title {
-    font-size: 1rem;
-  }
-
-  .form-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 5px;
-    border: none;
-  }
-
-  .grid-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    border: none;
-  }
-
-  .cell-1, .cell-2, .cell-3, .cell-4 {
-    grid-column: unset !important;
-    grid-row: unset !important;
-  }
-
-  .form-field {
-    min-height: 48px;
-    margin-bottom: 2px;
-  }
-
-  mat-form-field {
-    font-size: 9px;
-  }
-
-  mat-label {
-    font-size: 8px;
-  }
-
-  .form-hint, .form-error {
-    font-size: 7px;
-    min-height: 8px;
-  }
-
-  .dialog-actions {
-    gap: 5px;
-    padding: 5px 0;
-  }
-
-  button[mat-button], button[mat-raised-button] {
-    padding: 5px 10px;
-    font-size: 9px;
-  }
-}
-
-@media (max-width: 400px) {
-  .dialog-container {
-    padding: 6px;
-  }
-
-  .dialog-content {
-    max-height: 80vh;
-  }
-
-  .dialog-title {
-    font-size: 0.875rem;
-  }
-
-  .form-grid {
-    gap: 4px;
-  }
-
-  .grid-cell {
-    gap: 4px;
-  }
-
-  .form-field {
-    min-height: 46px;
-    margin-bottom: 1px;
-  }
-
-  mat-form-field {
-    font-size: 8px;
-  }
-
-  mat-label {
-    font-size: 7px;
-  }
-
-  .form-hint, .form-error {
-    font-size: 6px;
-    min-height: 7px;
-  }
-
-  .dialog-actions {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  button[mat-button], button[mat-raised-button] {
-    width: 100%;
-    padding: 6px;
-    font-size: 8px;
-  }
-}
-
-@media (max-width: 320px) {
-  .dialog-container {
-    padding: 4px;
-  }
-
-  .dialog-title {
-    font-size: 0.75rem;
-  }
-
-  .form-grid {
-    gap: 3px;
-  }
-
-  .grid-cell {
-    gap: 3px;
-  }
-
-  .form-field {
-    min-height: 44px;
-    margin-bottom: 0px;
-  }
-
-  mat-form-field {
-    font-size: 7px;
-  }
-
-  mat-label {
-    font-size: 6px;
-  }
-
-  .form-hint, .form-error {
-    font-size: 5px;
-    min-height: 6px;
-  }
-
-  .dialog-actions {
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  button[mat-button], button[mat-raised-button] {
-    width: auto;
-    padding: 5px;
-    font-size: 7px;
-  }
-}
-
-
-
-@media (max-width: 280px) {
-  .dialog-container {
-    padding: 2px;
-  }
-
-  .dialog-title {
-    font-size: 0.625rem;
-  }
-
-  .form-grid {
-    gap: 2px;
-  }
-
-  .grid-cell {
-    gap: 2px;
-  }
-
-  .form-field {
-    min-height: 42px;
-    margin-bottom: 0px;
-  }
-
-  mat-form-field {
-    font-size: 6px;
-  }
-
-  mat-label {
-    font-size: 5px;
-  }
-
-  .form-hint, .form-error {
-    font-size: 4px;
-    min-height: 5px;
-  }
-
-  .dialog-actions {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-
-
-  button[mat-button], button[mat-raised-button] {
-    width: auto;
-    padding: 4px;
-    font-size: 6px;
-  }
-
-
-  button[mat-button][color="warn"] {
-    padding: 4px 8px;
-  }
-
-
-  button[mat-raised-button][color="primary"] {
-    padding: 4px 10px;
-  }
-
-  button[mat-raised-button][color="primary"]:hover:enabled {
-    padding: 4px 10px;
-  }
-
-
-
-
-  button[mat-raised-button][color="primary"]:disabled {
-    padding: 4px 10px;
-  }
-
-  button[mat-raised-button][color="primary"]:disabled:hover {
-    padding: 4px 10px;
-  }
-
-
-  button[mat-raised-button][color="primary"]:disabled:active {
-    padding: 4px 10px;
-  }
-
-  button[mat-raised-button][color="primary"]:disabled:focus {
-    padding: 4px 10px;
-  }
-}
-
-
 
 /* SnackBar Styles */
 .success-snackbar {
   background-color: var(--success-bg);
   color: var(--success-text);
+  font-size: 14px; /* Aumenta o tamanho da fonte */
+  padding: 10px 20px; /* Aumenta o padding */
 }
 
 .error-snackbar {
   background-color: var(--error-bg);
   color: var(--error-text);
+}
+
+/* Responsividade para Stepper */
+@media (max-width: 768px) {
+  .dialog-container {
+    padding: 16px;
+    max-width: 95%; /* Ajuste para telas menores */
+  }
+  .dialog-title {
+    font-size: 1.25rem;
+  }
+  /* Força o stepper a ser vertical em telas menores */
+  .transaction-stepper.mat-stepper-horizontal {
+    flex-direction: column;
+  }
+  .mat-horizontal-stepper-header-container {
+    flex-wrap: wrap; /* Quebra as labels do stepper */
+    justify-content: center; /* Centraliza as labels */
+
+    gap: 10px; /* Espaçamento entre as labels */
+    margin-bottom: 20px; /* Espaço entre o stepper e o conteúdo */
+  }
+  .mat-step-header {
+    padding: 12px 0;
+    width: 100%; /* Largura total para cada passo */
+    text-align: center; /* Centraliza o texto */
+  }
+  .form-step-content {
+    gap: 15px;
+    padding: 15px 0; /* Menos padding */
+    margin: 0; /* Remove margens para evitar overflow */
+    width: 100%; /* Largura total */
+  }
+  mat-form-field {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  mat-label {
+    font-size: 11px;
+  }
+  .form-hint, .form-error {
+    font-size: 9px;
+  }
+  .stepper-actions {
+    justify-content: center; /* Centraliza botões em telas menores */
+  }
+  .stepper-actions.final-actions {
+    justify-content: space-around; /* Mantém a separação, mas centraliza o grupo */
+  }
+  button[mat-button], button[mat-raised-button] {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog-container {
+    padding: 12px;
+    max-height: 95vh;
+  }
+  .dialog-title {
+    font-size: 1rem;
+    margin-bottom: 15px;
+  }
+  .form-step-content {
+    gap: 10px;
+  }
+  mat-form-field {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  mat-label {
+    font-size: 10px;
+  }
+  .form-hint, .form-error {
+    font-size: 8px;
+    min-height: 10px;
+  }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+  .dialog-actions {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0;
+  }
+  .stepper-actions, .stepper-actions.final-actions {
+    flex-direction: column; /* Botões do stepper também em coluna */
+    gap: 8px;
+    justify-content: center;
+  }
+  button[mat-button], button[mat-raised-button] {
+    width: 100%;
+    padding: 8px;
+    font-size: 10px;
+  }
 }

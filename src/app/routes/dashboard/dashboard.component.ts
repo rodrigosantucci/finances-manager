@@ -16,7 +16,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Observable, take, catchError, of, map, filter } from 'rxjs'; // Importe 'filter'
+import { Observable, take, catchError, of, map, filter} from 'rxjs'; // Importe forkJoin e filter
 import { DashboardService, PatrimonioDistribuicaoVO, AtivoVO } from './dashboard.service';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -28,6 +28,8 @@ import { CotacaoService } from '../cotacoes/cotacoes.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SettingsService } from '@core/bootstrap/settings.service';
 import { AuthService, User } from '@core/authentication'; // Importe AuthService e User
+import { QuantidadeFormatPipe } from '@shared/pipes/quantidade-format.pipe';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -46,6 +48,8 @@ import { AuthService, User } from '@core/authentication'; // Importe AuthService
     MatDialogModule,
     MatButtonModule,
     MtxAlertModule,
+    QuantidadeFormatPipe
+
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy { // Implemente AfterViewInit e OnDestroy explicitamente
@@ -552,7 +556,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy { //
              return this.getChartOptions([], [], 'Outros Ativos', false);
            }
 
-           return this.getChartOptions(series, labels, 'Outros Ativos', false);
+           return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
          })
        );
   }

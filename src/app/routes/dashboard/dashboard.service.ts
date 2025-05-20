@@ -4,6 +4,8 @@ import { forkJoin, Observable, of, throwError } from 'rxjs'; // Importe throwErr
 import { catchError, map, switchMap, take, tap } from 'rxjs/operators'; // Importe switchMap e tap, take
 import { AuthService } from '@core/authentication'; // Ajuste o caminho para o seu AuthService
 
+
+
 // Mantenha suas interfaces de DTO
 export interface PatrimonioDistribuicaoVO {
   tipoAtivo: string;
@@ -69,7 +71,7 @@ export class DashboardService {
         console.log(`DashboardService: Solicitando cotação USD da URL: ${url}`);
 
         return this.http.get<CotacaoUSD[]>(url).pipe(
-            tap(response => console.log(`DashboardService: Resposta BRUTA (Array) da cotação USD recebida:`, response)),
+            tap(response => console.log(`DashboardService: Resposta da cotação USD recebida:`, response)),
             map(responseArray => {
                 // Se o array estiver vazio ou nulo, retorne 0
                 if (!responseArray || responseArray.length === 0) {
@@ -229,9 +231,6 @@ export class DashboardService {
             console.log(`DashboardService: Distribuição bruta recebida:`, distribuicao);
             console.log(`DashboardService: Cotação USD recebida para distribuição: ${cotacao}`);
 
-            // --- ADVERTÊNCIA GRAVE ---
-            console.warn("DashboardService: Aplicando conversão USD->BRL na Distribuição de Patrimônio com a ASSUNÇÃO de que a categoria 'Assets' (ou outra definida na lógica) representa valores em USD. Esta é uma lógica baseada em heurística e pode ser imprecisa se a API agregar moedas de forma diferente.");
-            // -----------------------
 
             // Cria cópias dos itens para não modificar o array original recebido
             const distribuicaoModificada = distribuicao.map(item => ({ ...item }));

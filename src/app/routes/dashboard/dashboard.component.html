@@ -77,16 +77,9 @@
                 </p>
               </div>
               <div class="metric text-center">
-                <p class="metric-label">% Renda Fixa</p>
-                <p class="metric-value">
-                  <span class="text font-weight-bold">{{getPercentualRF()}}%</span>
-                </p>
-              </div>
-              <div class="metric text-center">
-                <p class="metric-label">% Renda Variável</p>
-                <p class="metric-value">
-                  <span class="text font-weight-bold">{{getPercentualRV()}}%</span>
-                </p>
+                <p class="metric-label">Renda Fixa: <span class="metric-value">{{getPercentualRF()}}%</span></p>
+                <p class="metric-label">Renda Variável: <span class="metric-value">{{getPercentualRV()}}%</span></p>
+
               </div>
             </div>
           </mat-card-content>
@@ -153,7 +146,7 @@
               </ng-container>
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada | quantidadeFormat }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="precoMedioFormatado">
@@ -229,7 +222,7 @@
               </ng-container>
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada | quantidadeFormat }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="precoMedioFormatado">
@@ -303,7 +296,7 @@
               </ng-container>
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada | quantidadeFormat }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="precoMedioFormatado">
@@ -357,7 +350,7 @@
 
 
   <section class="acoes-section mb-4" aria-labelledby="acos-title">
-    <h2 id="acos-title" class="section-title">Assets</h2>
+    <h2 id="acos-title" class="section-title">Assets Internacionais</h2>
     <div class="row">
 
       <div class="col-12 col-md-8">
@@ -376,7 +369,7 @@
               </ng-container>
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.quantidadeFormatada | quantidadeFormat }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="precoMedioFormatado">

@@ -95,13 +95,14 @@
     th {
       color: var(--text-secondary);
       padding: 12px 8px;
-      text-align: left;
+      text-align: center;
       font-size: 14px;
       font-weight: 500;
     }
 
     td {
       color: var(--table-cell-text);
+      text-align: center;
     }
 
     .text-success {
@@ -139,6 +140,8 @@
     }
   }
 }
+
+
 
 .resumo-section {
   padding: 1rem 0;
