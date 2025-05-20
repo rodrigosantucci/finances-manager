@@ -8,9 +8,10 @@ import { AuthService } from '@core/authentication'; // Ajuste o caminho para o s
 
 // Mantenha suas interfaces de DTO
 export interface PatrimonioDistribuicaoVO {
-  tipoAtivo: string;
-  valorTotal: number;
-  percentual: number;
+  id: number;
+  tipoAtivo: string;
+  valorTotal: number;
+  percentual: number;
 }
 
   interface CotacaoUSD {
@@ -23,15 +24,16 @@ export interface PatrimonioDistribuicaoVO {
 }
 
 export interface AtivoVO {
-  tickerFormatado: string;
-  descricaoFormatada: string;
-  tipoAtivoFormatado: string;
-  moedaFormatada: string;
-  quantidadeFormatada: string;
-  valorInvestidoFormatado: string;
-  precoMedioFormatado: string;
-  valorAtualFormatado: string;
-  lucroPrejuizoFormatado: string;
+  id: number;
+  tickerFormatado: string;
+  descricaoFormatada: string;
+  tipoAtivoFormatado: string;
+  moedaFormatada: string;
+  quantidadeFormatada: string;
+  valorInvestidoFormatado: string;
+  precoMedioFormatado: string;
+  valorAtualFormatado: string;
+  lucroPrejuizoFormatado: string;
 }
 
 @Injectable({

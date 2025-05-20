@@ -382,3 +382,44 @@ mat-icon {
   /* margin-bottom: -10px; */
 }
 }
+
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-card {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+td, th {
+  padding: 8px;
+}
+
+input {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.text-success {
+  color: #28a745;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.no-data-text {
+  text-align: center;
+  color: #6B7280;
+  margin-top: 20px;
+}
