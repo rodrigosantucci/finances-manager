@@ -145,7 +145,7 @@
           <mat-form-field appearance="outline" class="form-field price-field">
             <mat-label>Preço Médio ($)</mat-label>
             <input matInput type="number" step="0.01" formControlName="averagePrice" min="0.01" aria-required="true">
-            <mat-hint class="form-hint">Ex: 14.50</mat-hint>
+            <mat-hint class="form-hint">Ex: 14,50</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupStep5.get('averagePrice')?.hasError('required') && formGroupStep5.get('averagePrice')?.touched">
               Informe o preço médio
             </mat-error>
@@ -157,7 +157,7 @@
           <mat-form-field appearance="outline" class="form-field value-field">
             <mat-label>Valor da Transação ($)</mat-label>
             <input matInput type="number" step="0.01" formControlName="transactionValue" min="0.01" aria-required="true">
-            <mat-hint class="form-hint">Ex: 1450.00</mat-hint>
+            <mat-hint class="form-hint">Ex: 1450,00</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupStep5.get('transactionValue')?.hasError('required') && formGroupStep5.get('transactionValue')?.touched">
               Informe o valor da transação
             </mat-error>

@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  baseUrl: 'https://137.131.186.39:8443/',
-  authUrl: 'https://137.131.186.39:8443/',
+  baseUrl: 'https://localhost:8443/',
+  authUrl: 'https://localhost:8443/',
   useHash: false,
 };
 

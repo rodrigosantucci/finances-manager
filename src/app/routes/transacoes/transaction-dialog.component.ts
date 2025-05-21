@@ -187,7 +187,7 @@ export class TransactionDialogComponent implements OnInit {
         moeda: 'BRL',
         observacao: formValue.description,
         corretora: formValue.corretora,
-        usuarioId: this.data.usuarioId || 1,
+        usuario: this.data.usuarioId ? { id: this.data.usuarioId } : undefined,
       };
 
       // Enviar requisição POST
