@@ -10,7 +10,9 @@
     "build:prod": "nx build --prod",
     "lint": "nx lint --fix && npm run lint:scss",
     "lint:ts": "eslint \"src/**/*.ts\" --fix",
-    "lint:scss": "stylelint \"src/**/*.scss\" --fix"
+    "lint:scss": "stylelint \"src/**/*.scss\" --fix",
+    "build:ghpages": "ng build --output-path docs --base-href /finances-manager && move docs\\browser\\* docs\\ && rmdir /s /q docs\\browser"
+
   },
   "private": true,
   "dependencies": {
