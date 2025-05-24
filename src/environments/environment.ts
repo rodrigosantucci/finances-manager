@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  baseUrl: 'https://apis.dividendosparatodos.com.br/services/',
-  authUrl: 'https://apis.dividendosparatodos.com.br/services/',
+  baseUrl: 'http://localhost:8080/',
+  authUrl: 'http://localhost:8080/',
   useHash: false,
 };
 
