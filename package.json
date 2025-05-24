@@ -11,9 +11,8 @@
     "lint": "nx lint --fix && npm run lint:scss",
     "lint:ts": "eslint \"src/**/*.ts\" --fix",
     "lint:scss": "stylelint \"src/**/*.scss\" --fix",
-    "build:ghpages-win": "ng build --output-path docs --base-href /finances-manager && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
-    "build:ghpages-linux": "ng build --output-path docs --base-href /finances-manager && cp -r docs/browser/* docs/ && rm -rf docs/browser"
-
+    "build:ghpages-win": "ng build --configuration production --output-path docs --base-href /finances-manager && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
+    "build:ghpages-linux": "ng build --configuration production --output-path docs --base-href /finances-manager && cp -r docs/browser/* docs/ && rm -rf docs/browser"
   },
   "private": true,
   "dependencies": {
