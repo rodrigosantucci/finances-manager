@@ -6,12 +6,32 @@
   <mat-card-content>
     <form [formGroup]="reactiveForm" class="form-field-full">
       <div class="row">
+        <div class="col-12 m-b-16 d-flex flex-column align-items-center">
+          <img
+            [src]="avatarPreviewUrl || defaultAvatarPlaceholder"
+            alt="Avatar Preview"
+            class="avatar-preview m-b-8"
+          />
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept="image/jpeg, image/png"
+            style="display: none;"
+          />
+          <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
+            Upload Avatar
+          </button>
+          @if (avatarError) {
+            <mat-error class="m-t-8">{{ avatarError }}</mat-error>
+          }
+        </div>
         <div class="col-sm-6 col-xl-4">
           <mat-form-field>
-            <mat-label>Username</mat-label>
-            <input matInput placeholder="Simple placeholder" formControlName="username" required />
-            @if (reactiveForm.get('username')?.invalid) {
-              <mat-error>Please enter username</mat-error>
+            <mat-label>Nome</mat-label>
+            <input matInput placeholder="Seu nome" formControlName="username" required />
+            @if (reactiveForm.get('username')?.invalid && reactiveForm.get('username')?.touched) {
+              <mat-error>{{ getErrorMessage('username') }}</mat-error>
             }
           </mat-form-field>
         </div>
@@ -19,9 +39,9 @@
         <div class="col-sm-6 col-xl-4">
           <mat-form-field>
             <mat-label>Email</mat-label>
-            <input matInput placeholder="Simple placeholder" formControlName="email" required />
-            @if (reactiveForm.get('email')?.invalid) {
-              <mat-error>{{ getErrorMessage(reactiveForm) }}</mat-error>
+            <input matInput placeholder="Seu email" formControlName="email" required />
+            @if (reactiveForm.get('email')?.invalid && reactiveForm.get('email')?.touched) {
+              <mat-error>{{ getErrorMessage('email') }}</mat-error>
             }
           </mat-form-field>
         </div>
@@ -29,27 +49,47 @@
         <div class="col-sm-6 col-xl-4">
           <mat-form-field>
             <mat-label>Senha</mat-label>
-            <input matInput placeholder="Simple placeholder" formControlName="username" required />
-            @if (reactiveForm.get('username')?.invalid) {
-              <mat-error>Please enter your password</mat-error>
+            <input matInput type="password" placeholder="Nova senha (opcional)" formControlName="password" />
+          </mat-form-field>
+        </div>
+
+        <div class="col-sm-6 col-xl-4">
+          <mat-form-field>
+            <mat-label>Confirmar Senha</mat-label>
+            <input matInput type="password" placeholder="Confirme a nova senha" formControlName="confirmPassword" />
+            @if (reactiveForm.get('confirmPassword')?.invalid && reactiveForm.get('confirmPassword')?.touched) {
+              <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
             }
           </mat-form-field>
         </div>
 
+        <div class="col-sm-6 col-xl-4">
+          <mat-form-field>
+            <mat-label>Estratégia</mat-label>
+            <input matInput placeholder="Sua estratégia" formControlName="estrategia" required />
+            @if (reactiveForm.get('estrategia')?.invalid && reactiveForm.get('estrategia')?.touched) {
+              <mat-error>{{ getErrorMessage('estrategia') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
 
-
-
-
-
-
-
-
-
+        <div class="col-sm-6 col-xl-4">
+          <mat-form-field>
+            <mat-label>Perfil</mat-label>
+            <input matInput placeholder="Seu perfil" formControlName="perfil" required />
+            @if (reactiveForm.get('perfil')?.invalid && reactiveForm.get('perfil')?.touched) {
+              <mat-error>{{ getErrorMessage('perfil') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
 
       </div>
 
-      <div class="d-flex justify-content-end">
-        <button mat-flat-button>Salvar</button>
+      <div class="d-flex justify-content-center m-t-16">
+        <button mat-flat-button color="primary" type="submit" (click)="onSubmit()"
+                [disabled]="reactiveForm.invalid && !selectedFile">
+          Salvar
+        </button>
       </div>
     </form>
   </mat-card-content>

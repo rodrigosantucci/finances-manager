@@ -1,0 +1,42 @@
+// Mantém o estilo do avatar
+.avatar-preview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%; /* Torna a imagem circular */
+  object-fit: cover; /* Garante que a imagem preencha o espaço sem distorção */
+  border: 2px solid #ccc; /* Opcional: Adiciona uma borda */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Opcional: Sombra sutil */
+}
+
+// Classes utilitárias (se você já as tiver em seu framework CSS, pode não precisar duplicá-las)
+.m-b-8 {
+  margin-bottom: 8px;
+}
+
+.m-b-16 {
+  margin-bottom: 16px;
+}
+
+.m-t-8 {
+  margin-top: 8px;
+}
+
+.m-t-16 {
+  margin-top: 16px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-center {
+  justify-content: center;
+}

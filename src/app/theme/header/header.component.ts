@@ -22,7 +22,7 @@ import { UserComponent } from '../widgets/user.component';
     MatButtonModule,
     MatIconModule,
     BrandingComponent,
-    NotificationComponent,
+  //  NotificationComponent,
     UserComponent,
   ],
 })
