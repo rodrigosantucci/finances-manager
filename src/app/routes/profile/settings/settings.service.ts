@@ -30,8 +30,7 @@ export class SettingsService {
   private readonly authService = inject(AuthService);
 
   private readonly apiUsuariosPrefix = '/api/usuarios/';
-  // Novo prefixo para o endpoint de avatares no backend
-  private readonly apiAvatarsPrefix = '/api/avatars/'; // <<-- SEU ENDPOINT DE AVATAR NO BACKEND
+  private readonly apiAvatarsPrefix = '/api/avatars/';
 
   constructor() {}
 
@@ -95,8 +94,7 @@ export class SettingsService {
     if (avatarIdentifier === undefined || avatarIdentifier === null) {
       return ''; // Retorna string vazia ou um placeholder padrão. O componente usará o default.
     }
-    // Constrói a URL usando o prefixo do seu endpoint de avatares e o identificador.
-    // O baseUrlInterceptor cuidará do `https://localhost:8443`
+
     return `${this.apiAvatarsPrefix}${avatarIdentifier}`;
   }
 }
