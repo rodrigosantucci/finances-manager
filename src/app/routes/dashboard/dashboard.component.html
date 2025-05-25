@@ -1,5 +1,4 @@
 <section class="header-section" aria-labelledby="header-title">
-
   <div *ngIf="isShowAlert">
     <mtx-alert type="info" dismissible (closed)="onAlertDismiss()">
       🎉 Novidade!
@@ -9,9 +8,8 @@
     </mtx-alert>
   </div>
 
-
   <div *ngIf="isLoading" class="loading-indicator text-center my-4" role="status" aria-live="polite">
-    <mat-spinner diameter="40" aria-label="Carregando dados"></mat-spinner>
+    <mat-spinner diameter="40" aria-label="Carregando dados" />
     <p>Carregando dados...</p>
   </div>
 
@@ -21,17 +19,13 @@
     <button mat-raised-button color="primary" aria-label="Tentar novamente">
       Tentar Novamente
     </button>
-    </div>
-
-
+  </div>
 
   <div class="tradingview-widget-container">
-      <div class="tradingview-widget-container__widget"></div>
-      <div id="tradingview-widget"></div>
-    </div>
-
+    <div class="tradingview-widget-container__widget"></div>
+    <div id="tradingview-widget"></div>
+  </div>
 </section>
-
 
 <div *ngIf="!isLoading && !hasError" class="dashboard-container">
   <section class="resumo-section mb-4" aria-labelledby="resumo-title">
@@ -49,8 +43,6 @@
                   </button>
                 </p>
               </div>
-
-
               <div class="metric mb-2 text-center">
                 <p class="metric-label">Recarregar Dados</p>
                 <p class="metric-value">
@@ -59,10 +51,7 @@
                   </button>
                 </p>
               </div>
-
-
             </div>
-
             <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
               <div class="metric mb-2 text-center">
                 <p class="metric-label">Total Investido</p>
@@ -77,9 +66,8 @@
                 </p>
               </div>
               <div class="metric text-center">
-                <p class="metric-label">Renda Fixa: <span class="metric-value">{{getPercentualRF()}}%</span></p>
-                <p class="metric-label">Renda Variável: <span class="metric-value">{{getPercentualRV()}}%</span></p>
-
+                <p class="metric-label">R.Fixa: <span class="metric-value">{{getPercentualRF()}}%</span></p>
+                <p class="metric-label">R.Variável: <span class="metric-value">{{getPercentualRV()}}%</span></p>
               </div>
             </div>
           </mat-card-content>
@@ -111,7 +99,6 @@
           </mat-card-content>
         </mat-card>
       </div>
-
       <div class="col-4 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
@@ -123,13 +110,11 @@
         </mat-card>
       </div>
     </div>
-
   </section>
 
   <section class="acoes-section mb-4" aria-labelledby="acos-title">
     <h2 id="acos-title" class="section-title">Ações</h2>
     <div class="row">
-
       <div class="col-12 col-md-8">
         <mat-card class="table-card">
           <mat-card-content>
@@ -153,7 +138,6 @@
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">{{ element.precoMedioFormatado | currency:'BRL' }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
-
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
@@ -163,25 +147,36 @@
               <ng-container matColumnDef="valorAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
                 <td mat-cell *matCellDef="let element">{{ element.valorAtualFormatado | currency:'BRL' }}</td>
-                <td mat-footer-cell *matFooterCellDef> {{ getTotalValorAtualAcoes() | currency:'BRL' }}</td>
-
+                <td mat-footer-cell *matFooterCellDef>{{ getTotalValorAtualAcoes() | currency:'BRL' }}</td>
               </ng-container>
               <ng-container matColumnDef="lucroPrejuizoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
                 <td mat-cell *matCellDef="let element" [ngClass]="{'text-success': element.lucroPrejuizoFormatado >= 0, 'text-danger': element.lucroPrejuizoFormatado < 0}">
                   {{ element.lucroPrejuizoFormatado | currency:'BRL' }}
                 </td>
-                <td mat-footer-cell *matFooterCellDef> <span [ngClass]="getTotalLucroPrejuizoAcoes() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoAcoes() | currency:'BRL' }}</span></td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <span [ngClass]="getTotalLucroPrejuizoAcoes() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoAcoes() | currency:'BRL' }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let element">
+                  <button mat-icon-button color="primary" (click)="openEditDialog(element, 'acoes')" matTooltip="Editar ativo" aria-label="Editar ativo">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'acoes')" matTooltip="Excluir ativo" aria-label="Excluir ativo">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="acoesColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: acoesColumns;"></tr>
               <tr mat-footer-row *matFooterRowDef="acoesColumns"></tr>
-
             </table>
           </mat-card-content>
         </mat-card>
       </div>
-
       <div class="col-12 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
@@ -195,17 +190,9 @@
     </div>
   </section>
 
-
-
-
-
-
-
-
-  <section class="acoes-section mb-4" aria-labelledby="acos-title">
-    <h2 id="acos-title" class="section-title">Fundos</h2>
+  <section class="acoes-section mb-4" aria-labelledby="fundos-title">
+    <h2 id="fundos-title" class="section-title">Fundos</h2>
     <div class="row">
-
       <div class="col-12 col-md-8">
         <mat-card class="table-card">
           <mat-card-content>
@@ -229,7 +216,6 @@
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">{{ element.precoMedioFormatado | currency:'BRL' }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
-
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
@@ -239,25 +225,36 @@
               <ng-container matColumnDef="valorAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
                 <td mat-cell *matCellDef="let element">{{ element.valorAtualFormatado | currency:'BRL' }}</td>
-                <td mat-footer-cell *matFooterCellDef> {{ getTotalValorAtualFundos() | currency:'BRL' }}</td>
-
+                <td mat-footer-cell *matFooterCellDef>{{ getTotalValorAtualFundos() | currency:'BRL' }}</td>
               </ng-container>
               <ng-container matColumnDef="lucroPrejuizoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
                 <td mat-cell *matCellDef="let element" [ngClass]="{'text-success': element.lucroPrejuizoFormatado >= 0, 'text-danger': element.lucroPrejuizoFormatado < 0}">
                   {{ element.lucroPrejuizoFormatado | currency:'BRL' }}
                 </td>
-                <td mat-footer-cell *matFooterCellDef> <span [ngClass]="getTotalLucroPrejuizoFundos() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoFundos() | currency:'BRL' }}</span></td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <span [ngClass]="getTotalLucroPrejuizoFundos() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoFundos() | currency:'BRL' }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let element">
+                  <button mat-icon-button color="primary" (click)="openEditDialog(element, 'fundos')" matTooltip="Editar fundo" aria-label="Editar fundo">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'fundos')" matTooltip="Excluir fundo" aria-label="Excluir fundo">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="fundosColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: fundosColumns;"></tr>
               <tr mat-footer-row *matFooterRowDef="fundosColumns"></tr>
-
             </table>
           </mat-card-content>
         </mat-card>
       </div>
-
       <div class="col-12 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
@@ -271,15 +268,9 @@
     </div>
   </section>
 
-
-
-
-
-
-  <section class="acoes-section mb-4" aria-labelledby="acos-title">
-    <h2 id="acos-title" class="section-title">Caixa</h2>
+  <section class="acoes-section mb-4" aria-labelledby="caixa-title">
+    <h2 id="caixa-title" class="section-title">Caixa</h2>
     <div class="row">
-
       <div class="col-12 col-md-8">
         <mat-card class="table-card">
           <mat-card-content>
@@ -303,7 +294,6 @@
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">{{ element.precoMedioFormatado | currency:'BRL' }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
-
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
@@ -313,25 +303,36 @@
               <ng-container matColumnDef="valorAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
                 <td mat-cell *matCellDef="let element">{{ element.valorAtualFormatado | currency:'BRL' }}</td>
-                <td mat-footer-cell *matFooterCellDef> {{ getTotalValorAtualCaixa() | currency:'BRL' }}</td>
-
+                <td mat-footer-cell *matFooterCellDef>{{ getTotalValorAtualCaixa() | currency:'BRL' }}</td>
               </ng-container>
               <ng-container matColumnDef="lucroPrejuizoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
                 <td mat-cell *matCellDef="let element" [ngClass]="{'text-success': element.lucroPrejuizoFormatado >= 0, 'text-danger': element.lucroPrejuizoFormatado < 0}">
                   {{ element.lucroPrejuizoFormatado | currency:'BRL' }}
                 </td>
-                <td mat-footer-cell *matFooterCellDef> <span [ngClass]="getTotalLucroPrejuizoCaixa() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoCaixa() | currency:'BRL' }}</span></td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <span [ngClass]="getTotalLucroPrejuizoCaixa() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoCaixa() | currency:'BRL' }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let element">
+                  <button mat-icon-button color="primary" (click)="openEditDialog(element, 'caixa')" matTooltip="Editar caixa" aria-label="Editar caixa">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'caixa')" matTooltip="Excluir caixa" aria-label="Excluir caixa">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="caixaColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: caixaColumns;"></tr>
               <tr mat-footer-row *matFooterRowDef="caixaColumns"></tr>
-
             </table>
           </mat-card-content>
         </mat-card>
       </div>
-
       <div class="col-12 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
@@ -345,14 +346,9 @@
     </div>
   </section>
 
-
-
-
-
-  <section class="acoes-section mb-4" aria-labelledby="acos-title">
-    <h2 id="acos-title" class="section-title">Assets Internacionais</h2>
+  <section class="acoes-section mb-4" aria-labelledby="assets-title">
+    <h2 id="assets-title" class="section-title">Assets Internacionais</h2>
     <div class="row">
-
       <div class="col-12 col-md-8">
         <mat-card class="table-card">
           <mat-card-content>
@@ -376,7 +372,6 @@
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">{{ element.precoMedioFormatado | currency:'BRL' }}</td>
                 <td mat-footer-cell *matFooterCellDef></td>
-
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
@@ -386,31 +381,42 @@
               <ng-container matColumnDef="valorAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
                 <td mat-cell *matCellDef="let element">{{ element.valorAtualFormatado | currency:'BRL' }}</td>
-                <td mat-footer-cell *matFooterCellDef> {{ getTotalValorAtualAssets() | currency:'BRL' }}</td>
-
+                <td mat-footer-cell *matFooterCellDef>{{ getTotalValorAtualAssets() | currency:'BRL' }}</td>
               </ng-container>
               <ng-container matColumnDef="lucroPrejuizoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
                 <td mat-cell *matCellDef="let element" [ngClass]="{'text-success': element.lucroPrejuizoFormatado >= 0, 'text-danger': element.lucroPrejuizoFormatado < 0}">
                   {{ element.lucroPrejuizoFormatado | currency:'BRL' }}
                 </td>
-                <td mat-footer-cell *matFooterCellDef> <span [ngClass]="getTotalLucroPrejuizoAssets() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoAssets() | currency:'BRL' }}</span></td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <span [ngClass]="getTotalLucroPrejuizoAssets() >= 0 ? 'text-success' : 'text-danger'">{{ getTotalLucroPrejuizoAssets() | currency:'BRL' }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let element">
+                  <button mat-icon-button color="primary" (click)="openEditDialog(element, 'assets')" matTooltip="Editar ativo internacional" aria-label="Editar ativo internacional">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'assets')" matTooltip="Excluir ativo internacional" aria-label="Excluir ativo internacional">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="assetsColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: assetsColumns;"></tr>
               <tr mat-footer-row *matFooterRowDef="assetsColumns"></tr>
-
             </table>
           </mat-card-content>
         </mat-card>
       </div>
-
       <div class="col-12 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
-            <div #chart5 id="chart5" role="img" aria-label="Gráfico de distribuição de ações"></div>
+            <div #chart5 id="chart5" role="img" aria-label="Gráfico de distribuição de assets internacionais"></div>
             <p *ngIf="!(assetsChart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para assets
+              Nenhum dado disponível para assets internacionais
             </p>
           </mat-card-content>
         </mat-card>

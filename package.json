@@ -38,6 +38,7 @@
     "date-fns": "^4.1.0",
     "finances-manager": "file:",
     "ng-matero": "^19.0.0",
+    "ngx-mask": "^19.0.7",
     "ngx-permissions": "^17.1.0",
     "ngx-progressbar": "^14.0.0",
     "ngx-toastr": "^19.0.0",

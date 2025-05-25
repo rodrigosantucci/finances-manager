@@ -1,29 +1,13 @@
-<mat-card>
+<div class="tradingview-widget-container" style="height: 450px; width: 100%;">
+</div>
 
-
-      <section class="section-title">
-
-         <mat-card-header>
-            <mat-card-title><h2>{{ user.username }}</h2></mat-card-title>
-            <mat-card-subtitle><p>{{ user.email }}</p></mat-card-subtitle>
-          </mat-card-header>
-
-        <mat-card class="demo-card">
-          <mat-card-content>
-            The German Shepherd is a breed of medium to large-sized working dog that originated in
-            Germany. The breed's officially recognized name is German Shepherd Dog in the English
-            language. The breed is also known as the Alsatian in Britain and Ireland.
-          </mat-card-content>
-                    <mat-card-content>
-            The German Shepherd is a breed of medium to large-sized working dog that originated in
-            Germany. The breed's officially recognized name is German Shepherd Dog in the English
-            language. The breed is also known as the Alsatian in Britain and Ireland.
-          </mat-card-content>
-          <mat-card-content>
-            People also search for Rottweiler, Siberian Husky, Labrador Retriever, Doberman Pinscher
-          </mat-card-content>
-        </mat-card>
-      </section>
-
-
-</mat-card>
+<div style="display: flex; justify-content: center; margin-top: 10px;">
+<button mat-icon-button
+        (click)="triggerWidgetRefresh()"
+        [disabled]="isLoading"
+        aria-label="Recarregar widget de cotações"
+        matTooltip="Recarregar Cotações"
+        matTooltipPosition="above">
+  <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
+</button>
+</div>

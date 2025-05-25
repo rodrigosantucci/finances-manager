@@ -1,8 +1,49 @@
+/* overview.component.scss */
+
+:host {
+  display: block; // Garante que o componente Angular ocupe o espaço necessário
+}
+
 .section-title {
-  font-size: 1.2rem;
-  font-weight: 200;
-  margin-bottom: 16px;
-  color: var(--text-secondary);
-  padding: 5px;
-  margin: 5px;
+  margin-bottom: 10px;
+}
+
+
+.tradingview-widget-container {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tradingview-widget-container__widget {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+// Estilos para o botão de recarregar e animação do ícone
+button[mat-icon-button] {
+  mat-icon {
+    &.spin-animation {
+      animation: spinAnimation 1s linear infinite;
+    }
+  }
+}
+
+// Animação de rotação
+@keyframes spinAnimation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Estilo opcional para o container do widget
+.tradingview-widget-container {
+  min-height: 450px; // Importante para o widget ter onde ser renderizado
+  width: 100%;
+  // Outros estilos que você possa precisar para o container
 }

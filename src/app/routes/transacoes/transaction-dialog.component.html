@@ -3,8 +3,8 @@
   <mat-dialog-content class="dialog-content">
     <mat-horizontal-stepper [linear]="true" #stepper class="transaction-stepper">
 
-      <mat-step [stepControl]="formGroupStep1" >
-        <form [formGroup]="formGroupStep1" class="form-step-content">
+      <mat-step [stepControl]="formGroupDadosIniciais">
+        <form [formGroup]="formGroupDadosIniciais" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field transaction-type-field">
             <mat-label>Transação</mat-label>
             <mat-select formControlName="transactionType" aria-required="true">
@@ -12,10 +12,10 @@
                 {{ type.label }}
               </mat-option>
             </mat-select>
-            <mat-icon matSuffix></mat-icon>
+            <mat-icon matSuffix>swap_horiz</mat-icon>
             <mat-hint class="form-hint">Tipo de operação (Compra/Venda)</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep1.get('transactionType')?.hasError('required') && formGroupStep1.get('transactionType')?.touched">
-              Selecione
+            <mat-error class="form-error" *ngIf="formGroupDadosIniciais.get('transactionType')?.hasError('required') && formGroupDadosIniciais.get('transactionType')?.touched">
+              Selecione o tipo de transação
             </mat-error>
           </mat-form-field>
 
@@ -26,10 +26,10 @@
                 {{ type.label }}
               </mat-option>
             </mat-select>
-            <mat-icon matSuffix></mat-icon>
+            <mat-icon matSuffix>category</mat-icon>
             <mat-hint class="form-hint">Selecione o tipo do ativo</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep1.get('assetType')?.hasError('required') && formGroupStep1.get('assetType')?.touched">
-              Selecione o tipo
+            <mat-error class="form-error" *ngIf="formGroupDadosIniciais.get('assetType')?.hasError('required') && formGroupDadosIniciais.get('assetType')?.touched">
+              Selecione o tipo de ativo
             </mat-error>
           </mat-form-field>
 
@@ -39,44 +39,44 @@
         </form>
       </mat-step>
 
-      <mat-step [stepControl]="formGroupStep2" >
-        <form [formGroup]="formGroupStep2" class="form-step-content">
+      <mat-step [stepControl]="formGroupDetalhesAtivo" >
+        <form [formGroup]="formGroupDetalhesAtivo" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field ticker-field">
             <mat-label>Ticker</mat-label>
             <input matInput formControlName="ticker" placeholder="Ex: PETR4" aria-required="true">
             <mat-hint class="form-hint">Ex: PETR4, ITUB3</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('ticker')?.hasError('required') && formGroupStep2.get('ticker')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('required') && formGroupDetalhesAtivo.get('ticker')?.touched">
               Informe o Ticker
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('ticker')?.hasError('minlength') && formGroupStep2.get('ticker')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('minlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
               Mínimo 3 caracteres
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('ticker')?.hasError('maxlength') && formGroupStep2.get('ticker')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('maxlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
               Máximo 10 caracteres
             </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field description-field">
             <mat-label>
-              {{ formGroupStep1.get('assetType')?.value === 'TÍTULO' ? 'Rentabilidade (%)' :
-                 formGroupStep1.get('assetType')?.value === 'MOEDA' ? 'Cotação' : 'Descrição' }}
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Rentabilidade (%)' :
+                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Cotação' : 'Descrição' }}
             </mat-label>
             <input matInput
                    formControlName="description"
-                   [placeholder]="formGroupStep1.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5' :
-                                  formGroupStep1.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ex: Nome da Empresa'"
+                   [placeholder]="formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5' :
+                                  formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ex: Nome da Empresa'"
                    aria-required="true">
             <mat-hint class="form-hint">
-              {{ formGroupStep1.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5 para 5.5%' :
-                 formGroupStep1.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30 para R$5,30' : 'Nome completo do ativo' }}
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5 para 5.5%' :
+                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30 para R$5,30' : 'Nome completo do ativo' }}
             </mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('description')?.hasError('required') && formGroupStep2.get('description')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('required') && formGroupDetalhesAtivo.get('description')?.touched">
               Obrigatório
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('description')?.hasError('invalidPercentage') && formGroupStep2.get('description')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('invalidPercentage') && formGroupDetalhesAtivo.get('description')?.touched">
               Informe um valor positivo (ex: 5.5)
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('description')?.hasError('invalidCurrency') && formGroupStep2.get('description')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('invalidCurrency') && formGroupDetalhesAtivo.get('description')?.touched">
               Informe um valor positivo (ex: 5.30)
             </mat-error>
           </mat-form-field>
@@ -85,29 +85,25 @@
             <mat-label>Quantidade</mat-label>
             <input matInput type="number" formControlName="quantity" min="1" aria-required="true">
             <mat-hint class="form-hint">Ex: 100</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('quantity')?.hasError('required') && formGroupStep2.get('quantity')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('quantity')?.hasError('required') && formGroupDetalhesAtivo.get('quantity')?.touched">
               Informe a quantidade
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep2.get('quantity')?.hasError('min') && formGroupStep2.get('quantity')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('quantity')?.hasError('min') && formGroupDetalhesAtivo.get('quantity')?.touched">
               Mínimo 1
             </mat-error>
           </mat-form-field>
 
-          <div class="stepper-actions">
-            <button mat-raised-button color="primary" matStepperPrevious aria-label="Voltar etapa">Voltar</button>
-            <button mat-raised-button color="primary" matStepperNext aria-label="Próxima etapa">Próximo</button>
-          </div>
-        </form>
-      </mat-step>
-
-      <mat-step [stepControl]="formGroupStep3" >
-        <form [formGroup]="formGroupStep3" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field corretora-field">
             <mat-label>Corretora</mat-label>
-            <input matInput formControlName="corretora" placeholder="Ex: XP Investimentos" aria-required="true">
-            <mat-hint class="form-hint">Ex: XP Investimentos</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep3.get('corretora')?.hasError('required') && formGroupStep3.get('corretora')?.touched">
-              Informe a corretora
+            <mat-select formControlName="corretora" aria-required="true">
+              <mat-option *ngFor="let broker of brokers" [value]="broker">
+                {{ broker }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>account_balance</mat-icon>
+            <mat-hint class="form-hint">Selecione a corretora</mat-hint>
+            <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('corretora')?.hasError('required') && formGroupDetalhesAtivo.get('corretora')?.touched">
+              Selecione a corretora
             </mat-error>
           </mat-form-field>
 
@@ -118,50 +114,45 @@
         </form>
       </mat-step>
 
-      <mat-step [stepControl]="formGroupStep4">
-        <form [formGroup]="formGroupStep4" class="form-step-content">
+      <mat-step [stepControl]="formGroupValoresData" >
+        <form [formGroup]="formGroupValoresData" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field date-field">
             <mat-label>Data da Transação</mat-label>
             <input matInput [matDatepicker]="picker" formControlName="date" aria-required="true">
             <mat-datepicker-toggle matSuffix [for]="picker">
               <mat-icon matDatepickerToggleIcon>calendar_today</mat-icon>
             </mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
+            <mat-datepicker #picker />
             <mat-hint class="form-hint">Ex: 18/04/2025</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep4.get('date')?.hasError('required') && formGroupStep4.get('date')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupValoresData.get('date')?.hasError('required') && formGroupValoresData.get('date')?.touched">
               Informe a data
             </mat-error>
           </mat-form-field>
 
-          <div class="stepper-actions">
-            <button mat-raised-button color="primary" matStepperPrevious aria-label="Voltar etapa">Voltar</button>
-            <button mat-raised-button color="primary" matStepperNext aria-label="Próxima etapa">Próximo</button>
-          </div>
-        </form>
-      </mat-step>
-
-      <mat-step [stepControl]="formGroupStep5">
-        <form [formGroup]="formGroupStep5" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field price-field">
             <mat-label>Preço Médio ($)</mat-label>
-            <input matInput type="number" step="0.01" formControlName="averagePrice" min="0.01" aria-required="true">
-            <mat-hint class="form-hint">Ex: 14,50</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep5.get('averagePrice')?.hasError('required') && formGroupStep5.get('averagePrice')?.touched">
+            <input matInput
+                   type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="averagePrice"
+                   aria-required="true">
+            <mat-hint class="form-hint">Ex: 14,50 </mat-hint>
+            <mat-error class="form-error" *ngIf="formGroupValoresData.get('averagePrice')?.hasError('required') && formGroupValoresData.get('averagePrice')?.touched">
               Informe o preço médio
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep5.get('averagePrice')?.hasError('min') && formGroupStep5.get('averagePrice')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupValoresData.get('averagePrice')?.hasError('min') && formGroupValoresData.get('averagePrice')?.touched">
               Mínimo 0,01
             </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field value-field">
             <mat-label>Valor da Transação ($)</mat-label>
-            <input matInput type="number" step="0.01" formControlName="transactionValue" min="0.01" aria-required="true">
-            <mat-hint class="form-hint">Ex: 1450,00</mat-hint>
-            <mat-error class="form-error" *ngIf="formGroupStep5.get('transactionValue')?.hasError('required') && formGroupStep5.get('transactionValue')?.touched">
+            <input matInput
+                   type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="transactionValue"
+                   aria-required="true">
+            <mat-hint class="form-hint">Ex: 1.450,00 </mat-hint>
+            <mat-error class="form-error" *ngIf="formGroupValoresData.get('transactionValue')?.hasError('required') && formGroupValoresData.get('transactionValue')?.touched">
               Informe o valor da transação
             </mat-error>
-            <mat-error class="form-error" *ngIf="formGroupStep5.get('transactionValue')?.hasError('min') && formGroupStep5.get('transactionValue')?.touched">
+            <mat-error class="form-error" *ngIf="formGroupValoresData.get('transactionValue')?.hasError('min') && formGroupValoresData.get('transactionValue')?.touched">
               Mínimo 0,01
             </mat-error>
           </mat-form-field>
