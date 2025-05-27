@@ -23,14 +23,13 @@ export interface AtivoVO {
   id: number | string; // Permitir string para novos ativos antes de receber um ID do backend
   tickerFormatado: string;
   descricaoFormatada: string;
-  tipoAtativoFormatado: string; // Corrigido de 'tipoAtivoFormatado' para 'tipoAtativoFormatado' para corresponder ao backend se for o caso, ou verifique a interface original
+  tipoAtativoFormatado: string;
   moedaFormatada: string;
-  quantidadeFormatada: string;
-  valorInvestidoFormatado: string;
-  precoMedioFormatado: string;
-  valorAtualFormatado: string;
-  lucroPrejuizoFormatado: string;
-  // Adicionado category para ser passado ao serviço para o método deleteAtivo/updateAtivo
+  quantidadeFormatada: number; // Alterado para number
+  valorInvestidoFormatado: number; // Alterado para number
+  precoMedioFormatado: number; // Alterado para number
+  valorAtualFormatado: number; // Alterado para number
+  lucroPrejuizoFormatado: number; // Alterado para number
   category?: string;
 }
 
@@ -80,6 +79,7 @@ export class DashboardService {
     );
   }
 
+  // Permanece para parsear strings de entrada (ex: do formulário de edição)
   public parseFormattedString(value: string | undefined | null): number {
     if (value === null || value === undefined || value.trim() === '') {
       return 0;
@@ -113,6 +113,8 @@ export class DashboardService {
     return parsed;
   }
 
+  // Este método agora é privado e só usado internamente para formatar para BRL se necessário,
+  // mas os dados retornados pelos getters serão numéricos.
   private formatToBRL(value: number | undefined | null): string {
     if (value === null || value === undefined || isNaN(value)) {
       return 'R$ --';
@@ -125,6 +127,7 @@ export class DashboardService {
     });
   }
 
+  // Converte os valores USD para BRL numericamente
   private convertUsdToBrlNumeric(ativos: AtivoVO[], cotacaoUSD: number): AtivoVO[] {
     if (cotacaoUSD <= 0) {
       console.warn(`[convertUsdToBrlNumeric] Cotação USD inválida ou zero (${cotacaoUSD}). Retornando ativos sem conversão numérica.`);
@@ -137,47 +140,45 @@ export class DashboardService {
       if (ativoModificado.moedaFormatada === 'USD') {
         console.log(`Convertendo USD para BRL (valor NUMÉRICO) para ativo ${ativoModificado.tickerFormatado}`);
 
-        const valorAtualUSD = this.parseFormattedString(ativoModificado.valorAtualFormatado);
+        // Garante que os valores são strings antes de parsear, pois a API pode enviá-los como strings
+        const valorAtualUSD = this.parseFormattedString(ativoModificado.valorAtualFormatado?.toString());
         if (!isNaN(valorAtualUSD)) {
-          const valorAtualBrl = valorAtualUSD * cotacaoUSD;
-          (ativoModificado.valorAtualFormatado as any) = valorAtualBrl; // Mantenha como number temporariamente
+          ativoModificado.valorAtualFormatado = valorAtualUSD * cotacaoUSD;
         } else {
           console.warn(`Não foi possível parsear valorAtualFormatado para ${ativoModificado.tickerFormatado}. Valor: ${ativoModificado.valorAtualFormatado}. Atribuindo 0.`);
-          (ativoModificado.valorAtualFormatado as any) = 0;
+          ativoModificado.valorAtualFormatado = 0;
         }
 
-        const valorInvestidoUSD = this.parseFormattedString(ativoModificado.valorInvestidoFormatado);
+        const valorInvestidoUSD = this.parseFormattedString(ativoModificado.valorInvestidoFormatado?.toString());
         if (!isNaN(valorInvestidoUSD)) {
-          const valorInvestidoBrl = valorInvestidoUSD * cotacaoUSD;
-          (ativoModificado.valorInvestidoFormatado as any) = valorInvestidoBrl; // Mantenha como number temporariamente
+          ativoModificado.valorInvestidoFormatado = valorInvestidoUSD * cotacaoUSD;
         } else {
           console.warn(`Não foi possível parsear valorInvestidoFormatado para ${ativoModificado.tickerFormatado}. Valor: ${ativoModificado.valorInvestidoFormatado}. Atribuindo 0.`);
-          (ativoModificado.valorInvestidoFormatado as any) = 0;
+          ativoModificado.valorInvestidoFormatado = 0;
         }
 
-        const precoMedioUSD = this.parseFormattedString(ativoModificado.precoMedioFormatado);
+        const precoMedioUSD = this.parseFormattedString(ativoModificado.precoMedioFormatado?.toString());
         if (!isNaN(precoMedioUSD)) {
-          const precoMedioBrl = precoMedioUSD * cotacaoUSD;
-          (ativoModificado.precoMedioFormatado as any) = precoMedioBrl; // Mantenha como number temporariamente
+          ativoModificado.precoMedioFormatado = precoMedioUSD * cotacaoUSD;
         } else {
           console.warn(`Não foi possível parsear precoMedioFormatado para ${ativoModificado.tickerFormatado}. Valor: ${ativoModificado.precoMedioFormatado}. Atribuindo 0.`);
-          (ativoModificado.precoMedioFormatado as any) = 0;
+          ativoModificado.precoMedioFormatado = 0;
         }
 
-        const valorAtualBrlNum = ativoModificado.valorAtualFormatado as unknown as number;
-        const valorInvestidoBrlNum = ativoModificado.valorInvestidoFormatado as unknown as number;
-        const lucroPrejuizoBrlRecalculado = (!isNaN(valorAtualBrlNum) && !isNaN(valorInvestidoBrlNum)) ? valorAtualBrlNum - valorInvestidoBrlNum : 0;
-        (ativoModificado.lucroPrejuizoFormatado as any) = lucroPrejuizoBrlRecalculado; // Mantenha como number temporariamente
+        // Recalcula lucro/prejuízo após a conversão
+        ativoModificado.lucroPrejuizoFormatado = ativoModificado.valorAtualFormatado - ativoModificado.valorInvestidoFormatado;
 
-        ativoModificado.moedaFormatada = 'BRL';
+        ativoModificado.moedaFormatada = 'BRL'; // Atualiza a moeda para BRL
       } else {
         console.log(`Ativo ${ativoModificado.tickerFormatado} não é USD (${ativoModificado.moedaFormatada}). Pulando conversão numérica.`);
-        // Mesmo que não seja USD, certifique-se de que os valores numéricos sejam parseados para cálculos subsequentes
-        (ativoModificado.valorAtualFormatado as any) = this.parseFormattedString(ativoModificado.valorAtualFormatado);
-        (ativoModificado.valorInvestidoFormatado as any) = this.parseFormattedString(ativoModificado.valorInvestidoFormatado);
-        (ativoModificado.precoMedioFormatado as any) = this.parseFormattedString(ativoModificado.precoMedioFormatado);
-        (ativoModificado.lucroPrejuizoFormatado as any) = this.parseFormattedString(ativoModificado.lucroPrejuizoFormatado);
+        // Mesmo que não seja USD, certifique-se de que os valores sejam numéricos
+        ativoModificado.valorAtualFormatado = this.parseFormattedString(ativoModificado.valorAtualFormatado?.toString());
+        ativoModificado.valorInvestidoFormatado = this.parseFormattedString(ativoModificado.valorInvestidoFormatado?.toString());
+        ativoModificado.precoMedioFormatado = this.parseFormattedString(ativoModificado.precoMedioFormatado?.toString());
+        ativoModificado.lucroPrejuizoFormatado = this.parseFormattedString(ativoModificado.lucroPrejuizoFormatado?.toString());
       }
+      // Garante que a quantidade também é numérica
+      ativoModificado.quantidadeFormatada = this.parseFormattedString(ativoModificado.quantidadeFormatada?.toString());
       return ativoModificado;
     });
   }
@@ -214,7 +215,6 @@ export class DashboardService {
               assetsEntry.valorTotal = assetsValorBrl;
               console.log(`DashboardService: Convertendo 'Assets' total (${assetsOriginalValor} USD) para BRL (${assetsValorBrl}) usando cotação ${cotacao}`);
 
-              // Ajusta o total geral para refletir a conversão dos "Assets"
               totalGeralAjustado = totalGeralOriginal - assetsOriginalValor + assetsValorBrl;
               console.log(`DashboardService: Total Geral Ajustado: ${totalGeralOriginal} (Original) - ${assetsOriginalValor} (Assets Original) + ${assetsValorBrl} (Assets BRL) = ${totalGeralAjustado}`);
             } else if (assetsEntry && cotacao <= 0) {
@@ -258,12 +258,13 @@ export class DashboardService {
           tap(acoes => console.log(`DashboardService: Ações brutas recebidas:`, acoes)),
           map(ativos => ativos.map(ativo => ({
             ...ativo,
-            valorInvestidoFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorInvestidoFormatado)),
-            precoMedioFormatado: this.formatToBRL(this.parseFormattedString(ativo.precoMedioFormatado)),
-            valorAtualFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorAtualFormatado)),
-            lucroPrejuizoFormatado: this.formatToBRL(this.parseFormattedString(ativo.lucroPrejuizoFormatado)),
-            quantidadeFormatada: ativo.quantidadeFormatada, // Mantém a formatação de quantidade
-            category: 'acoes' // Adiciona a categoria para uso no componente
+            // Converte para número aqui, a formatação para R$ será no HTML
+            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
+            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
+            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
+            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
+            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()), // Garante que a quantidade também é numérica
+            category: 'acoes'
           }))),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar ações para usuário ${usuarioId}:`, error);
@@ -289,12 +290,12 @@ export class DashboardService {
           tap(fundos => console.log(`DashboardService: Fundos brutos recebidos:`, fundos)),
           map(ativos => ativos.map(ativo => ({
             ...ativo,
-            valorInvestidoFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorInvestidoFormatado)),
-            precoMedioFormatado: this.formatToBRL(this.parseFormattedString(ativo.precoMedioFormatado)),
-            valorAtualFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorAtualFormatado)),
-            lucroPrejuizoFormatado: this.formatToBRL(this.parseFormattedString(ativo.lucroPrejuizoFormatado)),
-            quantidadeFormatada: ativo.quantidadeFormatada, // Mantém a formatação de quantidade
-            category: 'fundos' // Adiciona a categoria para uso no componente
+            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
+            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
+            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
+            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
+            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
+            category: 'fundos'
           }))),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar fundos para usuário ${usuarioId}:`, error);
@@ -320,12 +321,12 @@ export class DashboardService {
           tap(caixa => console.log(`DashboardService: Caixa bruta recebida:`, caixa)),
           map(ativos => ativos.map(ativo => ({
             ...ativo,
-            valorInvestidoFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorInvestidoFormatado)),
-            precoMedioFormatado: this.formatToBRL(this.parseFormattedString(ativo.precoMedioFormatado)),
-            valorAtualFormatado: this.formatToBRL(this.parseFormattedString(ativo.valorAtualFormatado)),
-            lucroPrejuizoFormatado: this.formatToBRL(this.parseFormattedString(ativo.lucroPrejuizoFormatado)),
-            quantidadeFormatada: ativo.quantidadeFormatada, // Mantém a formatação de quantidade
-            category: 'caixa' // Adiciona a categoria para uso no componente
+            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
+            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
+            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
+            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
+            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
+            category: 'caixa'
           }))),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar caixa para usuário ${usuarioId}:`, error);
@@ -364,18 +365,15 @@ export class DashboardService {
             const assetsConvertidosNumeric = this.convertUsdToBrlNumeric(assets, cotacao);
             console.log(`DashboardService: Assets após conversão USD->BRL (numérico):`, assetsConvertidosNumeric);
 
-            // Em seguida, formata os campos para string BRL
-            const assetsFormatados = assetsConvertidosNumeric.map(ativo => ({
+            // Retorna os ativos com valores numéricos. A formatação será no HTML.
+            const assetsFinal = assetsConvertidosNumeric.map(ativo => ({
               ...ativo,
-              valorInvestidoFormatado: this.formatToBRL(ativo.valorInvestidoFormatado as unknown as number),
-              precoMedioFormatado: this.formatToBRL(ativo.precoMedioFormatado as unknown as number),
-              valorAtualFormatado: this.formatToBRL(ativo.valorAtualFormatado as unknown as number),
-              lucroPrejuizoFormatado: this.formatToBRL(ativo.lucroPrejuizoFormatado as unknown as number),
-              quantidadeFormatada: ativo.quantidadeFormatada, // Mantém a formatação de quantidade
-              category: 'assets' // Adiciona a categoria para uso no componente
+              // Garante que a quantidade também é numérica
+              quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
+              category: 'assets'
             }));
 
-            return assetsFormatados;
+            return assetsFinal;
           }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar assets para usuário ${usuarioId}:`, error);
@@ -418,7 +416,6 @@ export class DashboardService {
       tap(() => console.log(`Ativo ID ${ativoId} excluído com sucesso da categoria ${category}.`)),
       catchError(error => {
         console.error(`Erro ao excluir ativo ID ${ativoId} da categoria ${category}:`, error);
-        // Retorna um erro que pode ser capturado pelo componente
         return throwError(() => new Error(`Erro ao excluir ativo: ${error.message || 'Erro desconhecido'}`));
       })
     );
@@ -427,7 +424,7 @@ export class DashboardService {
   /**
    * Atualiza um ativo com base na categoria e ID.
    * @param usuarioId ID do usuário logado.
-   * @param ativo Objeto AtivoVO com os dados atualizados.
+   * @param ativo Objeto AtivoVO com os dados atualizados (numéricos).
    * @param category Categoria do ativo ('acoes', 'fundos', 'caixa', 'assets').
    * @returns Observable<void>
    */
@@ -451,13 +448,14 @@ export class DashboardService {
         return throwError(() => new Error('Categoria inválida'));
     }
 
-    // Antes de enviar, converta os valores formatados para números, se necessário
+    // Antes de enviar, converta os valores numéricos para strings, se o backend espera strings
+    // Se o backend espera números, remova o .toString()
     const ativoParaEnviar = { ...ativo };
-    ativoParaEnviar.valorInvestidoFormatado = this.parseFormattedString(ativo.valorInvestidoFormatado).toString();
-    ativoParaEnviar.precoMedioFormatado = this.parseFormattedString(ativo.precoMedioFormatado).toString();
-    ativoParaEnviar.valorAtualFormatado = this.parseFormattedString(ativo.valorAtualFormatado).toString();
-    ativoParaEnviar.lucroPrejuizoFormatado = this.parseFormattedString(ativo.lucroPrejuizoFormatado).toString();
-    ativoParaEnviar.quantidadeFormatada = this.parseFormattedString(ativo.quantidadeFormatada).toString(); // Certifica-se de que a quantidade também é um número ou string numérica
+    ativoParaEnviar.valorInvestidoFormatado = ativo.valorInvestidoFormatado;
+    ativoParaEnviar.precoMedioFormatado = ativo.precoMedioFormatado;
+    ativoParaEnviar.valorAtualFormatado = ativo.valorAtualFormatado;
+    ativoParaEnviar.lucroPrejuizoFormatado = ativo.lucroPrejuizoFormatado;
+    ativoParaEnviar.quantidadeFormatada = ativo.quantidadeFormatada;
 
     console.log(`DashboardService: Atualizando ativo ID ${ativo.id} na categoria ${category} na URL: ${url}`);
     return this.http.put<void>(url, ativoParaEnviar).pipe(
@@ -470,9 +468,7 @@ export class DashboardService {
   }
 
   // Se você tiver um método para adicionar novas transações, ele também precisará ser ajustado
-  // Exemplo de como poderia ser:
   addTransaction(userId: number | string, transactionData: any): Observable<any> {
-    // transactionData deve conter os campos necessários e uma 'category'
     const category = transactionData.category;
     if (!category) {
       return throwError(() => new Error('Categoria da transação não especificada.'));
@@ -483,10 +479,9 @@ export class DashboardService {
 
     // Converta os valores numéricos para strings antes de enviar se o backend espera strings
     const dataToSend = { ...transactionData };
-    dataToSend.valorInvestido = this.parseFormattedString(transactionData.valorInvestido).toString();
-    dataToSend.precoMedio = this.parseFormattedString(transactionData.precoMedio).toString();
-    dataToSend.quantidade = this.parseFormattedString(transactionData.quantidade).toString();
-    // Outros campos como ticker, descrição, etc.
+    dataToSend.valorInvestido = this.parseFormattedString(transactionData.valorInvestido?.toString()).toString();
+    dataToSend.precoMedio = this.parseFormattedString(transactionData.precoMedio?.toString()).toString();
+    dataToSend.quantidade = this.parseFormattedString(transactionData.quantidade?.toString()).toString();
 
     return this.http.post<any>(url, dataToSend).pipe(
       tap(response => console.log(`Transação adicionada com sucesso:`, response)),

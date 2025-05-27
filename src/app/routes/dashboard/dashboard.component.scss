@@ -18,6 +18,9 @@
   }
 }
 
+.form-control {
+  width: 75px;
+}
 
 
 .error-container {
@@ -381,4 +384,16 @@ mat-icon {
   /* If negative margin is necessary, uncomment the line below and document its purpose */
   /* margin-bottom: -10px; */
 }
+}
+
+.action-buttons-group {
+  display: flex; /* Transforma o contêiner em um contêiner flex */
+  gap: 4px;      /* Adiciona um pequeno espaço entre os botões */
+  align-items: center; /* Opcional: Alinha os ícones verticalmente ao centro */
+  justify-content: flex-start; /* Opcional: Alinha os botões à esquerda */
+}
+
+/* Opcional: Ajusta a margem dos ícones dentro dos botões se necessário */
+.action-buttons-group button mat-icon {
+  vertical-align: middle; /* Ajuda a centralizar o ícone */
 }

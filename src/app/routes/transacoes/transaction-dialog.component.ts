@@ -15,8 +15,6 @@ import { MatStepper } from '@angular/material/stepper';
 import { TransacaoService, Transacao } from './transaction.service';
 import { HttpClientModule } from '@angular/common/http';
 
-// IMPORTE NGX-MASK AQUI
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
   selector: 'app-transaction-dialog',
@@ -36,13 +34,11 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     MatIconModule,
     MatSnackBarModule,
     HttpClientModule,
-    NgxMaskDirective, // Adicione NgxMaskDirective aqui
     MatStepperModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     CurrencyPipe,
-    provideNgxMask(), // Adicione provideNgxMask() aqui
   ]
 })
 export class TransactionDialogComponent implements OnInit {

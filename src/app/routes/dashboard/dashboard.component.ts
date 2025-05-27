@@ -10,7 +10,7 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { AsyncPipe, NgIf, CommonModule } from '@angular/common';
+import { AsyncPipe, NgIf, CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,6 +29,7 @@ import { SettingsService } from '@core/bootstrap/settings.service';
 import { AuthService } from '@core/authentication';
 import { QuantidadeFormatPipe } from '@shared/pipes/quantidade-format.pipe';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { FormsModule } from '@angular/forms'; // Importar FormsModule para [(ngModel)]
 
 @Component({
   selector: 'app-dashboard',
@@ -48,7 +49,11 @@ import { ConfirmDialogComponent } from './confirm-dialog.component';
     MatButtonModule,
     MtxAlertModule,
     QuantidadeFormatPipe,
-    ConfirmDialogComponent, // Adicionado pois é usado na classe
+    ConfirmDialogComponent,
+    CurrencyPipe,
+    DecimalPipe,
+    FormsModule,
+     ConfirmDialogComponent,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -63,7 +68,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly el = inject(ElementRef);
   private readonly authService = inject(AuthService);
 
-  // Removido itens de introdução duplicados e ajustada a lógica
   introducingItems = [
     {
       name: 'BBDC4',
@@ -160,11 +164,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isShowAlert = false;
   isUpdating = false;
 
+  // Variáveis para edição em linha
+  editingRowId: number | string | null = null;
+  currentEditedAtivo: AtivoVO | null = null;
+  protected  currentUserId: number | string | null = null; // Para armazenar o ID do usuário
+
   tema = this.settings.getThemeColor() as string;
 
   getRandom(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  private parseAndValidateNumber = (value: number | undefined): number => {
+    // Se o valor já for um número, apenas retorne-o. Se for undefined, trate como 0.
+    const parsed = value ?? 0;
+    return isNaN(parsed) ? 0 : parsed;
+  };
 
   async onUpdateCotacoes(): Promise<void> {
     if (this.isUpdating) return;
@@ -173,7 +188,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.user().pipe(
       filter(user => !!user?.id),
       take(1),
-      // Adicionado catchError para lidar com erros na obtenção do usuário
       catchError(error => {
         console.error('Erro ao buscar usuário para atualização de cotações:', error);
         this.snackBar.open('Erro ao buscar informações do usuário.', 'Fechar', {
@@ -181,7 +195,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           panelClass: ['error-snackbar'],
         });
         this.isUpdating = false;
-        return of(null); // Retorna um Observable de null para continuar a cadeia
+        return of(null);
       })
     ).subscribe(user => {
       if (!user?.id) {
@@ -197,7 +211,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       const usuarioId = user.id;
 
       this.patrimonioService.getUserTickers(usuarioId).pipe(
-        take(1), // Garante que a subscrição seja concluída após o primeiro valor
+        take(1),
         catchError(error => {
           console.error('Erro ao buscar tickers:', error);
           this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
@@ -205,7 +219,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             panelClass: ['error-snackbar'],
           });
           this.isUpdating = false;
-          return of([]); // Retorna um Observable de array vazio para continuar a cadeia
+          return of([]);
         })
       ).subscribe((tickers) => {
         if (tickers.length === 0) {
@@ -218,7 +232,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.cotacaoService.atualizarCotacoes(tickers).pipe(
-          take(1), // Garante que a subscrição seja concluída após o primeiro valor
+          take(1),
           catchError(error => {
             console.error('Erro ao atualizar cotações:', error);
             this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
@@ -226,14 +240,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               panelClass: ['error-snackbar'],
             });
             this.isUpdating = false;
-            return of(null); // Retorna um Observable de null para continuar a cadeia
+            return of(null);
           })
         ).subscribe(() => {
           this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
-          // Não usar window.location.reload() diretamente. Recarregar os dados é suficiente.
           this.loadData(usuarioId);
           this.isUpdating = false;
         });
@@ -247,36 +260,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       take(1)
     ).subscribe(user => {
       if (user?.id) {
-        if (user.id !== undefined) {
-          if (user.id !== undefined) {
-            if (user.id !== undefined) {
-              this.loadData(user.id);
-            } else {
-              console.error('ID do usuário não está definido.');
-              this.snackBar.open('Erro: ID do usuário não está definido.', 'Fechar', {
-                duration: 5000,
-                panelClass: ['error-snackbar'],
-              });
-            }
-          } else {
-            console.error('ID do usuário não está definido.');
-            this.snackBar.open('Erro: ID do usuário não está definido.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-          }
-        } else {
-          console.error('ID do usuário não está definido.');
-          this.snackBar.open('Erro: ID do usuário não está definido.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-        }
+        this.currentUserId = user.id; // Armazena o ID do usuário
+        this.loadData(user.id);
         this.setupCharts(user.id);
       } else {
         console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
         this.hasError = true;
         this.isLoading = false;
+        this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
       }
       this.cdr.markForCheck();
     });
@@ -291,7 +285,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Limpa o conteúdo existente para evitar duplicação em caso de chamadas múltiplas
     this.renderer.setProperty(tradingViewElement, 'innerHTML', '');
 
     const script = this.renderer.createElement('script');
@@ -318,8 +311,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // Usar um timer para garantir que as ViewChild estejam disponíveis.
-    // O tempo de 100ms é uma heurística, dependendo da complexidade do template.
     setTimeout(() => {
       this.patrimoniochart$?.subscribe({
         next: (options) => {
@@ -397,7 +388,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Destruir todas as instâncias de gráfico para evitar vazamentos de memória
     this.destroyChart(this.chartInstance1, 'chart1');
     this.destroyChart(this.chartInstance2, 'chart2');
     this.destroyChart(this.chartInstance3, 'chart3');
@@ -416,7 +406,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isShowAlert = false;
   }
 
-  loadData(userId: number): void {
+  loadData(userId: number | string): void { // userId pode ser string ou number
     console.log(`DashboardComponent: Iniciando carregamento de dados para usuário ${userId}...`);
     this.isLoading = true;
     this.hasError = false;
@@ -425,7 +415,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const handleError = (error: any, context: string) => {
       console.error(`Erro ao buscar ${context}:`, error);
       this.hasError = true;
-      this.isLoading = false; // Define isLoading para false apenas no primeiro erro
+      this.isLoading = false;
+      this.snackBar.open(`Erro ao carregar ${context}.`, 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
       this.cdr.markForCheck();
       return of([]);
     };
@@ -437,7 +431,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('Dados recebidos para a tabela de distribuição:', distribuicao);
       this.distribuicaoDataSource.data = distribuicao;
       this.cdr.markForCheck();
-      // Não definir isLoading aqui, pois outros Observables ainda podem estar carregando
     });
 
     this.dashboardSrv.getPatrimonioAcoes().pipe(
@@ -470,158 +463,219 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       console.log('Assets Data:', assets);
       this.assetsDataSource.data = assets;
       this.cdr.markForCheck();
-      // Somente após o último Observable ser concluído (ou erro), definir isLoading para false
-      // Isso pode ser melhor gerenciado com um 'forkJoin' se todos os dados forem estritamente necessários ao mesmo tempo.
-      // Para este caso, manter individualmente, mas ciente que isLoading pode ser true por mais tempo.
-      // Se todos os dados acima são carregados em paralelo, o isLoading final deve ser no `ngAfterViewInit` ou em um `forkJoin`.
-      // Como o `isLoading` é definido para `false` no `ngAfterViewInit`, o comportamento atual está ok.
     });
   }
 
-  setupCharts(userId: number): void {
-    console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
 
-    const createChartObservable = (
-      dataSource: MatTableDataSource<AtivoVO> | MatTableDataSource<PatrimonioDistribuicaoVO>,
-      title: string,
-      isPercentage: boolean,
-      valueExtractor: (item: any) => number,
-      labelExtractor: (item: any) => string,
-      filterCondition: (item: any) => boolean
-    ): Observable<ApexOptions> => {
-      return dataSource.connect().pipe(
-        map((data: any[]) => {
-          const validData = data.filter(filterCondition);
-          const series = validData.map(valueExtractor);
-          const labels = validData.map(labelExtractor);
+  // Aceita o ID do usuário como parâmetro
+setupCharts(userId: number): void {
+  console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
+  // Passe o userId para os métodos do DashboardService
+  this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe( // Removido userId daqui
+    catchError(error => {
+      console.error('Erro ao buscar dados para #chart1:', error);
+      this.hasError = true;
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return of([]);
+    }),
+    map((distribuicao: PatrimonioDistribuicaoVO[]) => {
+      console.log('Dados brutos para #chart1:', distribuicao);
+      const validDistribuicao = distribuicao.filter(
+        d => typeof d.valorTotal === 'number' && d.valorTotal >= 0 && typeof d.tipoAtivo === 'string' && d.tipoAtivo.trim() !== ''
+      );
+      const totalValor = validDistribuicao.reduce((sum, d) => sum + d.valorTotal, 0);
+      // Calcula a série com base nos valores totais, não nos percentuais já formatados
+      const series = validDistribuicao.map(d => d.percentual);
+      const labels = validDistribuicao.map(d => d.tipoAtivo);
+      console.log('Series para #chart1 (valores):', series); // Logando valores, não percentuais
+      console.log('Labels para #chart1:', labels);
+      console.log('Total Valor:', totalValor);
 
-          if (series.length === 0 || labels.length === 0 || series.length !== labels.length) {
-            console.warn(`Dados insuficientes ou inconsistentes para o gráfico "${title}".`, { series, labels, data });
-            return this.getChartOptions([], [], title, isPercentage);
+      if (series.length !== labels.length) {
+        console.error('Erro: series e labels têm tamanhos diferentes para #chart1', { series, labels });
+        // Retorna um gráfico vazio ou com dados padrão em caso de erro
+        return this.getChartOptions([], [], 'Distribuição de Patrimônio', true); // Título adicionado
+      }
+
+      // Passa false para isPercentage se o gráfico for exibir valores absolutos
+      return this.getChartOptions(series, labels, 'Distribuição de Patrimônio', true); // Título adicionado
+    })
+  );
+
+  // Os gráficos de acoes, fundos, caixa e assets parecem estar usando os dados
+  // dos MatTableDataSource. Isso significa que eles serão configurados APÓS
+  // o loadData preencher os DataSources. A lógica atual de usar connect().pipe()
+  // parece correta para reagir às mudanças nos DataSources.
+  // No entanto, a chamada para setupCharts() deve ocorrer APÓS loadData()
+  // ter chance de carregar os dados, ou garantir que os observables dos DataSources
+  // emitam o valor inicial após o carregamento.
+
+  // Alternativa: Mantenha setupCharts separada, mas saiba que os observables
+  // dos gráficos só emitirão dados depois que os DataSources forem preenchidos
+  // em loadData.
+
+  // Exemplo para acoesChart$ (mantendo a estrutura atual, mas ciente da dependência de loadData):
+  this.acoesChart$ = this.acoesDataSource.connect().pipe(
+    map((acoes: AtivoVO[]) => {
+      console.log('Dados brutos para #chart2:', acoes);
+      const validAcoes = acoes.filter(
+        // Removido parseFloat, usando this.parseAndValidateNumber
+        a => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && (a.tickerFormatado?.trim() ?? '') !== ''
+      );
+        // Calcula a série com base nos valores atuais, não nos percentuais
+        // Removido parseFloat
+      const series = validAcoes.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+      const labels = validAcoes.map(a => a.tickerFormatado); // Usar ticker como label
+      console.log('Series para #chart2 (valores):', series);
+      console.log('Labels para #chart2:', labels);
+
+      if (series.length !== labels.length) {
+        console.error('Erro: series e labels têm tamanhos diferentes para #chart2', { series, labels });
+        return this.getChartOptions([], [], 'Patrimônio em Ações', false); // Título adicionado
+      }
+
+      return this.getChartOptions(series, labels, 'Patrimônio em Ações', false); // Título adicionado, false para valores absolutos
+    })
+  );
+
+  // Repita a lógica para fundosChart$, caixaChart$, assetsChart$, ajustando os nomes das variáveis e títulos.
+  this.fundosChart$ = this.fundosDataSource.connect().pipe(
+      map((fundos: AtivoVO[]) => {
+        console.log('Dados brutos para #chart3:', fundos);
+        const validFundos = fundos.filter(
+          // Removido parseFloat
+          f => this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 && f.tickerFormatado?.trim() !== ''
+        );
+        // Removido parseFloat
+        const series = validFundos.map(f => this.parseAndValidateNumber(f.valorAtualFormatado));
+        const labels = validFundos.map(f => f.tickerFormatado);
+        console.log('Series para #chart3 (valores):', series);
+        console.log('Labels para #chart3:', labels);
+
+        if (series.length !== labels.length) {
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart3', { series, labels });
+          return this.getChartOptions([], [], 'Patrimônio em Fundos', false);
+        }
+
+        return this.getChartOptions(series, labels, 'Patrimônio em Fundos', false);
+      })
+    );
+
+    this.caixaChart$ = this.caixaDataSource.connect().pipe(
+      map((caixa: AtivoVO[]) => {
+        console.log('Dados brutos para #chart4:', caixa);
+        const validCaixa = caixa.filter(
+          // Removido parseFloat
+          c => this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 && c.tickerFormatado?.trim() !== ''
+        );
+        // Removido parseFloat
+        const series = validCaixa.map(c => this.parseAndValidateNumber(c.valorAtualFormatado));
+        const labels = validCaixa.map(c => c.tickerFormatado);
+        console.log('Series para #chart4 (valores):', series);
+        console.log('Labels para #chart4:', labels);
+
+        if (series.length !== labels.length) {
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart4', { series, labels });
+          return this.getChartOptions([], [], 'Patrimônio em Caixa', false);
+        }
+
+        return this.getChartOptions(series, labels, 'Patrimônio em Caixa', false);
+      })
+    );
+
+    this.assetsChart$ = this.assetsDataSource.connect().pipe(
+        map((assets: AtivoVO[]) => {
+          console.log('Dados brutos para #chart5:', assets);
+          const validAssets = assets.filter(
+            // Removido parseFloat
+            a => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado?.trim() !== ''
+          );
+          // Removido parseFloat
+          const series = validAssets.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+          const labels = validAssets.map(a => a.tickerFormatado);
+          console.log('Series para #chart5 (valores):', series);
+          console.log('Labels para #chart5:', labels);
+
+          if (series.length !== labels.length) {
+            console.error('Erro: series e labels têm tamanhos diferentes para #chart5', { series, labels });
+            return this.getChartOptions([], [], 'Outros Ativos', false);
           }
-          return this.getChartOptions(series, labels, title, isPercentage);
-        }),
-        catchError(error => {
-          console.error(`Erro ao buscar dados para o gráfico "${title}":`, error);
-          this.hasError = true;
-          this.isLoading = false;
-          this.cdr.markForCheck();
-          return of(this.getChartOptions([], [], title, isPercentage)); // Retorna opções vazias em caso de erro
+
+          return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
         })
       );
-    };
+}
 
-    this.patrimoniochart$ = createChartObservable(
-      this.distribuicaoDataSource,
-      'Distribuição de Patrimônio',
-      true,
-      (d: PatrimonioDistribuicaoVO) => d.percentual,
-      (d: PatrimonioDistribuicaoVO) => d.tipoAtivo,
-      (d: PatrimonioDistribuicaoVO) => typeof d.valorTotal === 'number' && d.valorTotal >= 0 && typeof d.tipoAtivo === 'string' && d.tipoAtivo.trim() !== ''
-    );
-
-    this.acoesChart$ = createChartObservable(
-      this.acoesDataSource,
-      'Patrimônio em Ações',
-      false,
-      (a: AtivoVO) => parseFloat(a.valorAtualFormatado),
-      (a: AtivoVO) => a.tickerFormatado,
-      (a: AtivoVO) => !isNaN(parseFloat(a.valorAtualFormatado)) && parseFloat(a.valorAtualFormatado) >= 0 && a.tickerFormatado?.trim() !== ''
-    );
-
-    this.fundosChart$ = createChartObservable(
-      this.fundosDataSource,
-      'Patrimônio em Fundos',
-      false,
-      (f: AtivoVO) => parseFloat(f.valorAtualFormatado),
-      (f: AtivoVO) => f.tickerFormatado,
-      (f: AtivoVO) => !isNaN(parseFloat(f.valorAtualFormatado)) && parseFloat(f.valorAtualFormatado) >= 0 && f.tickerFormatado?.trim() !== ''
-    );
-
-    this.caixaChart$ = createChartObservable(
-      this.caixaDataSource,
-      'Patrimônio em Caixa',
-      false,
-      (c: AtivoVO) => parseFloat(c.valorAtualFormatado),
-      (c: AtivoVO) => c.descricaoFormatada, // Usar descrição para caixa se ticker não for tão relevante
-      (c: AtivoVO) => !isNaN(parseFloat(c.valorAtualFormatado)) && parseFloat(c.valorAtualFormatado) >= 0 && c.descricaoFormatada?.trim() !== ''
-    );
-
-    this.assetsChart$ = createChartObservable(
-      this.assetsDataSource,
-      'Patrimônio em Ativos Internacionais', // Alterado para "Ativos Internacionais"
-      false,
-      (a: AtivoVO) => parseFloat(a.valorAtualFormatado),
-      (a: AtivoVO) => a.tickerFormatado,
-      (a: AtivoVO) => !isNaN(parseFloat(a.valorAtualFormatado)) && parseFloat(a.valorAtualFormatado) >= 0 && a.tickerFormatado?.trim() !== ''
-    );
+  // Helper para garantir que a conversão de string para número é segura
+  // Agora espera number | undefined, pois AtivoVO tem campos numéricos
+  private getNumericValue(value: number | undefined): number {
+    const parsed = value ?? 0;
+    return isNaN(parsed) ? 0 : parsed;
   }
 
   getTotalInvestido(): number {
-    const total = this.distribuicaoDataSource.data.reduce((sum, item) => sum + (item.valorTotal || 0), 0);
-    // console.log('Total Investido (da distribuição):', total); // Removido log excessivo
-    return total;
+    return this.distribuicaoDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorTotal), 0);
   }
 
-  // Métodos de totalização simplificados e corrigidos para segurança de tipo
   getTotalValorInvestidoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + (item.valorInvestidoFormatado ? parseFloat(item.valorInvestidoFormatado) : 0), 0);
+    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
   }
 
   getTotalValorInvestidoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + (item.valorInvestidoFormatado ? parseFloat(item.valorInvestidoFormatado) : 0), 0);
+    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
   }
 
   getTotalValorInvestidoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + (item.valorInvestidoFormatado ? parseFloat(item.valorInvestidoFormatado) : 0), 0);
+    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
   }
 
   getTotalValorInvestidoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + (item.valorInvestidoFormatado ? parseFloat(item.valorInvestidoFormatado) : 0), 0);
+    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
   }
 
   getTotalValorAtualAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + (item.valorAtualFormatado ? parseFloat(item.valorAtualFormatado) : 0), 0);
+    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
   }
 
   getTotalValorAtualFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + (item.valorAtualFormatado ? parseFloat(item.valorAtualFormatado) : 0), 0);
+    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
   }
 
   getTotalValorAtualCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + (item.valorAtualFormatado ? parseFloat(item.valorAtualFormatado) : 0), 0);
+    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
   }
 
   getTotalValorAtualAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + (item.valorAtualFormatado ? parseFloat(item.valorAtualFormatado) : 0), 0);
+    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
   }
 
   getTotalLucroPrejuizoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + (item.lucroPrejuizoFormatado ? parseFloat(item.lucroPrejuizoFormatado) : 0), 0);
+    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
   }
 
   getTotalLucroPrejuizoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + (item.lucroPrejuizoFormatado ? parseFloat(item.lucroPrejuizoFormatado) : 0), 0);
+    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
   }
 
   getTotalLucroPrejuizoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + (item.lucroPrejuizoFormatado ? parseFloat(item.lucroPrejuizoFormatado) : 0), 0);
+    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
   }
 
   getTotalLucroPrejuizoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + (item.lucroPrejuizoFormatado ? parseFloat(item.lucroPrejuizoFormatado) : 0), 0);
+    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
   }
 
   getPercentualRF(): number {
     const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
-    const rf = this.getTotalValorAtualCaixa(); // Considerando Caixa como Renda Fixa
+    const rf = this.getTotalValorAtualCaixa();
     const percentual = totalValorAtualGeral > 0 ? (rf / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
 
   getPercentualRV(): number {
     const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
-    const rv = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualAssets(); // Ações, Fundos e Assets como Renda Variável
+    const rv = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualAssets();
     const percentual = totalValorAtualGeral > 0 ? (rv / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
@@ -653,7 +707,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       series: chartSeries,
       labels: chartLabels,
-      colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6EE7B7', '#FBBF24', '#FCA5A5'], // Mais cores para mais diversidade
+      colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6EE7B7', '#FBBF24', '#FCA5A5'],
       title: {
         text: title,
         align: 'center',
@@ -822,120 +876,130 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
         console.log('Transação submetida:', result);
-        this.authService.user().pipe(take(1)).subscribe(user => {
-          if (user?.id) {
-            this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
-              duration: 3000,
-              panelClass: ['success-snackbar'],
-            });
-            this.loadData(user.id);
-          } else {
-            console.error('ID do usuário não disponível para recarregar dados após transação.');
-            this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-          }
-        });
+        if (this.currentUserId) {
+          this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
+          this.loadData(this.currentUserId);
+        } else {
+          console.error('ID do usuário não disponível para recarregar dados após transação.');
+          this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+        }
       } else {
         console.log('Diálogo fechado sem submissão');
       }
     });
   }
 
-  openEditDialog(element: AtivoVO, category: string): void {
-    console.log(`Abrindo diálogo de edição para ${category}:`, element);
-    const dialogRef = this.dialog.open(TransactionDialogComponent, {
-      width: '600px',
-      disableClose: true,
-      autoFocus: true,
-      data: {
-        title: `Editar ${category}`,
-        action: 'edit',
-        transaction: element,
-        category
-      },
-    });
+  // Método para iniciar a edição em linha
+  startEdit(element: AtivoVO, category: string): void {
+    this.editingRowId = element.id;
+    this.currentEditedAtivo = { ...element, category }; // Cria uma cópia para edição
+    this.cdr.markForCheck(); // Força a detecção de mudanças para atualizar a UI
+  }
 
-    dialogRef.afterClosed().subscribe((result: any) => {
-      if (result) {
-        console.log(`Edição submetida para ${category}:`, result);
-        this.authService.user().pipe(take(1)).subscribe(user => {
-          if (user?.id) {
-            this.dashboardSrv.updateAtivo(user.id, result, result.category).pipe(
-              catchError(error => {
-                console.error(`Erro ao atualizar ativo na categoria ${result.category}:`, error);
-                this.snackBar.open('Erro ao atualizar ativo.', 'Fechar', {
-                  duration: 5000,
-                  panelClass: ['error-snackbar'],
-                });
-                return of(null);
-              })
-            ).subscribe((updateResult) => {
-              if (updateResult) {
-                this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
-                  duration: 3000,
-                  panelClass: ['success-snackbar'],
-                });
-                this.loadData(user.id);
-              }
-            });
-          } else {
-            console.error('ID do usuário não disponível para recarregar dados após edição.');
-            this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-          }
+  // Método para cancelar a edição em linha
+  cancelEdit(): void {
+    this.editingRowId = null;
+    this.currentEditedAtivo = null;
+    if (this.currentUserId) {
+      this.loadData(this.currentUserId); // Recarrega os dados para reverter as alterações
+    } else {
+      console.warn('Não foi possível recarregar os dados: ID do usuário não disponível.');
+    }
+    this.cdr.markForCheck();
+  }
+
+  // Método para salvar a edição em linha
+  saveEdit(element: AtivoVO, category: string): void {
+    if (!this.currentEditedAtivo || !this.currentUserId) {
+      console.error('Dados de edição ou ID do usuário não disponíveis para salvar.');
+      this.snackBar.open('Erro ao salvar: dados incompletos.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+      return;
+    }
+
+    // O DashboardService.updateAtivo espera um AtivoVO com valores numéricos
+    // e os converte para string se o backend espera string.
+    this.dashboardSrv.updateAtivo(this.currentUserId, this.currentEditedAtivo, category).pipe(
+      catchError(error => {
+        console.error(`Erro ao atualizar ativo na categoria ${category}:`, error);
+        this.snackBar.open('Erro ao atualizar ativo.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
         });
-      } else {
-        console.log('Diálogo de edição fechado sem submissão');
+        return of(null);
+      })
+    ).subscribe((updateResult) => {
+      if (updateResult !== null) { // Verifica se não houve erro capturado
+        this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
+          duration: 3000,
+          panelClass: ['success-snackbar'],
+        });
+        this.editingRowId = null;
+        this.currentEditedAtivo = null;
+        this.loadData(this.currentUserId!); // Recarrega os dados
       }
+      this.cdr.markForCheck();
     });
+  }
+
+  // Helper para verificar se a linha está em modo de edição
+  isEditing(element: AtivoVO): boolean {
+    return this.editingRowId === element.id;
   }
 
   openDeleteDialog(element: AtivoVO, category: string): void {
     console.log(`Abrindo diálogo de exclusão para ${category}:`, element);
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '350px',
       data: {
         title: 'Confirmar Exclusão',
-        message: `Tem certeza que deseja excluir o ativo "${element.tickerFormatado}" (${element.descricaoFormatada}) da categoria "${category}"?`,
-      },
+        message: `Tem certeza que deseja excluir o ativo ${element.tickerFormatado}?`,
+        confirmText: 'Excluir',
+        cancelText: 'Cancelar'
+      }
     });
 
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.authService.user().pipe(take(1)).subscribe(user => {
-          if (user?.id && element.id) {
-            this.dashboardSrv.deleteAtivo(user.id, element.id, category).pipe(
-              catchError(error => {
-                console.error(`Erro ao excluir ativo da categoria ${category}:`, error);
-                this.snackBar.open('Erro ao excluir ativo.', 'Fechar', {
-                  duration: 5000,
-                  panelClass: ['error-snackbar'],
-                });
-                return of(null);
-              })
-            ).subscribe((deleteResult: any) => {
-              if (deleteResult) {
-                this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
-                  duration: 3000,
-                  panelClass: ['success-snackbar'],
-                });
-                this.loadData(user.id);
-              }
-            });
-          } else {
-            console.error('ID do usuário ou do ativo não disponível para exclusão.');
-            this.snackBar.open('Erro: ID do usuário ou do ativo não disponível.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-          }
-        });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(`Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`);
+        if (this.currentUserId) {
+          this.dashboardSrv.deleteAtivo(this.currentUserId, element.id, category).pipe(
+            catchError(error => {
+              console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);
+              this.snackBar.open('Erro ao excluir ativo.', 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+              });
+              return of(null);
+            })
+          ).subscribe((deleteResult) => {
+            if (deleteResult !== null) {
+              this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
+                duration: 3000,
+                panelClass: ['success-snackbar'],
+              });
+              this.loadData(this.currentUserId!);
+            }
+            this.cdr.markForCheck();
+          });
+        } else {
+          console.error('ID do usuário não disponível para excluir ativo.');
+          this.snackBar.open('Erro: ID do usuário não disponível para exclusão.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+        }
       } else {
-        console.log('Diálogo de exclusão cancelado.');
+        console.log('Exclusão cancelada.');
       }
     });
   }
