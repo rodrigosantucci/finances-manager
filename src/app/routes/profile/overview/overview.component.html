@@ -1,13 +1,15 @@
-<div class="tradingview-widget-container" style="height: 450px; width: 100%;">
-</div>
+<div class="profile-overview">
 
-<div style="display: flex; justify-content: center; margin-top: 10px;">
-<button mat-icon-button
-        (click)="triggerWidgetRefresh()"
-        [disabled]="isLoading"
-        aria-label="Recarregar widget de cotações"
-        matTooltip="Recarregar Cotações"
-        matTooltipPosition="above">
-  <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
-</button>
+        <div class="tradingview-widget-container" style="height: 450px; width: 100%;">
+        </div>
+        <div style="display: flex; justify-content: center; margin-top: 10px;">
+          <button mat-icon-button
+                  (click)="triggerWidgetRefresh()"
+                  [disabled]="isLoading"
+                  aria-label="Recarregar widget de News"
+                  matTooltip="Recarregar News"
+                  matTooltipPosition="above">
+            <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
+          </button>
+        </div>
 </div>

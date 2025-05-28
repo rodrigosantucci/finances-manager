@@ -1,8 +1,8 @@
 // Mantém o estilo do avatar
 .avatar-preview {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%; /* Torna a imagem circular */
+  width: 120px;
+  height: 120px;
+  border-radius: 40%; /* Torna a imagem circular */
   object-fit: cover; /* Garante que a imagem preencha o espaço sem distorção */
   border: 2px solid #ccc; /* Opcional: Adiciona uma borda */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Opcional: Sombra sutil */

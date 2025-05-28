@@ -503,18 +503,6 @@ setupCharts(userId: number): void {
     })
   );
 
-  // Os gráficos de acoes, fundos, caixa e assets parecem estar usando os dados
-  // dos MatTableDataSource. Isso significa que eles serão configurados APÓS
-  // o loadData preencher os DataSources. A lógica atual de usar connect().pipe()
-  // parece correta para reagir às mudanças nos DataSources.
-  // No entanto, a chamada para setupCharts() deve ocorrer APÓS loadData()
-  // ter chance de carregar os dados, ou garantir que os observables dos DataSources
-  // emitam o valor inicial após o carregamento.
-
-  // Alternativa: Mantenha setupCharts separada, mas saiba que os observables
-  // dos gráficos só emitirão dados depois que os DataSources forem preenchidos
-  // em loadData.
-
   // Exemplo para acoesChart$ (mantendo a estrutura atual, mas ciente da dependência de loadData):
   this.acoesChart$ = this.acoesDataSource.connect().pipe(
     map((acoes: AtivoVO[]) => {

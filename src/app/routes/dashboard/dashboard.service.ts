@@ -20,16 +20,16 @@ interface CotacaoUSD {
 }
 
 export interface AtivoVO {
-  id: number | string; // Permitir string para novos ativos antes de receber um ID do backend
+  id: number | string;
   tickerFormatado: string;
   descricaoFormatada: string;
-  tipoAtativoFormatado: string;
+  tipoAtivoFormatado: string;
   moedaFormatada: string;
-  quantidadeFormatada: number; // Alterado para number
-  valorInvestidoFormatado: number; // Alterado para number
-  precoMedioFormatado: number; // Alterado para number
-  valorAtualFormatado: number; // Alterado para number
-  lucroPrejuizoFormatado: number; // Alterado para number
+  quantidadeFormatada: number;
+  valorInvestidoFormatado: number;
+  precoMedioFormatado: number;
+  valorAtualFormatado: number;
+  lucroPrejuizoFormatado: number;
   category?: string;
 }
 
@@ -79,28 +79,22 @@ export class DashboardService {
     );
   }
 
-  // Permanece para parsear strings de entrada (ex: do formulário de edição)
   public parseFormattedString(value: string | undefined | null): number {
     if (value === null || value === undefined || value.trim() === '') {
       return 0;
     }
     let cleanedValue = value.trim();
 
-    // Remove caracteres não numéricos, exceto vírgulas, pontos e sinais de menos
     cleanedValue = cleanedValue.replace(/[^\d.,-]/g, '');
 
-    // Verifica se há tanto vírgula quanto ponto para decidir a formatação
     if (cleanedValue.includes(',') && cleanedValue.includes('.')) {
-      // Se a vírgula vier depois do ponto, é formato brasileiro (ex: 1.000,00)
       if (cleanedValue.indexOf(',') > cleanedValue.indexOf('.')) {
-        cleanedValue = cleanedValue.replace(/\./g, ''); // Remove separadores de milhar
-        cleanedValue = cleanedValue.replace(/,/g, '.'); // Troca vírgula por ponto decimal
+        cleanedValue = cleanedValue.replace(/\./g, '');
+        cleanedValue = cleanedValue.replace(/,/g, '.');
       } else {
-        // Se o ponto vier depois da vírgula, é formato americano (ex: 1,000.00)
-        cleanedValue = cleanedValue.replace(/,/g, ''); // Remove separadores de milhar
+        cleanedValue = cleanedValue.replace(/,/g, '');
       }
     } else if (cleanedValue.includes(',')) {
-      // Se tiver só vírgula, assume que é separador decimal (formato brasileiro)
       cleanedValue = cleanedValue.replace(/,/g, '.');
     }
 
@@ -113,21 +107,6 @@ export class DashboardService {
     return parsed;
   }
 
-  // Este método agora é privado e só usado internamente para formatar para BRL se necessário,
-  // mas os dados retornados pelos getters serão numéricos.
-  private formatToBRL(value: number | undefined | null): string {
-    if (value === null || value === undefined || isNaN(value)) {
-      return 'R$ --';
-    }
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  }
-
-  // Converte os valores USD para BRL numericamente
   private convertUsdToBrlNumeric(ativos: AtivoVO[], cotacaoUSD: number): AtivoVO[] {
     if (cotacaoUSD <= 0) {
       console.warn(`[convertUsdToBrlNumeric] Cotação USD inválida ou zero (${cotacaoUSD}). Retornando ativos sem conversão numérica.`);
@@ -140,7 +119,6 @@ export class DashboardService {
       if (ativoModificado.moedaFormatada === 'USD') {
         console.log(`Convertendo USD para BRL (valor NUMÉRICO) para ativo ${ativoModificado.tickerFormatado}`);
 
-        // Garante que os valores são strings antes de parsear, pois a API pode enviá-los como strings
         const valorAtualUSD = this.parseFormattedString(ativoModificado.valorAtualFormatado?.toString());
         if (!isNaN(valorAtualUSD)) {
           ativoModificado.valorAtualFormatado = valorAtualUSD * cotacaoUSD;
@@ -165,19 +143,16 @@ export class DashboardService {
           ativoModificado.precoMedioFormatado = 0;
         }
 
-        // Recalcula lucro/prejuízo após a conversão
         ativoModificado.lucroPrejuizoFormatado = ativoModificado.valorAtualFormatado - ativoModificado.valorInvestidoFormatado;
 
-        ativoModificado.moedaFormatada = 'BRL'; // Atualiza a moeda para BRL
+        ativoModificado.moedaFormatada = 'BRL';
       } else {
         console.log(`Ativo ${ativoModificado.tickerFormatado} não é USD (${ativoModificado.moedaFormatada}). Pulando conversão numérica.`);
-        // Mesmo que não seja USD, certifique-se de que os valores sejam numéricos
         ativoModificado.valorAtualFormatado = this.parseFormattedString(ativoModificado.valorAtualFormatado?.toString());
         ativoModificado.valorInvestidoFormatado = this.parseFormattedString(ativoModificado.valorInvestidoFormatado?.toString());
         ativoModificado.precoMedioFormatado = this.parseFormattedString(ativoModificado.precoMedioFormatado?.toString());
         ativoModificado.lucroPrejuizoFormatado = this.parseFormattedString(ativoModificado.lucroPrejuizoFormatado?.toString());
       }
-      // Garante que a quantidade também é numérica
       ativoModificado.quantidadeFormatada = this.parseFormattedString(ativoModificado.quantidadeFormatada?.toString());
       return ativoModificado;
     });
@@ -196,42 +171,62 @@ export class DashboardService {
 
         return forkJoin({
           distribuicao: this.http.get<PatrimonioDistribuicaoVO[]>(distUrl),
-          cotacao: this.getCotacaoUSD()
+          acoes: this.getPatrimonioAcoes(),
+          fundos: this.getPatrimonioFundos(),
+          caixa: this.getPatrimonioCaixa(),
+          assets: this.getPatrimonioAssets()
         }).pipe(
-          map(({ distribuicao, cotacao }) => {
+          map(({ distribuicao, acoes, fundos, caixa, assets }) => {
             console.log(`DashboardService: Distribuição bruta recebida:`, distribuicao);
-            console.log(`DashboardService: Cotação USD recebida para distribuição: ${cotacao}`);
 
-            const distribuicaoModificada = distribuicao.map(item => ({ ...item }));
+            // Calculate category totals from asset data (already in BRL)
+            const categoryTotals: { [key: string]: number } = {
+              Ações: acoes.reduce((sum, item) => sum + (item.valorAtualFormatado || 0), 0),
+              Fundos: fundos.reduce((sum, item) => sum + (item.valorAtualFormatado || 0), 0),
+              Caixa: caixa.reduce((sum, item) => sum + (item.valorAtualFormatado || 0), 0),
+              Assets: assets.reduce((sum, item) => sum + (item.valorAtualFormatado || 0), 0)
+            };
+            console.log(`DashboardService: Totais calculados por categoria (BRL):`, categoryTotals);
 
-            let totalGeralOriginal = distribuicaoModificada.reduce((sum, item) => sum + item.valorTotal, 0);
-            let totalGeralAjustado = totalGeralOriginal;
+            // Create a map of distribution items by tipoAtivo
+            const distribuicaoMap = new Map<string, PatrimonioDistribuicaoVO>(
+              distribuicao.map(item => [item.tipoAtivo, { ...item }])
+            );
 
-            const assetsEntry = distribuicaoModificada.find(item => item.tipoAtivo === 'Assets');
+            // Update valorTotal in distribution to match category totals
+            Object.entries(categoryTotals).forEach(([tipoAtivo, total]) => {
+              if (distribuicaoMap.has(tipoAtivo)) {
+                const item = distribuicaoMap.get(tipoAtivo)!;
+                const originalValor = item.valorTotal;
+                item.valorTotal = total;
+                console.log(`DashboardService: Ajustando '${tipoAtivo}' valorTotal de ${originalValor} para ${total} (BRL)`);
+              } else {
+                // If category is missing in distribution, add it
+                distribuicaoMap.set(tipoAtivo, {
+                  tipoAtivo,
+                  valorTotal: total,
+                  percentual: 0 // Will be calculated below
+                });
+                console.log(`DashboardService: Adicionando '${tipoAtivo}' à distribuição com valorTotal ${total}`);
+              }
+            });
 
-            if (assetsEntry && cotacao > 0) {
-              const assetsOriginalValor = assetsEntry.valorTotal;
-              const assetsValorBrl = assetsOriginalValor * cotacao;
-              assetsEntry.valorTotal = assetsValorBrl;
-              console.log(`DashboardService: Convertendo 'Assets' total (${assetsOriginalValor} USD) para BRL (${assetsValorBrl}) usando cotação ${cotacao}`);
+            // Convert map back to array
+            const distribuicaoModificada = Array.from(distribuicaoMap.values());
 
-              totalGeralAjustado = totalGeralOriginal - assetsOriginalValor + assetsValorBrl;
-              console.log(`DashboardService: Total Geral Ajustado: ${totalGeralOriginal} (Original) - ${assetsOriginalValor} (Assets Original) + ${assetsValorBrl} (Assets BRL) = ${totalGeralAjustado}`);
-            } else if (assetsEntry && cotacao <= 0) {
-              console.warn(`DashboardService: Cotação USD inválida (${cotacao}) para converter 'Assets' total. Mantendo valor original (${assetsEntry.valorTotal}) para 'Assets'.`);
-            } else if (!assetsEntry) {
-              console.log(`DashboardService: Categoria 'Assets' não encontrada na distribuição. Nenhuma conversão de distribuição aplicada.`);
-            }
+            // Calculate total for percentage
+            const totalGeral = distribuicaoModificada.reduce((sum, item) => sum + item.valorTotal, 0);
+            console.log(`DashboardService: Total geral para percentuais: ${totalGeral}`);
 
+            // Update percentages
             const distribuicaoFinal = distribuicaoModificada.map(item => {
-              const totalParaPercentual = totalGeralAjustado > 0 ? totalGeralAjustado : 0;
-              item.percentual = totalParaPercentual > 0 ? (item.valorTotal / totalParaPercentual) * 100 : 0;
-              item.percentual = Math.round(item.percentual);
-              console.log(`Item "${item.tipoAtivo}": Valor ${item.valorTotal.toFixed(2)}, Total ${totalParaPercentual.toFixed(2)}, Percentual ${item.percentual}%`);
+              item.percentual = totalGeral > 0 ? (item.valorTotal / totalGeral) * 100 : 0;
+              item.percentual = Math.round(item.percentual * 100) / 100; // Round to 2 decimals
+              console.log(`DashboardService: '${item.tipoAtivo}' - Valor: ${item.valorTotal}, Percentual: ${item.percentual}%`);
               return item;
             });
 
-            console.log(`DashboardService: Distribuição final após ajustes:`, distribuicaoFinal);
+            console.log(`DashboardService: Distribuição final:`, distribuicaoFinal);
             return distribuicaoFinal;
           }),
           catchError(error => {
@@ -254,18 +249,27 @@ export class DashboardService {
         const acoesUrl = `${this.apiUserPatrimonioPrefix}${usuarioId}/acoes`;
         console.log(`DashboardService: Solicitando ações para usuário ID: ${usuarioId} da URL: ${acoesUrl}`);
 
-        return this.http.get<AtivoVO[]>(acoesUrl).pipe(
-          tap(acoes => console.log(`DashboardService: Ações brutas recebidas:`, acoes)),
-          map(ativos => ativos.map(ativo => ({
-            ...ativo,
-            // Converte para número aqui, a formatação para R$ será no HTML
-            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
-            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
-            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
-            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
-            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()), // Garante que a quantidade também é numérica
-            category: 'acoes'
-          }))),
+        return forkJoin({
+          acoes: this.http.get<AtivoVO[]>(acoesUrl),
+          cotacao: this.getCotacaoUSD()
+        }).pipe(
+          map(({ acoes, cotacao }) => {
+            console.log(`DashboardService: Ações brutas recebidas:`, acoes);
+            console.log(`DashboardService: Cotação USD recebida para ações: ${cotacao}`);
+
+            if (!acoes || acoes.length === 0) {
+              console.log(`DashboardService: Nenhuma ação encontrada para usuário ${usuarioId}.`);
+              return [];
+            }
+
+            const acoesConvertidasNumeric = this.convertUsdToBrlNumeric(acoes, cotacao);
+            console.log(`DashboardService: Ações após conversão USD->BRL:`, acoesConvertidasNumeric);
+
+            return acoesConvertidasNumeric.map(ativo => ({
+              ...ativo,
+              category: 'acoes'
+            }));
+          }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar ações para usuário ${usuarioId}:`, error);
             return of([]);
@@ -286,17 +290,27 @@ export class DashboardService {
         const fundosUrl = `${this.apiUserPatrimonioPrefix}${usuarioId}/fundos`;
         console.log(`DashboardService: Solicitando fundos para usuário ID: ${usuarioId} da URL: ${fundosUrl}`);
 
-        return this.http.get<AtivoVO[]>(fundosUrl).pipe(
-          tap(fundos => console.log(`DashboardService: Fundos brutos recebidos:`, fundos)),
-          map(ativos => ativos.map(ativo => ({
-            ...ativo,
-            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
-            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
-            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
-            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
-            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
-            category: 'fundos'
-          }))),
+        return forkJoin({
+          fundos: this.http.get<AtivoVO[]>(fundosUrl),
+          cotacao: this.getCotacaoUSD()
+        }).pipe(
+          map(({ fundos, cotacao }) => {
+            console.log(`DashboardService: Fundos brutos recebidos:`, fundos);
+            console.log(`DashboardService: Cotação USD recebida para fundos: ${cotacao}`);
+
+            if (!fundos || fundos.length === 0) {
+              console.log(`DashboardService: Nenhum fundo encontrado para usuário ${usuarioId}.`);
+              return [];
+            }
+
+            const fundosConvertidosNumeric = this.convertUsdToBrlNumeric(fundos, cotacao);
+            console.log(`DashboardService: Fundos após conversão USD->BRL:`, fundosConvertidosNumeric);
+
+            return fundosConvertidosNumeric.map(ativo => ({
+              ...ativo,
+              category: 'fundos'
+            }));
+          }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar fundos para usuário ${usuarioId}:`, error);
             return of([]);
@@ -317,17 +331,27 @@ export class DashboardService {
         const caixaUrl = `${this.apiUserPatrimonioPrefix}${usuarioId}/caixa`;
         console.log(`DashboardService: Solicitando caixa para usuário ID: ${usuarioId} da URL: ${caixaUrl}`);
 
-        return this.http.get<AtivoVO[]>(caixaUrl).pipe(
-          tap(caixa => console.log(`DashboardService: Caixa bruta recebida:`, caixa)),
-          map(ativos => ativos.map(ativo => ({
-            ...ativo,
-            valorInvestidoFormatado: this.parseFormattedString(ativo.valorInvestidoFormatado?.toString()),
-            precoMedioFormatado: this.parseFormattedString(ativo.precoMedioFormatado?.toString()),
-            valorAtualFormatado: this.parseFormattedString(ativo.valorAtualFormatado?.toString()),
-            lucroPrejuizoFormatado: this.parseFormattedString(ativo.lucroPrejuizoFormatado?.toString()),
-            quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
-            category: 'caixa'
-          }))),
+        return forkJoin({
+          caixa: this.http.get<AtivoVO[]>(caixaUrl),
+          cotacao: this.getCotacaoUSD()
+        }).pipe(
+          map(({ caixa, cotacao }) => {
+            console.log(`DashboardService: Caixa bruta recebida:`, caixa);
+            console.log(`DashboardService: Cotação USD recebida para caixa: ${cotacao}`);
+
+            if (!caixa || caixa.length === 0) {
+              console.log(`DashboardService: Nenhum caixa encontrado para usuário ${usuarioId}.`);
+              return [];
+            }
+
+            const caixaConvertidosNumeric = this.convertUsdToBrlNumeric(caixa, cotacao);
+            console.log(`DashboardService: Caixa após conversão USD->BRL:`, caixaConvertidosNumeric);
+
+            return caixaConvertidosNumeric.map(ativo => ({
+              ...ativo,
+              category: 'caixa'
+            }));
+          }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar caixa para usuário ${usuarioId}:`, error);
             return of([]);
@@ -361,19 +385,13 @@ export class DashboardService {
               return [];
             }
 
-            // Converte os valores para BRL numericamente primeiro
             const assetsConvertidosNumeric = this.convertUsdToBrlNumeric(assets, cotacao);
-            console.log(`DashboardService: Assets após conversão USD->BRL (numérico):`, assetsConvertidosNumeric);
+            console.log(`DashboardService: Assets após conversão USD->BRL:`, assetsConvertidosNumeric);
 
-            // Retorna os ativos com valores numéricos. A formatação será no HTML.
-            const assetsFinal = assetsConvertidosNumeric.map(ativo => ({
+            return assetsConvertidosNumeric.map(ativo => ({
               ...ativo,
-              // Garante que a quantidade também é numérica
-              quantidadeFormatada: this.parseFormattedString(ativo.quantidadeFormatada?.toString()),
               category: 'assets'
             }));
-
-            return assetsFinal;
           }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar assets para usuário ${usuarioId}:`, error);
@@ -384,13 +402,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Deleta um ativo com base na categoria e ID.
-   * @param usuarioId ID do usuário logado.
-   * @param ativoId ID do ativo a ser deletado.
-   * @param category Categoria do ativo ('acoes', 'fundos', 'caixa', 'assets').
-   * @returns Observable<void>
-   */
   deleteAtivo(usuarioId: number | string, ativoId: number | string, category: string): Observable<void> {
     let url: string;
     switch (category) {
@@ -421,13 +432,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Atualiza um ativo com base na categoria e ID.
-   * @param usuarioId ID do usuário logado.
-   * @param ativo Objeto AtivoVO com os dados atualizados (numéricos).
-   * @param category Categoria do ativo ('acoes', 'fundos', 'caixa', 'assets').
-   * @returns Observable<void>
-   */
   updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
     let url: string;
     switch (category) {
@@ -448,8 +452,6 @@ export class DashboardService {
         return throwError(() => new Error('Categoria inválida'));
     }
 
-    // Antes de enviar, converta os valores numéricos para strings, se o backend espera strings
-    // Se o backend espera números, remova o .toString()
     const ativoParaEnviar = { ...ativo };
     ativoParaEnviar.valorInvestidoFormatado = ativo.valorInvestidoFormatado;
     ativoParaEnviar.precoMedioFormatado = ativo.precoMedioFormatado;
@@ -467,7 +469,6 @@ export class DashboardService {
     );
   }
 
-  // Se você tiver um método para adicionar novas transações, ele também precisará ser ajustado
   addTransaction(userId: number | string, transactionData: any): Observable<any> {
     const category = transactionData.category;
     if (!category) {
@@ -477,7 +478,6 @@ export class DashboardService {
     const url = `${this.apiUserPatrimonioPrefix}${userId}/${category}`;
     console.log(`DashboardService: Adicionando transação na categoria ${category} para usuário ${userId} na URL: ${url}`);
 
-    // Converta os valores numéricos para strings antes de enviar se o backend espera strings
     const dataToSend = { ...transactionData };
     dataToSend.valorInvestido = this.parseFormattedString(transactionData.valorInvestido?.toString()).toString();
     dataToSend.precoMedio = this.parseFormattedString(transactionData.precoMedio?.toString()).toString();
