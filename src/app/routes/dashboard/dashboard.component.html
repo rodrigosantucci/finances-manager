@@ -96,12 +96,20 @@
               </div>
               <div class="metric text-center">
                 <p class="metric-label">
-                  R.Fixa:
+                  Renda Fixa:
                   <span class="metric-value">{{ getPercentualRF() }}%</span>
                 </p>
                 <p class="metric-label">
-                  R.Variável:
+                  Renda Variável:
                   <span class="metric-value">{{ getPercentualRV() }}%</span>
+                </p>
+                <p class="metric-label">
+                  Exterior:
+                  <span class="metric-value">{{ getPercentualExterior() }}%</span>
+                </p>
+                <p class="metric-label">
+                  Total Exterior:
+                  <span class="metric-value">R$ {{ getTotalValorExterior() }}</span>
                 </p>
               </div>
             </div>

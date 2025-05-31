@@ -53,7 +53,7 @@ import { FormsModule } from '@angular/forms'; // Importar FormsModule para [(ngM
     CurrencyPipe,
     DecimalPipe,
     FormsModule,
-     ConfirmDialogComponent,
+    ConfirmDialogComponent,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -167,13 +167,27 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // Variáveis para edição em linha
   editingRowId: number | string | null = null;
   currentEditedAtivo: AtivoVO | null = null;
-  protected  currentUserId: number | string | null = null; // Para armazenar o ID do usuário
+  protected currentUserId: number | string | null = null; // Para armazenar o ID do usuário
 
   tema = this.settings.getThemeColor() as string;
 
   getRandom(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
+  console.log('DataSource:', dataSource.data.map(ativo => ({
+    id: ativo.id,
+    moedaFormatada: ativo.moedaFormatada
+  })));
+  return dataSource.data
+    .filter(ativo => {
+      const moeda = ativo.moedaFormatada?.toUpperCase().trim();
+      console.log('Ativo ID:', ativo.id, 'Moeda:', moeda);
+      return moeda === 'USD';
+    })
+    .reduce((sum, ativo) => sum + this.getNumericValue(ativo.valorAtualFormatado), 0);
+}
 
   private parseAndValidateNumber = (value: number | undefined): number => {
     // Se o valor já for um número, apenas retorne-o. Se for undefined, trate como 0.
@@ -185,45 +199,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isUpdating) return;
     this.isUpdating = true;
 
-    this.authService.user().pipe(
-      filter(user => !!user?.id),
-      take(1),
-      catchError(error => {
-        console.error('Erro ao buscar usuário para atualização de cotações:', error);
-        this.snackBar.open('Erro ao buscar informações do usuário.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.isUpdating = false;
-        return of(null);
-      })
-    ).subscribe(user => {
-      if (!user?.id) {
-        console.error('ID do usuário não disponível para atualizar cotações.');
-        this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.isUpdating = false;
-        return;
-      }
-
-      const usuarioId = user.id;
-
-      this.patrimonioService.getUserTickers(usuarioId).pipe(
+    this.authService
+      .user()
+      .pipe(
+        filter(user => !!user?.id),
         take(1),
         catchError(error => {
-          console.error('Erro ao buscar tickers:', error);
-          this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+          console.error('Erro ao buscar usuário para atualização de cotações:', error);
+          this.snackBar.open('Erro ao buscar informações do usuário.', 'Fechar', {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
           this.isUpdating = false;
-          return of([]);
+          return of(null);
         })
-      ).subscribe((tickers) => {
-        if (tickers.length === 0) {
-          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
+      )
+      .subscribe(user => {
+        if (!user?.id) {
+          console.error('ID do usuário não disponível para atualizar cotações.');
+          this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -231,49 +225,81 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-        this.cotacaoService.atualizarCotacoes(tickers).pipe(
-          take(1),
-          catchError(error => {
-            console.error('Erro ao atualizar cotações:', error);
-            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-            this.isUpdating = false;
-            return of(null);
-          })
-        ).subscribe(() => {
-          this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
-            duration: 3000,
-            panelClass: ['success-snackbar'],
+        const usuarioId = user.id;
+
+        this.patrimonioService
+          .getUserTickers(usuarioId)
+          .pipe(
+            take(1),
+            catchError(error => {
+              console.error('Erro ao buscar tickers:', error);
+              this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+              });
+              this.isUpdating = false;
+              return of([]);
+            })
+          )
+          .subscribe(tickers => {
+            if (tickers.length === 0) {
+              this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+              });
+              this.isUpdating = false;
+              return;
+            }
+
+            this.cotacaoService
+              .atualizarCotacoes(tickers)
+              .pipe(
+                take(1),
+                catchError(error => {
+                  console.error('Erro ao atualizar cotações:', error);
+                  this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                  });
+                  this.isUpdating = false;
+                  return of(null);
+                })
+              )
+              .subscribe(() => {
+                this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
+                  duration: 3000,
+                  panelClass: ['success-snackbar'],
+                });
+                this.loadData(usuarioId);
+                this.isUpdating = false;
+              });
           });
-          this.loadData(usuarioId);
-          this.isUpdating = false;
-        });
       });
-    });
   }
 
   ngOnInit() {
-    this.authService.user().pipe(
-      filter(user => !!user?.id),
-      take(1)
-    ).subscribe(user => {
-      if (user?.id) {
-        this.currentUserId = user.id; // Armazena o ID do usuário
-        this.loadData(user.id);
-        this.setupCharts(user.id);
-      } else {
-        console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
-        this.hasError = true;
-        this.isLoading = false;
-        this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-      }
-      this.cdr.markForCheck();
-    });
+    this.authService
+      .user()
+      .pipe(
+        filter(user => !!user?.id),
+        take(1)
+      )
+      .subscribe(user => {
+        if (user?.id) {
+          this.currentUserId = user.id; // Armazena o ID do usuário
+          this.loadData(user.id);
+          this.setupCharts(user.id);
+        } else {
+          console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
+          this.hasError = true;
+          this.isLoading = false;
+          this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+        }
+        this.cdr.markForCheck();
+      });
 
     this.loadTradingViewWidget();
   }
@@ -289,7 +315,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const script = this.renderer.createElement('script');
     this.renderer.setAttribute(script, 'type', 'text/javascript');
-    this.renderer.setAttribute(script, 'src', 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js');
+    this.renderer.setAttribute(
+      script,
+      'src',
+      'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js'
+    );
     this.renderer.setAttribute(script, 'async', 'true');
     script.innerHTML = JSON.stringify({
       symbols: [
@@ -299,7 +329,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         { description: 'IBOVESPA', proName: 'INDEX:IBOV' },
         { description: 'EUR to BRL', proName: 'FX_IDC:EURBRL' },
         { description: 'NASDAQ', proName: 'IG:NASDAQ' },
-        { description: 'USD to BRL', proName: 'FX_IDC:USDBRL' }
+        { description: 'USD to BRL', proName: 'FX_IDC:USDBRL' },
       ],
       showSymbolLogo: true,
       isTransparent: false,
@@ -313,12 +343,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     setTimeout(() => {
       this.patrimoniochart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement1?.nativeElement) {
             this.initChart(this.chartElement1, options, 'chart1');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de patrimônio:', err);
           this.hasError = true;
           this.isLoading = false;
@@ -327,12 +357,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       this.acoesChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement2?.nativeElement) {
             this.initChart(this.chartElement2, options, 'chart2');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de ações:', err);
           this.hasError = true;
           this.isLoading = false;
@@ -341,12 +371,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       this.fundosChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement3?.nativeElement) {
             this.initChart(this.chartElement3, options, 'chart3');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de fundos:', err);
           this.hasError = true;
           this.isLoading = false;
@@ -355,12 +385,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       this.caixaChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement4?.nativeElement) {
             this.initChart(this.chartElement4, options, 'chart4');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de caixa:', err);
           this.hasError = true;
           this.isLoading = false;
@@ -369,12 +399,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       this.assetsChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement5?.nativeElement) {
             this.initChart(this.chartElement5, options, 'chart5');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de assets:', err);
           this.hasError = true;
           this.isLoading = false;
@@ -406,7 +436,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isShowAlert = false;
   }
 
-  loadData(userId: number | string): void { // userId pode ser string ou number
+  loadData(userId: number | string): void {
+    // userId pode ser string ou number
     console.log(`DashboardComponent: Iniciando carregamento de dados para usuário ${userId}...`);
     this.isLoading = true;
     this.hasError = false;
@@ -424,116 +455,137 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       return of([]);
     };
 
-    this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
-      take(1),
-      catchError(error => handleError(error, 'distribuição de patrimônio'))
-    ).subscribe(distribuicao => {
-      console.log('Dados recebidos para a tabela de distribuição:', distribuicao);
-      this.distribuicaoDataSource.data = distribuicao;
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .getDistribuicaoPatrimonio()
+      .pipe(
+        take(1),
+        catchError(error => handleError(error, 'distribuição de patrimônio'))
+      )
+      .subscribe(distribuicao => {
+        console.log('Dados recebidos para a tabela de distribuição:', distribuicao);
+        this.distribuicaoDataSource.data = distribuicao;
+        this.cdr.markForCheck();
+      });
 
-    this.dashboardSrv.getPatrimonioAcoes().pipe(
-      catchError(error => handleError(error, 'ações'))
-    ).subscribe(acoes => {
-      console.log('Acoes Data:', acoes);
-      this.acoesDataSource.data = acoes;
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .getPatrimonioAcoes()
+      .pipe(catchError(error => handleError(error, 'ações')))
+      .subscribe(acoes => {
+        console.log('Acoes Data:', acoes);
+        this.acoesDataSource.data = acoes;
+        this.cdr.markForCheck();
+      });
 
-    this.dashboardSrv.getPatrimonioFundos().pipe(
-      catchError(error => handleError(error, 'fundos'))
-    ).subscribe(fundos => {
-      console.log('Fundos Data:', fundos);
-      this.fundosDataSource.data = fundos;
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .getPatrimonioFundos()
+      .pipe(catchError(error => handleError(error, 'fundos')))
+      .subscribe(fundos => {
+        console.log('Fundos Data:', fundos);
+        this.fundosDataSource.data = fundos;
+        this.cdr.markForCheck();
+      });
 
-    this.dashboardSrv.getPatrimonioCaixa().pipe(
-      catchError(error => handleError(error, 'caixa'))
-    ).subscribe(caixa => {
-      console.log('Caixa Data:', caixa);
-      this.caixaDataSource.data = caixa;
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .getPatrimonioCaixa()
+      .pipe(catchError(error => handleError(error, 'caixa')))
+      .subscribe(caixa => {
+        console.log('Caixa Data:', caixa);
+        this.caixaDataSource.data = caixa;
+        this.cdr.markForCheck();
+      });
 
-    this.dashboardSrv.getPatrimonioAssets().pipe(
-      catchError(error => handleError(error, 'assets'))
-    ).subscribe(assets => {
-      console.log('Assets Data:', assets);
-      this.assetsDataSource.data = assets;
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .getPatrimonioAssets()
+      .pipe(catchError(error => handleError(error, 'assets')))
+      .subscribe(assets => {
+        console.log('Assets Data:', assets);
+        this.assetsDataSource.data = assets;
+        this.cdr.markForCheck();
+      });
   }
 
-
   // Aceita o ID do usuário como parâmetro
-setupCharts(userId: number): void {
-  console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
-  // Passe o userId para os métodos do DashboardService
-  this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe( // Removido userId daqui
-    catchError(error => {
-      console.error('Erro ao buscar dados para #chart1:', error);
-      this.hasError = true;
-      this.isLoading = false;
-      this.cdr.markForCheck();
-      return of([]);
-    }),
-    map((distribuicao: PatrimonioDistribuicaoVO[]) => {
-      console.log('Dados brutos para #chart1:', distribuicao);
-      const validDistribuicao = distribuicao.filter(
-        d => typeof d.valorTotal === 'number' && d.valorTotal >= 0 && typeof d.tipoAtivo === 'string' && d.tipoAtivo.trim() !== ''
-      );
-      const totalValor = validDistribuicao.reduce((sum, d) => sum + d.valorTotal, 0);
-      // Calcula a série com base nos valores totais, não nos percentuais já formatados
-      const series = validDistribuicao.map(d => d.percentual);
-      const labels = validDistribuicao.map(d => d.tipoAtivo);
-      console.log('Series para #chart1 (valores):', series); // Logando valores, não percentuais
-      console.log('Labels para #chart1:', labels);
-      console.log('Total Valor:', totalValor);
+  setupCharts(userId: number): void {
+    console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
+    // Passe o userId para os métodos do DashboardService
+    this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
+      // Removido userId daqui
+      catchError(error => {
+        console.error('Erro ao buscar dados para #chart1:', error);
+        this.hasError = true;
+        this.isLoading = false;
+        this.cdr.markForCheck();
+        return of([]);
+      }),
+      map((distribuicao: PatrimonioDistribuicaoVO[]) => {
+        console.log('Dados brutos para #chart1:', distribuicao);
+        const validDistribuicao = distribuicao.filter(
+          d =>
+            typeof d.valorTotal === 'number' &&
+            d.valorTotal >= 0 &&
+            typeof d.tipoAtivo === 'string' &&
+            d.tipoAtivo.trim() !== ''
+        );
+        const totalValor = validDistribuicao.reduce((sum, d) => sum + d.valorTotal, 0);
+        // Calcula a série com base nos valores totais, não nos percentuais já formatados
+        const series = validDistribuicao.map(d => d.percentual);
+        const labels = validDistribuicao.map(d => d.tipoAtivo);
+        console.log('Series para #chart1 (valores):', series); // Logando valores, não percentuais
+        console.log('Labels para #chart1:', labels);
+        console.log('Total Valor:', totalValor);
 
-      if (series.length !== labels.length) {
-        console.error('Erro: series e labels têm tamanhos diferentes para #chart1', { series, labels });
-        // Retorna um gráfico vazio ou com dados padrão em caso de erro
-        return this.getChartOptions([], [], 'Distribuição de Patrimônio', true); // Título adicionado
-      }
+        if (series.length !== labels.length) {
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart1', {
+            series,
+            labels,
+          });
+          // Retorna um gráfico vazio ou com dados padrão em caso de erro
+          return this.getChartOptions([], [], 'Distribuição de Patrimônio', true); // Título adicionado
+        }
 
-      // Passa false para isPercentage se o gráfico for exibir valores absolutos
-      return this.getChartOptions(series, labels, 'Distribuição de Patrimônio', true); // Título adicionado
-    })
-  );
+        // Passa false para isPercentage se o gráfico for exibir valores absolutos
+        return this.getChartOptions(series, labels, 'Distribuição de Patrimônio', true); // Título adicionado
+      })
+    );
 
-  // Exemplo para acoesChart$ (mantendo a estrutura atual, mas ciente da dependência de loadData):
-  this.acoesChart$ = this.acoesDataSource.connect().pipe(
-    map((acoes: AtivoVO[]) => {
-      console.log('Dados brutos para #chart2:', acoes);
-      const validAcoes = acoes.filter(
-        // Removido parseFloat, usando this.parseAndValidateNumber
-        a => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && (a.tickerFormatado?.trim() ?? '') !== ''
-      );
+    // Exemplo para acoesChart$ (mantendo a estrutura atual, mas ciente da dependência de loadData):
+    this.acoesChart$ = this.acoesDataSource.connect().pipe(
+      map((acoes: AtivoVO[]) => {
+        console.log('Dados brutos para #chart2:', acoes);
+        const validAcoes = acoes.filter(
+          // Removido parseFloat, usando this.parseAndValidateNumber
+          a =>
+            this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 &&
+            (a.tickerFormatado?.trim() ?? '') !== ''
+        );
         // Calcula a série com base nos valores atuais, não nos percentuais
         // Removido parseFloat
-      const series = validAcoes.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
-      const labels = validAcoes.map(a => a.tickerFormatado); // Usar ticker como label
-      console.log('Series para #chart2 (valores):', series);
-      console.log('Labels para #chart2:', labels);
+        const series = validAcoes.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+        const labels = validAcoes.map(a => a.tickerFormatado); // Usar ticker como label
+        console.log('Series para #chart2 (valores):', series);
+        console.log('Labels para #chart2:', labels);
 
-      if (series.length !== labels.length) {
-        console.error('Erro: series e labels têm tamanhos diferentes para #chart2', { series, labels });
-        return this.getChartOptions([], [], 'Patrimônio em Ações', false); // Título adicionado
-      }
+        if (series.length !== labels.length) {
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart2', {
+            series,
+            labels,
+          });
+          return this.getChartOptions([], [], 'Patrimônio em Ações', false); // Título adicionado
+        }
 
-      return this.getChartOptions(series, labels, 'Patrimônio em Ações', false); // Título adicionado, false para valores absolutos
-    })
-  );
+        return this.getChartOptions(series, labels, 'Patrimônio em Ações', false); // Título adicionado, false para valores absolutos
+      })
+    );
 
-  // Repita a lógica para fundosChart$, caixaChart$, assetsChart$, ajustando os nomes das variáveis e títulos.
-  this.fundosChart$ = this.fundosDataSource.connect().pipe(
+    // Repita a lógica para fundosChart$, caixaChart$, assetsChart$, ajustando os nomes das variáveis e títulos.
+    this.fundosChart$ = this.fundosDataSource.connect().pipe(
       map((fundos: AtivoVO[]) => {
         console.log('Dados brutos para #chart3:', fundos);
         const validFundos = fundos.filter(
           // Removido parseFloat
-          f => this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 && f.tickerFormatado?.trim() !== ''
+          f =>
+            this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 &&
+            f.tickerFormatado?.trim() !== ''
         );
         // Removido parseFloat
         const series = validFundos.map(f => this.parseAndValidateNumber(f.valorAtualFormatado));
@@ -542,7 +594,10 @@ setupCharts(userId: number): void {
         console.log('Labels para #chart3:', labels);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart3', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart3', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Patrimônio em Fundos', false);
         }
 
@@ -555,7 +610,9 @@ setupCharts(userId: number): void {
         console.log('Dados brutos para #chart4:', caixa);
         const validCaixa = caixa.filter(
           // Removido parseFloat
-          c => this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 && c.tickerFormatado?.trim() !== ''
+          c =>
+            this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 &&
+            c.tickerFormatado?.trim() !== ''
         );
         // Removido parseFloat
         const series = validCaixa.map(c => this.parseAndValidateNumber(c.valorAtualFormatado));
@@ -564,7 +621,10 @@ setupCharts(userId: number): void {
         console.log('Labels para #chart4:', labels);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart4', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart4', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Patrimônio em Caixa', false);
         }
 
@@ -573,27 +633,32 @@ setupCharts(userId: number): void {
     );
 
     this.assetsChart$ = this.assetsDataSource.connect().pipe(
-        map((assets: AtivoVO[]) => {
-          console.log('Dados brutos para #chart5:', assets);
-          const validAssets = assets.filter(
-            // Removido parseFloat
-            a => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado?.trim() !== ''
-          );
+      map((assets: AtivoVO[]) => {
+        console.log('Dados brutos para #chart5:', assets);
+        const validAssets = assets.filter(
           // Removido parseFloat
-          const series = validAssets.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
-          const labels = validAssets.map(a => a.tickerFormatado);
-          console.log('Series para #chart5 (valores):', series);
-          console.log('Labels para #chart5:', labels);
+          a =>
+            this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 &&
+            a.tickerFormatado?.trim() !== ''
+        );
+        // Removido parseFloat
+        const series = validAssets.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+        const labels = validAssets.map(a => a.tickerFormatado);
+        console.log('Series para #chart5 (valores):', series);
+        console.log('Labels para #chart5:', labels);
 
-          if (series.length !== labels.length) {
-            console.error('Erro: series e labels têm tamanhos diferentes para #chart5', { series, labels });
-            return this.getChartOptions([], [], 'Outros Ativos', false);
-          }
+        if (series.length !== labels.length) {
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart5', {
+            series,
+            labels,
+          });
+          return this.getChartOptions([], [], 'Outros Ativos', false);
+        }
 
-          return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
-        })
-      );
-}
+        return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
+      })
+    );
+  }
 
   // Helper para garantir que a conversão de string para número é segura
   // Agora espera number | undefined, pois AtivoVO tem campos numéricos
@@ -603,196 +668,238 @@ setupCharts(userId: number): void {
   }
 
   getTotalInvestido(): number {
-    return this.distribuicaoDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorTotal), 0);
+    return this.distribuicaoDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorTotal),
+      0
+    );
   }
 
   getTotalValorInvestidoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorAtualAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getPercentualRF(): number {
-    const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
+    const totalValorAtualGeral =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualCaixa() +
+      this.getTotalValorAtualAssets();
     const rf = this.getTotalValorAtualCaixa();
     const percentual = totalValorAtualGeral > 0 ? (rf / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
 
   getPercentualRV(): number {
-    const totalValorAtualGeral = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualCaixa() + this.getTotalValorAtualAssets();
-    const rv = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualAssets();
+    const totalValorAtualGeral =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualCaixa() +
+      this.getTotalValorAtualAssets();
+    const rv =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualAssets();
     const percentual = totalValorAtualGeral > 0 ? (rv / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
 
-  private getChartOptions(series: number[], labels: string[], title: string, isPercentage: boolean): ApexOptions {
-    const hasData = series && series.length > 0 && labels && labels.length > 0 && !series.every(val => val === 0);
-    const chartSeries = hasData ? series : [1];
-    const chartLabels = hasData ? labels.map(label => String(label)) : ['Sem dados'];
-
-    return {
-      chart: {
-        type: 'pie',
-        height: 350,
-        width: '100%',
-        animations: {
-          enabled: true,
-          speed: 600,
-          animateGradually: { enabled: true, delay: 150 },
-          dynamicAnimation: { enabled: true, speed: 350 },
-        },
-        dropShadow: {
-          enabled: true,
-          top: 2,
-          left: 2,
-          blur: 4,
-          opacity: 0.2,
-        },
-        toolbar: { show: false },
-      },
-      series: chartSeries,
-      labels: chartLabels,
-      colors: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6EE7B7', '#FBBF24', '#FCA5A5'],
-      title: {
-        text: title,
-        align: 'center',
-        style: {
-          fontSize: '16px',
-          fontWeight: '600',
-          fontFamily: 'Roboto, sans-serif',
-          color: '#979899',
-        },
-      },
-      legend: {
-        position: 'top',
-        fontSize: '12px',
-        fontFamily: 'Roboto, sans-serif',
-        fontWeight: 400,
-        labels: { colors: '#979899' },
-        markers: {
-          size: 10,
-          offsetX: -2,
-        },
-        itemMargin: { horizontal: 8, vertical: 4 },
-        formatter: (seriesName, opts) => {
-          const value = opts.w.globals.series[opts.seriesIndex];
-          if (!hasData) {
-            return 'Sem dados';
-          }
-          return `${seriesName}: ${isPercentage ? value.toFixed(1) + '%' : 'R$ ' + value.toFixed(2)}`;
-        },
-      },
-      dataLabels: {
-        enabled: true,
-        formatter: (val: number) => (hasData ? (isPercentage ? `${val.toFixed(1)}%` : `${val.toFixed(0)}%`) : ''),
-        style: {
-          fontSize: '12px',
-          fontFamily: 'Roboto, sans-serif',
-          fontWeight: '500',
-          colors: ['#FFFFFF'],
-        },
-        dropShadow: {
-          enabled: true,
-          top: 1,
-          left: 1,
-          blur: 2,
-          opacity: 0.5,
-        },
-      },
-      responsive: [
-        {
-          breakpoint: 640,
-          options: {
-            chart: { height: 300 },
-            legend: {
-              position: 'bottom',
-              fontSize: '11px',
-              itemMargin: { horizontal: 6, vertical: 3 },
-            },
-            dataLabels: { style: { fontSize: '11px' } },
-          },
-        },
-        {
-          breakpoint: 480,
-          options: {
-            chart: { height: 250 },
-            legend: { fontSize: '10px' },
-            dataLabels: { style: { fontSize: '10px' } },
-          },
-        },
-      ],
-      noData: {
-        text: 'Nenhum dado disponível',
-        align: 'center',
-        verticalAlign: 'middle',
-        offsetX: 0,
-        offsetY: 0,
-        style: {
-          fontSize: '14px',
-          fontFamily: 'Roboto, sans-serif',
-          color: '#6B7280',
-        },
-      },
-      tooltip: {
-        style: {
-          fontSize: '12px',
-          fontFamily: 'Roboto, sans-serif',
-        },
-        y: {
-          formatter: val => (hasData ? (isPercentage ? `${val.toFixed(1)}%` : `R$ ${val.toFixed(2)}`) : 'Sem dados'),
-        },
-      },
-      stroke: {
-        width: 2,
-        colors: ['#FFFFFF'],
-      },
-    };
+  getPercentualExterior(): number {
+    const totalValorAtualGeral =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualCaixa() +
+      this.getTotalValorAtualAssets();
+    const exterior = this.getTotalValorExterior();
+    const percentual = totalValorAtualGeral > 0 ? (exterior / totalValorAtualGeral) * 100 : 0;
+    return Math.round(percentual);
   }
 
-  private initChart(chartElement: ElementRef<HTMLDivElement>, options: ApexOptions, chartId: string): void {
+  getTotalValorExterior(): number {
+    const totalExterior =
+      this.sumUSD(this.acoesDataSource) +
+      this.sumUSD(this.fundosDataSource) +
+      this.sumUSD(this.assetsDataSource);
+
+    return totalExterior;
+  }
+
+  private getChartOptions(
+  series: number[],
+  labels: string[],
+  title: string,
+  isPercentage: boolean
+): ApexOptions {
+  const hasData =
+    series && series.length > 0 && labels && labels.length > 0 && !series.every(val => val === 0);
+  const chartSeries = hasData ? series : [1];
+  const chartLabels = hasData ? labels.map(label => String(label)) : ['Sem dados'];
+
+  return {
+    chart: {
+      type: 'pie',
+      height: 350, // Fixed height
+      width: 350,  // Fixed width
+      animations: {
+        enabled: true,
+        speed: 600,
+        animateGradually: { enabled: true, delay: 150 },
+        dynamicAnimation: { enabled: true, speed: 350 },
+      },
+      dropShadow: {
+        enabled: true,
+        top: 2,
+        left: 2,
+        blur: 4,
+        opacity: 0.2,
+      },
+      toolbar: { show: false },
+      sparkline: { enabled: false }, // Ensure no sparkline mode
+    },
+    series: chartSeries,
+    labels: chartLabels,
+    colors: [
+      '#3B82F6',
+      '#10B981',
+      '#F59E0B',
+      '#EF4444',
+      '#8B5CF6',
+      '#EC4899',
+      '#6EE7B7',
+      '#FBBF24',
+      '#FCA5A5',
+    ],
+    dataLabels: {
+      enabled: series.length <= 10, // Disable data labels for >10 assets to avoid clutter
+      formatter: (val: number) =>
+        hasData ? (isPercentage ? `${val.toFixed(1)}%` : `${val.toFixed(0)}%`) : '',
+      style: {
+        fontSize: '12px',
+        fontFamily: 'Roboto, sans-serif',
+        fontWeight: '500',
+        colors: ['#FFFFFF'],
+      },
+      dropShadow: {
+        enabled: true,
+        top: 1,
+        left: 1,
+        blur: 2,
+        opacity: 0.5,
+      },
+    },
+    noData: {
+      text: 'Nenhum dado disponível',
+      align: 'center',
+      verticalAlign: 'middle',
+      offsetX: 0,
+      offsetY: 0,
+      style: {
+        fontSize: '14px',
+        fontFamily: 'Roboto, sans-serif',
+        color: '#6B7280',
+      },
+    },
+    tooltip: {
+      style: {
+        fontSize: '12px',
+        fontFamily: 'Roboto, sans-serif',
+      },
+      y: {
+        formatter: val =>
+          hasData ? (isPercentage ? `${val.toFixed(1)}%` : `R$ ${val.toFixed(2)}`) : 'Sem dados',
+      },
+    },
+    stroke: {
+      width: 2,
+      colors: ['#FFFFFF'],
+    },
+  };
+}
+
+  private initChart(
+    chartElement: ElementRef<HTMLDivElement>,
+    options: ApexOptions,
+    chartId: string
+  ): void {
     if (!chartElement?.nativeElement) {
       console.error(`Elemento ${chartId} não encontrado no DOM.`);
       return;
@@ -915,27 +1022,31 @@ setupCharts(userId: number): void {
 
     // O DashboardService.updateAtivo espera um AtivoVO com valores numéricos
     // e os converte para string se o backend espera string.
-    this.dashboardSrv.updateAtivo(this.currentUserId, this.currentEditedAtivo, category).pipe(
-      catchError(error => {
-        console.error(`Erro ao atualizar ativo na categoria ${category}:`, error);
-        this.snackBar.open('Erro ao atualizar ativo.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        return of(null);
-      })
-    ).subscribe((updateResult) => {
-      if (updateResult !== null) { // Verifica se não houve erro capturado
-        this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
-          duration: 3000,
-          panelClass: ['success-snackbar'],
-        });
-        this.editingRowId = null;
-        this.currentEditedAtivo = null;
-        this.loadData(this.currentUserId!); // Recarrega os dados
-      }
-      this.cdr.markForCheck();
-    });
+    this.dashboardSrv
+      .updateAtivo(this.currentUserId, this.currentEditedAtivo, category)
+      .pipe(
+        catchError(error => {
+          console.error(`Erro ao atualizar ativo na categoria ${category}:`, error);
+          this.snackBar.open('Erro ao atualizar ativo.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          return of(null);
+        })
+      )
+      .subscribe(updateResult => {
+        if (updateResult !== null) {
+          // Verifica se não houve erro capturado
+          this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
+          this.editingRowId = null;
+          this.currentEditedAtivo = null;
+          this.loadData(this.currentUserId!); // Recarrega os dados
+        }
+        this.cdr.markForCheck();
+      });
   }
 
   // Helper para verificar se a linha está em modo de edição
@@ -952,33 +1063,41 @@ setupCharts(userId: number): void {
         title: 'Confirmar Exclusão',
         message: `Tem certeza que deseja excluir o ativo ${element.tickerFormatado}?`,
         confirmText: 'Excluir',
-        cancelText: 'Cancelar'
-      }
+        cancelText: 'Cancelar',
+      },
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log(`Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`);
+        console.log(
+          `Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`
+        );
         if (this.currentUserId) {
-          this.dashboardSrv.deleteAtivo(this.currentUserId, element.id, category).pipe(
-            catchError(error => {
-              console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);
-              this.snackBar.open('Erro ao excluir ativo.', 'Fechar', {
-                duration: 5000,
-                panelClass: ['error-snackbar'],
-              });
-              return of(null);
-            })
-          ).subscribe((deleteResult) => {
-            if (deleteResult !== null) {
-              this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
-                duration: 3000,
-                panelClass: ['success-snackbar'],
-              });
-              this.loadData(this.currentUserId!);
-            }
-            this.cdr.markForCheck();
-          });
+          this.dashboardSrv
+            .deleteAtivo(this.currentUserId, element.id, category)
+            .pipe(
+              catchError(error => {
+                console.error(
+                  `Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`,
+                  error
+                );
+                this.snackBar.open('Erro ao excluir ativo.', 'Fechar', {
+                  duration: 5000,
+                  panelClass: ['error-snackbar'],
+                });
+                return of(null);
+              })
+            )
+            .subscribe(deleteResult => {
+              if (deleteResult !== null) {
+                this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
+                  duration: 3000,
+                  panelClass: ['success-snackbar'],
+                });
+                this.loadData(this.currentUserId!);
+              }
+              this.cdr.markForCheck();
+            });
         } else {
           console.error('ID do usuário não disponível para excluir ativo.');
           this.snackBar.open('Erro: ID do usuário não disponível para exclusão.', 'Fechar', {
