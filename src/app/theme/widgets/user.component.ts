@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { debounceTime, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
 import { AuthService, SettingsService, User } from '@core';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
@@ -61,42 +61,48 @@ export class UserComponent implements OnInit, OnDestroy {
   private avatarObjectUrl: string | null = null;
 
   ngOnInit(): void {
+    console.log('UserComponent: Initializing');
     this.auth
       .user()
       .pipe(
+        distinctUntilChanged((prev, curr) => prev.id === curr.id),
         tap(user => {
+          console.log('UserComponent: User received', user);
           this.user = user;
           this.loadAvatar(user.id);
         }),
-        debounceTime(10)
+        debounceTime(100)
       )
-      .subscribe(() => this.cdr.detectChanges());
+      .subscribe(() => {
+        console.log('UserComponent: Triggering change detection');
+        this.cdr.detectChanges();
+      });
   }
 
   private loadAvatar(userId: number | undefined): void {
     if (!userId) {
-      console.warn('No user ID provided for avatar loading');
+      console.warn('UserComponent: No user ID provided for avatar loading');
       this.avatarUrl = this.defaultAvatarPlaceholder;
       return;
     }
 
+    console.log('UserComponent: Fetching avatar for ID:', userId);
     this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
+        console.log('UserComponent: Avatar loaded for ID:', userId);
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
-        console.log('Avatar loaded for user ID:', userId);
-        this.cdr.detectChanges();
       },
       error: (error) => {
-        console.warn('Failed to load avatar:', error);
+        console.warn('UserComponent: Failed to load avatar:', error);
         this.avatarUrl = this.defaultAvatarPlaceholder;
-        this.cdr.detectChanges();
-      }
+      },
+      complete: () => this.cdr.detectChanges()
     });
   }
 
   onImageError(event: Event): void {
-    console.warn('Image failed to load:', (event.target as HTMLImageElement).src);
+    console.warn('UserComponent: Image failed to load:', (event.target as HTMLImageElement).src);
     (event.target as HTMLImageElement).src = this.defaultAvatarPlaceholder;
     this.avatarUrl = this.defaultAvatarPlaceholder;
     this.cdr.detectChanges();
@@ -114,6 +120,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    console.log('UserComponent: Destroying');
     if (this.avatarObjectUrl) {
       URL.revokeObjectURL(this.avatarObjectUrl);
       this.avatarObjectUrl = null;
