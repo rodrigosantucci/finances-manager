@@ -21,6 +21,7 @@ import { IProfileReduced, SettingsService } from './settings.service';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
+import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
 
 export function confirmPasswordValidator(control: AbstractControl): { [key: string]: boolean } | null {
   const password = control.get('password');
@@ -82,11 +83,20 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   user!: User;
 
   ngOnInit(): void {
-    this.auth.user().subscribe(user => {
-      this.user = user;
-      this.loadUserData();
-      this.loadAvatar(user.id);
-    });
+    console.log('ProfileSettingsComponent: Initializing');
+    this.auth
+      .user()
+      .pipe(
+        distinctUntilChanged((prev, curr) => prev.id === curr.id),
+        tap(user => {
+          console.log('ProfileSettingsComponent: User received', user);
+          this.user = user;
+          this.loadUserData();
+          this.loadAvatar(user.id);
+        }),
+        debounceTime(100)
+      )
+      .subscribe();
 
     this.reactiveForm = this.fb.group<ControlsOf<IProfileReduced>>({
       username: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
@@ -101,9 +111,11 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   loadUserData(): void {
+    console.log('ProfileSettingsComponent: Loading user data');
     this.settingsService.getProfile().subscribe({
       next: (data: IProfileReduced | null) => {
         if (data) {
+          console.log('ProfileSettingsComponent: Profile data loaded', data);
           this.reactiveForm.patchValue({
             username: data.username,
             email: data.email,
@@ -113,13 +125,13 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             avatarIdentifier: data.avatarIdentifier,
           });
         } else {
-          console.warn('No profile data loaded, using placeholder.');
+          console.warn('ProfileSettingsComponent: No profile data loaded, using placeholder');
           this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
           this.isLoadingAvatar = false;
         }
       },
       error: (err) => {
-        console.error('Error loading profile data:', err);
+        console.error('ProfileSettingsComponent: Error loading profile data:', err);
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         this.isLoadingAvatar = false;
       }
@@ -128,21 +140,22 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   private loadAvatar(userId: number | undefined): void {
     if (!userId) {
-      console.warn('No user ID provided for avatar loading');
+      console.warn('ProfileSettingsComponent: No user ID provided for avatar loading');
       this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
       this.isLoadingAvatar = false;
       return;
     }
 
+    console.log('ProfileSettingsComponent: Fetching avatar for ID:', userId);
     this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
+        console.log('ProfileSettingsComponent: Avatar loaded for ID:', userId);
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
-        console.log('Avatar loaded for user ID:', userId);
         this.isLoadingAvatar = false;
       },
       error: (error) => {
-        console.warn('Failed to load avatar:', error);
+        console.warn('ProfileSettingsComponent: Failed to load avatar:', error);
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         this.isLoadingAvatar = false;
       }
@@ -150,6 +163,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   onFileSelected(event: Event): void {
+    console.log('ProfileSettingsComponent: File selected');
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
@@ -217,6 +231,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    console.log('ProfileSettingsComponent: Submitting form');
     this.reactiveForm.markAllAsTouched();
 
     const password = this.reactiveForm.get('password')?.value;
@@ -224,15 +239,15 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
     if (password && password.length > 0) {
       if (!confirmPassword || confirmPassword.length === 0) {
-        this.reactiveForm.get('confirmPassword')?.setErrors({ 'required': true });
+        this.reactiveForm.get('confirmPassword')?.setErrors({ required: true });
         this.reactiveForm.get('confirmPassword')?.markAsTouched();
-        console.log('Confirmação de senha é obrigatória.');
+        console.log('ProfileSettingsComponent: Confirmação de senha é obrigatória');
         return;
       }
       if (password !== confirmPassword) {
-        this.reactiveForm.get('confirmPassword')?.setErrors({ 'passwordMismatch': true });
+        this.reactiveForm.get('confirmPassword')?.setErrors({ passwordMismatch: true });
         this.reactiveForm.get('confirmPassword')?.markAsTouched();
-        console.log('As senhas não coincidem.');
+        console.log('ProfileSettingsComponent: As senhas não coincidem');
         return;
       }
     } else {
@@ -240,7 +255,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     }
 
     if (this.reactiveForm.invalid && !this.selectedFile) {
-      console.log('Formulário inválido e nenhum arquivo selecionado.');
+      console.log('ProfileSettingsComponent: Formulário inválido e nenhum arquivo selecionado');
       return;
     }
 
@@ -264,7 +279,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     this.settingsService.updateProfile(formData).subscribe({
       next: (response: IProfileReduced | null) => {
         if (response) {
-          console.log('Perfil atualizado com sucesso!', response);
+          console.log('ProfileSettingsComponent: Perfil atualizado com sucesso', response);
           alert('Perfil atualizado com sucesso!');
           if (response.id) {
             this.loadAvatar(response.id);
@@ -274,8 +289,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
             avatarIdentifier: response.avatarIdentifier,
           });
         } else {
-          console.error('Erro ao atualizar perfil: Resposta nula.');
-          alert('Erro ao atualizar perfil.');
+          console.error('ProfileSettingsComponent: Erro ao atualizar perfil: Resposta nula');
+          alert('Erro ao atualizar perfil');
           this.loadAvatar(this.user.id);
         }
 
@@ -286,21 +301,22 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         this.reactiveForm.markAsUntouched();
       },
       error: (err) => {
-        console.error('Erro ao atualizar perfil:', err);
-        alert('Erro ao atualizar perfil.');
+        console.error('ProfileSettingsComponent: Erro ao atualizar perfil:', err);
+        alert('Erro ao atualizar perfil');
         this.loadAvatar(this.user.id);
       }
     });
   }
 
   onImageError(event: Event): void {
-    console.warn('Image failed to load:', (event.target as HTMLImageElement).src);
+    console.warn('ProfileSettingsComponent: Image failed to load:', (event.target as HTMLImageElement).src);
     (event.target as HTMLImageElement).src = this.defaultAvatarPlaceholder;
     this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
     this.isLoadingAvatar = false;
   }
 
   ngOnDestroy(): void {
+    console.log('ProfileSettingsComponent: Destroying');
     if (this.avatarObjectUrl) {
       URL.revokeObjectURL(this.avatarObjectUrl);
       this.avatarObjectUrl = null;
