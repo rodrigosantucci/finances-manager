@@ -38,10 +38,6 @@ export const routes: Routes = [
         loadChildren: () => import('./routes/forms/forms.routes').then(m => m.routes),
       },
       {
-        path: 'tables',
-        loadChildren: () => import('./routes/tables/tables.routes').then(m => m.routes),
-      },
-      {
         path: 'profile',
         loadChildren: () => import('./routes/profile/profile.routes').then(m => m.routes),
       },

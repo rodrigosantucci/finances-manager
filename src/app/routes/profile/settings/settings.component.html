@@ -4,19 +4,25 @@
   </mat-card-header>
 
   <mat-card-content>
-    <form [formGroup]="reactiveForm" class="form-field-full">
+    <form [formGroup]="reactiveForm" class="form-field-full" (ngSubmit)="onSubmit()">
       <div class="row">
         <div class="col-12 m-b-16 d-flex flex-column align-items-center">
-          <img
-            [src]="avatarPreviewUrl || defaultAvatarPlaceholder"
-            alt="Avatar Preview"
-            class="avatar-preview m-b-8"
-          />
+          @if (!isLoadingAvatar) {
+            <img
+              class="m-b-8 r-full"
+              [src]="avatarPreviewUrl"
+              alt="user avatar"
+              width="80"
+              (error)="onImageError($event)"
+            />
+          } @else {
+            <mat-spinner diameter="40" class="m-b-8"></mat-spinner>
+          }
           <input
             type="file"
             #fileInput
             (change)="onFileSelected($event)"
-            accept="image/jpeg, image/png"
+            accept="image/jpeg,image/png"
             style="display: none;"
           />
           <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
@@ -82,12 +88,15 @@
             }
           </mat-form-field>
         </div>
-
       </div>
 
       <div class="d-flex justify-content-center m-t-16">
-        <button mat-flat-button color="primary" type="submit" (click)="onSubmit()"
-                [disabled]="reactiveForm.invalid && !selectedFile">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="reactiveForm.invalid && !selectedFile"
+        >
           Salvar
         </button>
       </div>

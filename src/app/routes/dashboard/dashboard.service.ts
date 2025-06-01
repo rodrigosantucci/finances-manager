@@ -20,6 +20,7 @@ interface CotacaoUSD {
 }
 
 export interface AtivoVO {
+  moeda: string;
   id: number | string;
   tickerFormatado: string;
   descricaoFormatada: string;

@@ -5,12 +5,15 @@
     <mat-card>
       <mat-card-content>
         <div class="text-center">
-
-         <img class="m-b-8 r-full" [src]="user.avatar" alt="" width="80" />
+<img
+    class="m-b-8 r-full"
+    [src]="avatarUrl"
+    alt="user avatar"
+    width="80"
+    (error)="onImageError($event)"
+  />
           <h2 class="m-t-0 m-b-8 f-w-400">{{ user.username }}</h2>
           <p class="m-t-0 text-grey-500">Let's make money.</p>
-
-
         </div>
 
         <mat-divider class="m-t-16 m-b-8" />

@@ -15,7 +15,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Observable, take, catchError, of, map, filter } from 'rxjs';
+import { Observable, take, catchError, of, map, filter, finalize, timeout, forkJoin } from 'rxjs';
 import { DashboardService, PatrimonioDistribuicaoVO, AtivoVO } from './dashboard.service';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -175,19 +175,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
-  console.log('DataSource:', dataSource.data.map(ativo => ({
-    id: ativo.id,
-    moedaFormatada: ativo.moedaFormatada
-  })));
-  return dataSource.data
-    .filter(ativo => {
-      const moeda = ativo.moedaFormatada?.toUpperCase().trim();
-      console.log('Ativo ID:', ativo.id, 'Moeda:', moeda);
-      return moeda === 'USD';
-    })
-    .reduce((sum, ativo) => sum + this.getNumericValue(ativo.valorAtualFormatado), 0);
-}
+
 
   private parseAndValidateNumber = (value: number | undefined): number => {
     // Se o valor já for um número, apenas retorne-o. Se for undefined, trate como 0.
@@ -199,25 +187,24 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
     if (this.isUpdating) return;
     this.isUpdating = true;
 
-    this.authService
-      .user()
-      .pipe(
-        filter(user => !!user?.id),
-        take(1),
-        catchError(error => {
-          console.error('Erro ao buscar usuário para atualização de cotações:', error);
-          this.snackBar.open('Erro ao buscar informações do usuário.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.isUpdating = false;
-          return of(null);
-        })
-      )
-      .subscribe(user => {
-        if (!user?.id) {
-          console.error('ID do usuário não disponível para atualizar cotações.');
-          this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
+    // Obtenha o ID do usuário do AuthService
+    const user = this.authService.user().getValue();
+    const usuarioId = user?.id;
+
+    if (usuarioId === undefined || usuarioId === null) {
+      console.error("ID do usuário não disponível para atualizar cotações.");
+      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+      return; // Sai da função se o ID do usuário não for válido
+    }
+
+    this.patrimonioService.getUserTickers(usuarioId).subscribe({
+      next: (tickers) => {
+        if (tickers.length === 0) {
+          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -225,56 +212,36 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
           return;
         }
 
-        const usuarioId = user.id;
-
-        this.patrimonioService
-          .getUserTickers(usuarioId)
-          .pipe(
-            take(1),
-            catchError(error => {
-              console.error('Erro ao buscar tickers:', error);
-              this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
-                duration: 5000,
-                panelClass: ['error-snackbar'],
-              });
-              this.isUpdating = false;
-              return of([]);
-            })
-          )
-          .subscribe(tickers => {
-            if (tickers.length === 0) {
-              this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
-                duration: 5000,
-                panelClass: ['error-snackbar'],
-              });
-              this.isUpdating = false;
-              return;
-            }
-
-            this.cotacaoService
-              .atualizarCotacoes(tickers)
-              .pipe(
-                take(1),
-                catchError(error => {
-                  console.error('Erro ao atualizar cotações:', error);
-                  this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                  });
-                  this.isUpdating = false;
-                  return of(null);
-                })
-              )
-              .subscribe(() => {
-                this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
-                  duration: 3000,
-                  panelClass: ['success-snackbar'],
-                });
-                this.loadData(usuarioId);
-                this.isUpdating = false;
-              });
-          });
-      });
+        // Call /atualizar with tickers and cambio
+        this.cotacaoService.atualizarCotacoes(tickers).subscribe({
+          next: (cotacoes) => {
+            this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+            });
+            // Reload the page
+            window.location.reload();
+            this.isUpdating = false;
+          },
+          error: (error) => {
+            console.error('Erro ao atualizar cotações:', error);
+            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            });
+            this.isUpdating = false;
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Erro ao buscar tickers:', error);
+        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.isUpdating = false;
+      },
+    });
   }
 
   ngOnInit() {
@@ -300,7 +267,7 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
         }
         this.cdr.markForCheck();
       });
-
+    this.fetchAndCacheData();
     this.loadTradingViewWidget();
   }
 
@@ -758,6 +725,13 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
     );
   }
 
+  getTotalLucroPrejuizoGeral(): number {
+    return (this.getTotalLucroPrejuizoAcoes() +
+      this.getTotalLucroPrejuizoFundos() +
+      this.getTotalLucroPrejuizoAssets());
+  }
+
+
   getPercentualRF(): number {
     const totalValorAtualGeral =
       this.getTotalValorAtualAcoes() +
@@ -783,25 +757,64 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
     return Math.round(percentual);
   }
 
-  getPercentualExterior(): number {
-    const totalValorAtualGeral =
-      this.getTotalValorAtualAcoes() +
-      this.getTotalValorAtualFundos() +
-      this.getTotalValorAtualCaixa() +
-      this.getTotalValorAtualAssets();
-    const exterior = this.getTotalValorExterior();
-    const percentual = totalValorAtualGeral > 0 ? (exterior / totalValorAtualGeral) * 100 : 0;
-    return Math.round(percentual);
-  }
+private acoes: AtivoVO[] = [];
+private fundos: AtivoVO[] = [];
+private caixa: AtivoVO[] = [];
+private assets: AtivoVO[] = [];
 
-  getTotalValorExterior(): number {
-    const totalExterior =
-      this.sumUSD(this.acoesDataSource) +
-      this.sumUSD(this.fundosDataSource) +
-      this.sumUSD(this.assetsDataSource);
+private sumUSD(): number {
+  const allAssets = [...this.acoes, ...this.fundos, ...this.caixa, ...this.assets];
+  console.log('sumUSD: All assets:', allAssets);
+  const totalUSD = allAssets
+    .filter(ativo => {
+      const moeda = ativo.moeda?.toUpperCase().trim();
+      return moeda === 'USD';
+    })
+    .reduce((sum, ativo) => sum + this.getNumericValue(ativo.valorAtualFormatado), 0);
+  console.log('sumUSD: Total USD:', totalUSD);
+  return totalUSD;
+}
 
-    return totalExterior;
-  }
+getTotalValorExterior(): number {
+  const total = this.sumUSD();
+  console.log('getTotalValorExterior: Total USD value:', total);
+  return total;
+}
+
+getPercentualExterior(): number {
+  const exterior = this.getTotalValorExterior();
+  const totalValorAtualGeral =
+    this.getTotalValorAtualAcoes() +
+    this.getTotalValorAtualFundos() +
+    this.getTotalValorAtualCaixa() +
+    this.getTotalValorAtualAssets();
+  const percentual = totalValorAtualGeral > 0 ? (exterior / totalValorAtualGeral) * 100 : 0;
+  const roundedPercentual = Math.round(percentual); // Round to nearest integer
+  console.log('getPercentualExterior:', { totalValorAtualGeral, exterior, percentual: roundedPercentual });
+  return roundedPercentual;
+}
+
+// Method to fetch and cache AtivoVO data (call in ngOnInit or loadData)
+private fetchAndCacheData(): void {
+  forkJoin([
+    this.dashboardSrv.getPatrimonioAcoes().pipe(take(1), catchError(() => of([]))),
+    this.dashboardSrv.getPatrimonioFundos().pipe(take(1), catchError(() => of([]))),
+    this.dashboardSrv.getPatrimonioCaixa().pipe(take(1), catchError(() => of([]))),
+    this.dashboardSrv.getPatrimonioAssets().pipe(take(1), catchError(() => of([]))),
+  ]).subscribe(([acoes, fundos, caixa, assets]: [AtivoVO[], AtivoVO[], AtivoVO[], AtivoVO[]]) => {
+    console.log('fetchAndCacheData: Data fetched', { acoes, fundos, caixa, assets });
+    this.acoes = acoes;
+    this.fundos = fundos;
+    this.caixa = caixa;
+    this.assets = assets;
+    // Update data sources for consistency with existing code
+    this.acoesDataSource.data = acoes;
+    this.fundosDataSource.data = fundos;
+    this.caixaDataSource.data = caixa;
+    this.assetsDataSource.data = assets;
+    this.cdr.markForCheck(); // Trigger change detection
+  });
+}
 
   private getChartOptions(
   series: number[],
@@ -817,8 +830,8 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
   return {
     chart: {
       type: 'pie',
-      height: 350, // Fixed height
-      width: 350,  // Fixed width
+      height: 450, // Fixed height
+      width: 300,  // Fixed width
       animations: {
         enabled: true,
         speed: 600,
@@ -849,7 +862,7 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
       '#FCA5A5',
     ],
     dataLabels: {
-      enabled: series.length <= 10, // Disable data labels for >10 assets to avoid clutter
+      enabled: series.length <= 20, // Disable data labels for >10 assets to avoid clutter
       formatter: (val: number) =>
         hasData ? (isPercentage ? `${val.toFixed(1)}%` : `${val.toFixed(0)}%`) : '',
       style: {
@@ -864,6 +877,33 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
         left: 1,
         blur: 2,
         opacity: 0.5,
+      },
+    },
+    legend: {
+      position: 'bottom',
+      horizontalAlign: 'center',
+      fontSize: '14px',
+      fontFamily: 'Roboto, sans-serif',
+      fontWeight: '500',
+      itemMargin: {
+        horizontal: 10,
+        vertical: 5,
+      },
+      onItemClick: {
+        toggleDataSeries: true,
+      },
+      onItemHover: {
+        highlightDataSeries: true,
+      },
+    },
+    title: {
+      text: title,
+      align: 'center',
+      style: {
+        fontSize: '16px',
+        fontFamily: 'Roboto, sans-serif',
+        fontWeight: '500',
+        color: '#374151', // Gray-700
       },
     },
     noData: {
@@ -1111,3 +1151,4 @@ private sumUSD(dataSource: MatTableDataSource<AtivoVO>): number {
     });
   }
 }
+

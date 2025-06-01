@@ -14,7 +14,7 @@ export interface Cotacao {
 })
 export class CotacaoService {
 
-  private readonly apiUrl = 'https://137.131.186.39:8443/api/cotacoes/ticker';
+  private readonly apiCotacoesPrefix = '/api/cotacoes/tickers/';
 
   constructor(private http: HttpClient) {}
 
@@ -23,7 +23,7 @@ export class CotacaoService {
       tickers: tickers.join(',') // Convert array to comma-separated string
 
     };
-    return this.http.get<Cotacao[]>(this.apiUrl, { params }).pipe(
+    return this.http.get<Cotacao[]>(this.apiCotacoesPrefix, { params }).pipe(
       catchError(this.handleError)
     );
   }

@@ -1,26 +1,27 @@
-// src/app/modules/settings/settings.component.ts
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators,
-  AbstractControl, // <<-- Certifique-se de que está importado
+  AbstractControl,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { ControlsOf } from '@shared/interfaces'; // Ajuste o caminho se necessário
-import { AuthService } from '@core/authentication/auth.service';
-import { User } from '@core/authentication/interface';
-import { IProfileReduced, SettingsService } from './settings.service'; // Importe a interface e o serviço
+import { ControlsOf } from '@shared/interfaces';
+import { AuthService, User } from '@core';
+import { IProfileReduced, SettingsService } from './settings.service';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { environment } from '@env/environment';
 
-// Validador customizado para confirmar senha (pode ser movido para um arquivo de utilitários de validação)
 export function confirmPasswordValidator(control: AbstractControl): { [key: string]: boolean } | null {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
@@ -29,8 +30,6 @@ export function confirmPasswordValidator(control: AbstractControl): { [key: stri
     return null;
   }
 
-  // Se ambos os campos de senha estão vazios, a validação de mismatch não se aplica.
-  // A validação 'required' para confirmPassword quando password é preenchida será feita no onSubmit.
   if (!password.value && !confirmPassword.value) {
     confirmPassword.setErrors(null);
     return null;
@@ -40,7 +39,6 @@ export function confirmPasswordValidator(control: AbstractControl): { [key: stri
     confirmPassword.setErrors({ passwordMismatch: true });
     return { passwordMismatch: true };
   } else {
-    // Limpa o erro se as senhas agora coincidem, caso tenha sido definido anteriormente
     if (confirmPassword.hasError('passwordMismatch')) {
       confirmPassword.setErrors(null);
     }
@@ -62,34 +60,32 @@ export function confirmPasswordValidator(control: AbstractControl): { [key: stri
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    MatProgressSpinnerModule,
   ],
-  providers: [provideNativeDateAdapter(), SettingsService], // Forneça o serviço aqui ou em app.config.ts
+  providers: [provideNativeDateAdapter(), SettingsService],
 })
-export class ProfileSettingsComponent implements OnInit {
+export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
-  private readonly settingsService = inject(SettingsService); // Injete o serviço
+  private readonly settingsService = inject(SettingsService);
+  private readonly http = inject(HttpClient);
+  private readonly sanitizer = inject(DomSanitizer);
 
   reactiveForm!: FormGroup<ControlsOf<IProfileReduced>>;
-
   selectedFile: File | null = null;
-  avatarPreviewUrl: string | ArrayBuffer | null = null;
+  avatarPreviewUrl: SafeUrl | string | ArrayBuffer | null = null;
   avatarError: string | null = null;
+  defaultAvatarPlaceholder: string = 'images/avatar.jpg';
+  private avatarObjectUrl: string | null = null;
+  isLoadingAvatar: boolean = true;
 
-  defaultAvatarPlaceholder: string = 'images/avatar.jpg'; // Caminho para seu placeholder
-
-  // O user é necessário aqui para obter o ID no ngOnInit e outras lógicas do componente
   user!: User;
 
   ngOnInit(): void {
-    // O subscribe aqui é principalmente para ter o objeto 'user' disponível no componente
-    // para exibir informações ou para a lógica do formulário, não para acionar diretamente as chamadas de API.
-    // As chamadas de API são acionadas pelos métodos do SettingsService, que internamente buscam o ID.
     this.auth.user().subscribe(user => {
       this.user = user;
-      // Se o usuário já estiver disponível, tente carregar os dados
-      // settingsService.getProfile() já lida com a ausência de ID internamente
       this.loadUserData();
+      this.loadAvatar(user.id);
     });
 
     this.reactiveForm = this.fb.group<ControlsOf<IProfileReduced>>({
@@ -99,13 +95,12 @@ export class ProfileSettingsComponent implements OnInit {
       confirmPassword: this.fb.control('', { nonNullable: true }),
       estrategia: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
       perfil: this.fb.control('', { validators: [Validators.required], nonNullable: true }),
-      avatarIdentifier: this.fb.control(undefined as any), // Campo para o identificador do avatar (ex: ID do usuário)
-      id: this.fb.control(undefined as any) // ID do usuário, para propósitos internos
+      avatarIdentifier: this.fb.control(undefined as any),
+      id: this.fb.control(undefined as any),
     }, { validators: confirmPasswordValidator });
   }
 
   loadUserData(): void {
-    // Componente chama o serviço para obter os dados. Não passa o ID diretamente.
     this.settingsService.getProfile().subscribe({
       next: (data: IProfileReduced | null) => {
         if (data) {
@@ -114,27 +109,42 @@ export class ProfileSettingsComponent implements OnInit {
             email: data.email,
             estrategia: data.estrategia,
             perfil: data.perfil,
-            id: data.id, // Atualiza o ID no formulário também
+            id: data.id,
+            avatarIdentifier: data.avatarIdentifier,
           });
-
-          // Verifica se há um avatarIdentifier vindo do backend
-          if (data.avatarIdentifier !== undefined && data.avatarIdentifier !== null) {
-            // Constrói a URL completa do avatar usando o serviço
-            this.avatarPreviewUrl = this.settingsService.getFullAvatarUrl(data.avatarIdentifier);
-            // Salva o identificador no formulário para uso posterior se necessário
-            this.reactiveForm.get('avatarIdentifier')?.patchValue(data.avatarIdentifier);
-          } else {
-            this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
-          }
         } else {
-          console.warn('Não foi possível carregar os dados do perfil ou usuário não encontrado. Exibindo placeholder.');
+          console.warn('No profile data loaded, using placeholder.');
           this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+          this.isLoadingAvatar = false;
         }
       },
       error: (err) => {
-        // Erro já tratado no serviço para retornar null, mas é bom ter um fallback aqui
-        console.error('Erro inesperado ao carregar dados do usuário no componente:', err);
+        console.error('Error loading profile data:', err);
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+        this.isLoadingAvatar = false;
+      }
+    });
+  }
+
+  private loadAvatar(userId: number | undefined): void {
+    if (!userId) {
+      console.warn('No user ID provided for avatar loading');
+      this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+      this.isLoadingAvatar = false;
+      return;
+    }
+
+    this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        this.avatarObjectUrl = URL.createObjectURL(blob);
+        this.avatarPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
+        console.log('Avatar loaded for user ID:', userId);
+        this.isLoadingAvatar = false;
+      },
+      error: (error) => {
+        console.warn('Failed to load avatar:', error);
+        this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+        this.isLoadingAvatar = false;
       }
     });
   }
@@ -150,16 +160,18 @@ export class ProfileSettingsComponent implements OnInit {
         this.avatarError = 'Apenas arquivos JPEG e PNG são permitidos.';
         this.selectedFile = null;
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
-        input.value = ''; // Limpa o input do arquivo para permitir nova seleção
+        input.value = '';
+        this.isLoadingAvatar = false;
         return;
       }
 
-      const maxSize = 2 * 1024 * 1024; // 2 MB
+      const maxSize = 2 * 1024 * 1024;
       if (file.size > maxSize) {
         this.avatarError = 'O tamanho do arquivo não pode exceder 2MB.';
         this.selectedFile = null;
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
-        input.value = ''; // Limpa o input do arquivo
+        input.value = '';
+        this.isLoadingAvatar = false;
         return;
       }
 
@@ -168,20 +180,15 @@ export class ProfileSettingsComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         this.avatarPreviewUrl = reader.result;
+        this.isLoadingAvatar = false;
       };
       reader.readAsDataURL(file);
     } else {
       this.selectedFile = null;
-      // Se nenhum arquivo foi selecionado, mantém o avatar existente se houver, ou o placeholder
-      const currentAvatarIdentifier = this.reactiveForm.get('avatarIdentifier')?.value;
-      this.avatarPreviewUrl = currentAvatarIdentifier !== undefined && currentAvatarIdentifier !== null ?
-                              this.settingsService.getFullAvatarUrl(currentAvatarIdentifier) :
-                              this.defaultAvatarPlaceholder;
+      this.loadAvatar(this.user.id);
     }
   }
 
-  // === MÉTODOS DE MENSAGENS DE ERRO ===
-  // O erro indicava que estes métodos estavam faltando ou inacessíveis.
   getErrorMessage(controlName: string): string {
     const control = this.reactiveForm.get(controlName);
     if (!control || !control.touched) {
@@ -194,13 +201,11 @@ export class ProfileSettingsComponent implements OnInit {
     if (control.hasError('email')) {
       return 'Por favor, insira um e-mail válido.';
     }
-    // Adicione mais mensagens de erro conforme suas validações
     return '';
   }
 
   getPasswordErrorMessage(): string {
     const confirmPasswordControl = this.reactiveForm.get('confirmPassword');
-
     if (!confirmPasswordControl || !confirmPasswordControl.touched) {
       return '';
     }
@@ -208,98 +213,97 @@ export class ProfileSettingsComponent implements OnInit {
     if (confirmPasswordControl.hasError('passwordMismatch')) {
       return 'As senhas não coincidem.';
     }
-    // Adicione outras validações de senha, se houver (ex: minLength)
     return '';
   }
-  // === FIM DOS MÉTODOS DE MENSAGENS DE ERRO ===
-
 
   onSubmit(): void {
-    this.reactiveForm.markAllAsTouched(); // Marca todos os controles como 'touched' para exibir validações
+    this.reactiveForm.markAllAsTouched();
 
-    // Verificação de senha e confirmação de senha
     const password = this.reactiveForm.get('password')?.value;
     const confirmPassword = this.reactiveForm.get('confirmPassword')?.value;
 
-    // Se a senha foi preenchida, a confirmação é obrigatória e deve coincidir
     if (password && password.length > 0) {
       if (!confirmPassword || confirmPassword.length === 0) {
         this.reactiveForm.get('confirmPassword')?.setErrors({ 'required': true });
         this.reactiveForm.get('confirmPassword')?.markAsTouched();
-        console.log('Confirmação de senha é obrigatória quando a senha é preenchida.');
-        return; // Sai da função para que o usuário corrija
+        console.log('Confirmação de senha é obrigatória.');
+        return;
       }
       if (password !== confirmPassword) {
         this.reactiveForm.get('confirmPassword')?.setErrors({ 'passwordMismatch': true });
         this.reactiveForm.get('confirmPassword')?.markAsTouched();
         console.log('As senhas não coincidem.');
-        return; // Sai da função
+        return;
       }
     } else {
-      // Se a senha está vazia, limpa erros de confirmação de senha
       this.reactiveForm.get('confirmPassword')?.setErrors(null);
     }
 
-    // Após todas as verificações manuais de senhas, verifica a validade geral do formulário
-    // Se o formulário está inválido E NÃO HÁ um arquivo selecionado para upload (que não é validado pelo formGroup),
-    // então não prossegue. Se o form está inválido mas tem um arquivo, pode ser um update de avatar apenas.
     if (this.reactiveForm.invalid && !this.selectedFile) {
-        console.log('Formulário inválido e nenhum arquivo de avatar selecionado. Não será enviado.');
-        return;
+      console.log('Formulário inválido e nenhum arquivo selecionado.');
+      return;
     }
 
     const formData = new FormData();
-    const formValue = this.reactiveForm.getRawValue(); // Usa getRawValue para pegar todos os valores, mesmo desabilitados
+    const formValue = this.reactiveForm.getRawValue();
 
-    // Anexa os campos do formulário ao FormData
     formData.append('username', formValue.username);
     formData.append('email', formValue.email);
     formData.append('estrategia', formValue.estrategia);
     formData.append('perfil', formValue.perfil);
 
-    // Anexa a senha apenas se ela foi preenchida e as validações passaram
     if (formValue.password && formValue.password.length > 0) {
       formData.append('password', formValue.password);
     }
 
-    // Anexa o arquivo de avatar se um novo arquivo foi selecionado
     if (this.selectedFile) {
       formData.append('avatar', this.selectedFile, this.selectedFile.name);
     }
 
+    this.isLoadingAvatar = true;
     this.settingsService.updateProfile(formData).subscribe({
       next: (response: IProfileReduced | null) => {
         if (response) {
           console.log('Perfil atualizado com sucesso!', response);
           alert('Perfil atualizado com sucesso!');
-          // Se o backend retorna o novo avatarIdentifier após o upload
-          if (response.avatarIdentifier !== undefined && response.avatarIdentifier !== null) {
-            this.avatarPreviewUrl = this.settingsService.getFullAvatarUrl(response.avatarIdentifier);
-            this.reactiveForm.get('avatarIdentifier')?.patchValue(response.avatarIdentifier); // Atualiza o identificador no formulário
-          } else {
-            // Se o backend não retorna o avatarIdentifier no response de update,
-            // ou se ele não foi atualizado (ex: nenhum novo arquivo),
-            // recarregue os dados do usuário para garantir que o avatar atualizado seja exibido.
-            // Isso é um fallback seguro.
-            this.loadUserData();
+          if (response.id) {
+            this.loadAvatar(response.id);
           }
+          this.reactiveForm.patchValue({
+            id: response.id,
+            avatarIdentifier: response.avatarIdentifier,
+          });
         } else {
-          console.error('Erro ao atualizar perfil: Resposta nula ou erro no serviço.');
-          alert('Erro ao atualizar perfil. Verifique o console.');
+          console.error('Erro ao atualizar perfil: Resposta nula.');
+          alert('Erro ao atualizar perfil.');
+          this.loadAvatar(this.user.id);
         }
 
-        // Limpa campos de senha e estado do arquivo selecionado após a tentativa de submit
         this.selectedFile = null;
         this.reactiveForm.get('password')?.reset('');
         this.reactiveForm.get('confirmPassword')?.reset('');
-        // Marcar como 'pristine' e 'untouched' para resetar o estado de validação visual
         this.reactiveForm.markAsPristine();
         this.reactiveForm.markAsUntouched();
       },
       error: (err) => {
-        console.error('Erro inesperado ao atualizar perfil no componente:', err);
-        alert('Erro ao atualizar perfil. Verifique o console.');
+        console.error('Erro ao atualizar perfil:', err);
+        alert('Erro ao atualizar perfil.');
+        this.loadAvatar(this.user.id);
       }
     });
+  }
+
+  onImageError(event: Event): void {
+    console.warn('Image failed to load:', (event.target as HTMLImageElement).src);
+    (event.target as HTMLImageElement).src = this.defaultAvatarPlaceholder;
+    this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+    this.isLoadingAvatar = false;
+  }
+
+  ngOnDestroy(): void {
+    if (this.avatarObjectUrl) {
+      URL.revokeObjectURL(this.avatarObjectUrl);
+      this.avatarObjectUrl = null;
+    }
   }
 }

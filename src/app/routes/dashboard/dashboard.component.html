@@ -88,10 +88,17 @@
                 <p class="metric-label">Lucro/Prejuízo Total</p>
                 <p class="metric-value">
                   <span
-                    [ngClass]="getTotalLucroPrejuizoAcoes() >= 0 ? 'text-success' : 'text-danger'"
+                    [ngClass]="getTotalLucroPrejuizoGeral() >= 0 ? 'text-success' : 'text-danger'"
                   >
-                    {{ getTotalLucroPrejuizoAcoes() | currency: 'BRL' }}
+                    {{ getTotalLucroPrejuizoGeral() | currency: 'BRL' }}
                   </span>
+                </p>
+              </div>
+              <div class="metric text-center">
+                <p class="metric-label">Total Exterior:</p>
+                <p class="metric-label">
+                  <span class="metric-value"> </span>
+                 {{ getTotalValorExterior()  | currency: 'BRL' }}
                 </p>
               </div>
               <div class="metric text-center">
@@ -106,10 +113,6 @@
                 <p class="metric-label">
                   Exterior:
                   <span class="metric-value">{{ getPercentualExterior() }}%</span>
-                </p>
-                <p class="metric-label">
-                  Total Exterior:
-                  <span class="metric-value">R$ {{ getTotalValorExterior() }}</span>
                 </p>
               </div>
             </div>
