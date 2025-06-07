@@ -231,7 +231,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         });
 
 
-            window.location.reload();
+         (window.location.reload as (forceGet?: boolean) => void)(true);
             this.isUpdating = false;
           },
           error: (error) => {
