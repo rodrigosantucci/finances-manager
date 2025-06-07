@@ -227,7 +227,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             });
             // Reload the page
             this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-            this.router.navigate(['/finances-manager']); // OU para a rota específica
+            this.router.navigate(['/finances-manager/']); // OU para a rota específica
         });
 
 
