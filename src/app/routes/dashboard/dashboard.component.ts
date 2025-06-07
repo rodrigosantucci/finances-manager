@@ -30,6 +30,7 @@ import { AuthService } from '@core/authentication';
 import { QuantidadeFormatPipe } from '@shared/pipes/quantidade-format.pipe';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { FormsModule } from '@angular/forms'; // Importar FormsModule para [(ngModel)]
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -67,6 +68,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly renderer = inject(Renderer2);
   private readonly el = inject(ElementRef);
   private readonly authService = inject(AuthService);
+
+    constructor(
+    // ... outros serviços
+    private router: Router // Injete o Router
+  ) {}
 
   introducingItems = [
     {
@@ -220,7 +226,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               panelClass: ['success-snackbar'],
             });
             // Reload the page
-            window.location.href = '/';
+            this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+            this.router.navigate(['/finances-manager']); // OU para a rota específica
+        });
+
+
+            window.location.reload();
             this.isUpdating = false;
           },
           error: (error) => {
