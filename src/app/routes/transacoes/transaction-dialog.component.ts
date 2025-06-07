@@ -62,6 +62,9 @@ export class TransactionDialogComponent implements OnInit {
     { value: 'FUNDO', label: 'Fundo', tipoAtivo: 2 },
     { value: 'TÍTULO', label: 'Título', tipoAtivo: 3 },
     { value: 'MOEDA', label: 'Moeda', tipoAtivo: 4 },
+    { value: 'AÇÃO EXTERIOR', label: 'Ação exterior', tipoAtivo: 4 },
+    { value: 'FUNDO EXTERIOR', label: 'Fundo Exterior', tipoAtivo: 4 },
+
   ];
 
   brokers = [

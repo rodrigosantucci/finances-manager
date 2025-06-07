@@ -220,7 +220,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               panelClass: ['success-snackbar'],
             });
             // Reload the page
-            window.location.reload();
+            window.location.href = '/';
             this.isUpdating = false;
           },
           error: (error) => {
@@ -861,44 +861,20 @@ private fetchAndCacheData(): void {
       '#FBBF24',
       '#FCA5A5',
     ],
-    dataLabels: {
-      enabled: series.length <= 20, // Disable data labels for >10 assets to avoid clutter
-      formatter: (val: number) =>
-        hasData ? (isPercentage ? `${val.toFixed(1)}%` : `${val.toFixed(0)}%`) : '',
-      style: {
-        fontSize: '12px',
-        fontFamily: 'Roboto, sans-serif',
-        fontWeight: '500',
-        colors: ['#FFFFFF'],
-      },
-      dropShadow: {
-        enabled: true,
-        top: 1,
-        left: 1,
-        blur: 2,
-        opacity: 0.5,
-      },
-    },
     legend: {
+      show: true,
       position: 'bottom',
       horizontalAlign: 'center',
-      fontSize: '14px',
+      fontSize: '12px',
       fontFamily: 'Roboto, sans-serif',
-      fontWeight: '500',
-      itemMargin: {
-        horizontal: 10,
-        vertical: 5,
-      },
-      onItemClick: {
-        toggleDataSeries: true,
-      },
-      onItemHover: {
-        highlightDataSeries: true,
+      labels: {
+        colors: '#374151', // Gray-700
       },
     },
     title: {
       text: title,
       align: 'center',
+      margin: 10,
       style: {
         fontSize: '16px',
         fontFamily: 'Roboto, sans-serif',
@@ -920,7 +896,7 @@ private fetchAndCacheData(): void {
     },
     tooltip: {
       style: {
-        fontSize: '12px',
+        fontSize: '10px',
         fontFamily: 'Roboto, sans-serif',
       },
       y: {
