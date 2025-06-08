@@ -201,7 +201,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  async onUpdateCotacoes(): Promise<void> {
+  async onUpdateDados(): Promise<void> {
     if (this.isUpdating) return;
     this.isUpdating = true;
 
@@ -229,7 +229,70 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           return;
         }
 
-        this.cotacaoService.atualizarCotacoes(tickers).subscribe({
+        this.cotacaoService.atualizarDados(tickers).subscribe({
+          next: (cotacoes) => {
+            this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+            });
+            if (this.currentUserId) {
+              this.loadData(this.currentUserId); // Recarrega os dados do componente
+            } else {
+              console.error('ID do usuário não disponível para recarregar dados após atualização de cotações.');
+            }
+            this.isUpdating = false;
+          },
+          error: (error) => {
+            console.error('Erro ao atualizar cotações:', error);
+            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            });
+            this.isUpdating = false;
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Erro ao buscar tickers:', error);
+        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.isUpdating = false;
+      },
+    });
+  }
+
+
+    async onUpdateCotacoes(): Promise<void> {
+    if (this.isUpdating) return;
+    this.isUpdating = true;
+
+    const user = this.authService.user().getValue();
+    const usuarioId = user?.id;
+
+    if (usuarioId === undefined || usuarioId === null) {
+      console.error('ID do usuário não disponível para atualizar cotações.');
+      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+      return;
+    }
+
+    this.patrimonioService.getUserTickers(usuarioId).subscribe({
+      next: (tickers) => {
+        if (tickers.length === 0) {
+          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          this.isUpdating = false;
+          return;
+        }
+
+        this.cotacaoService.atualizarCotacoes(tickers, 'BRL').subscribe({
           next: (cotacoes) => {
             this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
               duration: 3000,
@@ -660,6 +723,22 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.round(percentual);
   }
 
+
+    getPercentualBitcoin(): number {
+    const totalValorAtualGeral =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualCaixa() + // Adicionado Caixa
+      this.getTotalValorAtualAssets();
+
+    const btc = this.assetsDataSource.data
+      .filter((asset) => asset.tickerFormatado?.toUpperCase() === 'USDBTC')
+      .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
+      console.log('getPercentualBitcoin: BTC value:', btc);
+    const percentual = totalValorAtualGeral > 0 ? (btc / totalValorAtualGeral) * 100 : 0;
+    return Math.round(percentual);
+  }
+
   public acoes: AtivoVO[] = [];
   public fundos: AtivoVO[] = [];
   public caixa: AtivoVO[] = [];
@@ -1019,6 +1098,7 @@ startEdit(element: AtivoVO, category: string): void {
   // Helper para verificar se a linha está em modo de edição
 isEditing(element: AtivoVO, category: string): boolean {
   return this.editingRowId === element.id && (this.currentEditedAtivo as any)?.category === category;
+
 }
 
   openDeleteDialog(element: AtivoVO, category: string): void {

@@ -15,10 +15,22 @@ export interface Cotacao {
 export class CotacaoService {
 
   private readonly apiCotacoesPrefix = '/api/cotacoes/tickers/';
+  private readonly apiCotacoesAtualizarPrefix = '/api/cotacoes/atualizar/';
+
 
   constructor(private http: HttpClient) {}
 
-  atualizarCotacoes(tickers: string[]): Observable<Cotacao[]> {
+  atualizarCotacoes(tickers: string[], cambio: string): Observable<Cotacao[]> {
+    const params = {
+      tickers: tickers.join(','),
+      cambio : 'BRL'
+    };
+    return this.http.get<Cotacao[]>(this.apiCotacoesAtualizarPrefix, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  atualizarDados(tickers: string[]): Observable<Cotacao[]> {
     const params = {
       tickers: tickers.join(',') // Convert array to comma-separated string
 
