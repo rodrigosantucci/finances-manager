@@ -18,7 +18,7 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { ControlsOf } from '@shared/interfaces';
 import { AuthService, User } from '@core';
 import { IProfileReduced, SettingsService } from './settings.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
@@ -138,29 +138,39 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadAvatar(userId: number | undefined): void {
-    if (!userId) {
-      console.warn('ProfileSettingsComponent: No user ID provided for avatar loading');
-      this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
-      this.isLoadingAvatar = false;
-      return;
-    }
-
-    console.log('ProfileSettingsComponent: Fetching avatar for ID:', userId);
-    this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        console.log('ProfileSettingsComponent: Avatar loaded for ID:', userId);
-        this.avatarObjectUrl = URL.createObjectURL(blob);
-        this.avatarPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
-        this.isLoadingAvatar = false;
-      },
-      error: (error) => {
-        console.warn('ProfileSettingsComponent: Failed to load avatar:', error);
-        this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
-        this.isLoadingAvatar = false;
-      }
-    });
+private loadAvatar(userId: number | undefined): void {
+  if (!userId) {
+    console.warn('ProfileSettingsComponent: No user ID provided for avatar loading');
+    this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+    this.isLoadingAvatar = false;
+    return;
   }
+
+  console.log('ProfileSettingsComponent: Fetching avatar for ID:', userId);
+  this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+    next: (blob) => {
+      console.log('ProfileSettingsComponent: Avatar loaded for ID:', userId);
+      this.avatarObjectUrl = URL.createObjectURL(blob);
+      this.avatarPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
+      this.isLoadingAvatar = false;
+    },
+    error: (error: HttpErrorResponse) => { // Tipagem para HttpErrorResponse
+      console.warn('ProfileSettingsComponent: Failed to load avatar:', error);
+
+      // Verifica se o erro é 404 (Not Found)
+      if (error.status === 404) {
+        console.log('ProfileSettingsComponent: Avatar not found (404), showing placeholder.');
+        this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
+      } else {
+        // Para outros tipos de erro, você pode optar por exibir um erro genérico
+        // ou também o placeholder, dependendo da sua lógica de negócio.
+        console.error('ProfileSettingsComponent: An unexpected error occurred while loading avatar.', error);
+        this.avatarPreviewUrl = this.defaultAvatarPlaceholder; // Ou um placeholder de erro diferente
+      }
+      this.isLoadingAvatar = false;
+    }
+  });
+}
 
   onFileSelected(event: Event): void {
     console.log('ProfileSettingsComponent: File selected');

@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { PageHeaderComponent } from '@shared';
 import { environment } from '@env/environment';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
 
 @Component({
@@ -67,26 +67,39 @@ export class ProfileLayoutComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadAvatar(userId: number | undefined): void {
-    if (!userId) {
-      console.warn('ProfileLayoutComponent: No user ID provided for avatar loading');
-      this.avatarUrl = this.defaultAvatarPlaceholder;
-      return;
-    }
-
-    console.log('ProfileLayoutComponent: Fetching avatar for ID:', userId);
-    this.http.get(`${this.apiUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        console.log('ProfileLayoutComponent: Avatar loaded for ID:', userId);
-        this.avatarObjectUrl = URL.createObjectURL(blob);
-        this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
-      },
-      error: (error) => {
-        console.warn('ProfileLayoutComponent: Failed to load avatar:', error);
-        this.avatarUrl = this.defaultAvatarPlaceholder;
-      }
-    });
+private loadAvatar(userId: number | undefined): void {
+  if (!userId) {
+    console.warn('ProfileLayoutComponent: No user ID provided for avatar loading');
+    this.avatarUrl = this.defaultAvatarPlaceholder;
+    return;
   }
+
+  console.log('ProfileLayoutComponent: Fetching avatar for ID:', userId);
+  this.http.get(`${this.apiUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+    next: (blob) => {
+      console.log('ProfileLayoutComponent: Avatar loaded for ID:', userId);
+      // Libera a URL do objeto anterior se existir, para evitar vazamentos de memória
+      if (this.avatarObjectUrl) {
+        URL.revokeObjectURL(this.avatarObjectUrl);
+      }
+      this.avatarObjectUrl = URL.createObjectURL(blob);
+      this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
+    },
+    error: (error: HttpErrorResponse) => { // Tipar o erro como HttpErrorResponse
+      console.warn('ProfileLayoutComponent: Failed to load avatar:', error);
+
+      // Verifica se o erro é um HttpErrorResponse e se o status é 404
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        console.log('ProfileLayoutComponent: Avatar not found (404), displaying placeholder.');
+        this.avatarUrl = this.defaultAvatarPlaceholder;
+      } else {
+        // Para outros tipos de erro, você pode querer exibir o placeholder ou lidar de outra forma
+        console.error('ProfileLayoutComponent: An unexpected error occurred while loading avatar.');
+        this.avatarUrl = this.defaultAvatarPlaceholder; // Ou algum outro placeholder de erro genérico
+      }
+    }
+  });
+}
 
   ngOnDestroy(): void {
     console.log('ProfileLayoutComponent: Destroying');

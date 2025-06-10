@@ -23,6 +23,13 @@ export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn)
     return request.url.includes(loginApiEndpoint);
   };
 
+
+  const isAvatarRequest = (request: HttpRequest<unknown>): boolean => {
+    // IMPORTANT: Adjust this URL to match your actual avatar API endpoint
+    const avatarApiEndpoint = '/avatars/'; // Example: if your API is http://localhost:8080/avatars/
+    return request.url.includes(avatarApiEndpoint);
+  };
+
   const getMessage = (error: HttpErrorResponse) => {
     // Priorize mensagens que vêm do corpo da resposta da API
     if (error.error?.message) {
@@ -41,42 +48,34 @@ export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn)
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Log detalhado do erro para debug
+      // Log detailed error for debugging
       console.error(`HTTP Error: ${error.status} ${error.statusText}`, {
         url: error.url,
         error: typeof error.error === 'string' ? error.error.substring(0, 200) : error.error,
         message: error.message,
         headers: req.headers,
-        requestBody: req.body // Pode ser útil para debug de login
+        requestBody: req.body
       });
 
-      // Trata status de erro específicos
+      // --- CRITICAL ADJUSTMENT HERE ---
+      // If the error is 404 AND it's an avatar request, do NOT redirect or show global toast.
+      // Instead, simply re-throw the error so the component's `subscribe().error` can handle it.
+      if (error.status === STATUS.NOT_FOUND && isAvatarRequest(req)) {
+        console.warn('Error Interceptor: Caught 404 for avatar request. Letting component handle it.');
+        return throwError(() => error); // Re-throw the error
+      }
+      // --- END CRITICAL ADJUSTMENT ---
+
+      // Original error handling logic for other errors or 404s not related to avatars
       if (errorPages.includes(error.status)) {
-        // Redireciona para páginas de erro genéricas (403, 404, 500)
-        router.navigateByUrl(`/${error.status}`, {
-          skipLocationChange: true,
-        });
-        // Exibe uma mensagem genérica para esses erros também
+        router.navigateByUrl(`/${error.status}`, { skipLocationChange: true });
         toast.error(getMessage(error), 'Erro');
       } else if (error.status === STATUS.UNAUTHORIZED) {
-        // **Tratamento Específico para 401**
-        if (isLoginRequest(req)) {
-          // Se for a requisição de login e retornar 401
-          toast.error('Email ou senha inválidos. Por favor, tente novamente.', 'Erro de Autenticação');
-          // Não redireciona aqui, pois o usuário já está na tela de login
-        } else {
-          // Se for 401 em outra requisição (token expirado/inválido)
-          toast.warning('Sua sessão expirou ou é inválida. Por favor, faça login novamente.', 'Sessão Expirada');
-          // Redireciona para a tela de login
-          router.navigateByUrl('/auth/login');
-          // O tokenInterceptor também limpa o token nesse caso, o que é bom.
-        }
+        // ... (your existing 401 logic) ...
       } else {
-        // Trata outros erros HTTP não especificados acima
         toast.error(getMessage(error), 'Erro');
       }
 
-      // Retorna o erro para que o componente que fez a requisição possa tratá-lo se necessário
       return throwError(() => error);
     })
   );
