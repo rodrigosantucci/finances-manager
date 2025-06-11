@@ -147,7 +147,7 @@ private loadAvatar(userId: number | undefined): void {
   }
 
   console.log('ProfileSettingsComponent: Fetching avatar for ID:', userId);
-  this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+  this.http.get(`${environment.baseUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
     next: (blob) => {
       console.log('ProfileSettingsComponent: Avatar loaded for ID:', userId);
       this.avatarObjectUrl = URL.createObjectURL(blob);

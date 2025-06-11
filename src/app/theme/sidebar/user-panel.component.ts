@@ -54,7 +54,7 @@ export class UserPanelComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+    this.http.get(`${environment.baseUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
