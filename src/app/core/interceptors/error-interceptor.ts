@@ -26,7 +26,7 @@ export function errorInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn)
 
   const isAvatarRequest = (request: HttpRequest<unknown>): boolean => {
     // IMPORTANT: Adjust this URL to match your actual avatar API endpoint
-    const avatarApiEndpoint = '/avatars/'; // Example: if your API is http://localhost:8080/avatars/
+    const avatarApiEndpoint = '/api/avatars/'; // Example: if your API is http://localhost:8080/avatars/
     return request.url.includes(avatarApiEndpoint);
   };
 
