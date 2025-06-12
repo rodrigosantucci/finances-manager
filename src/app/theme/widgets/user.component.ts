@@ -87,7 +87,7 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     console.log('UserComponent: Fetching avatar for ID:', userId);
-    this.http.get(`${environment.baseUrl}avatars/${userId}`, { responseType: 'blob' }).subscribe({
+    this.http.get(`${environment.baseUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
         console.log('UserComponent: Avatar loaded for ID:', userId);
         this.avatarObjectUrl = URL.createObjectURL(blob);
