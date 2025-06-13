@@ -185,7 +185,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   // Variáveis para edição em linha
-  editingRowId: number | string | null = null;
+  editingRowTicker: string | null = null;
   currentEditedAtivo: AtivoVO | null = null;
   originalAtivoBeforeEdit: AtivoVO | null = null;
 
@@ -992,29 +992,103 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
 
-  // Método para iniciar a edição em linha
 startEdit(element: AtivoVO, category: string): void {
-    // Cancela qualquer edição em andamento antes de iniciar uma nova
-    if (this.editingRowId !== null) {
+    if (this.editingRowTicker !== null) {
+      console.log('startEdit: Canceling existing edit before starting new one.');
       this.cancelEdit();
     }
 
-    // Define o estado de edição
-    this.editingRowId = element.id;
-    this.originalAtivoBeforeEdit = JSON.parse(JSON.stringify(element)); // Cópia profunda para restaurar se cancelar
-    this.currentEditedAtivo = { ...element, category }; // Adiciona a categoria ao objeto
-    this.cdr.detectChanges(); // Força a atualização da view
+    // Log the entire element for debugging
+    console.log('startEdit: Received element:', {
+      element,
+      category,
+      ticker: element.tickerFormatado,
+      description: element.descricaoFormatada,
+    });
+
+    if (!element.tickerFormatado || element.tickerFormatado.trim() === '') {
+      console.error('startEdit: Invalid or missing ticker for element.', {
+        element,
+        category,
+        ticker: element.tickerFormatado,
+      });
+      this.snackBar.open(`Erro: Ticker inválido para ativo na categoria ${category}.`, 'Fechar', {
+        duration: 6000,
+        panelClass: ['error-snackbar'],
+      });
+      return;
+    }
+
+    // Check for duplicate tickers in the data source
+    let dataSource: MatTableDataSource<AtivoVO>;
+    switch (category) {
+      case 'acoes':
+        dataSource = this.acoesDataSource;
+        break;
+      case 'fundos':
+        dataSource = this.fundosDataSource;
+        break;
+      case 'caixa':
+        dataSource = this.caixaDataSource;
+        break;
+      case 'assets':
+        dataSource = this.assetsDataSource;
+        break;
+      default:
+        console.error('startEdit: Invalid category:', category);
+        return;
+    }
+
+    const duplicateTickers = dataSource.data.filter(
+      item => item.tickerFormatado === element.tickerFormatado
+    );
+    if (duplicateTickers.length > 1) {
+      console.warn('startEdit: Duplicate ticker found in category', {
+        category,
+        ticker: element.tickerFormatado,
+        count: duplicateTickers.length,
+      });
+      this.snackBar.open(`Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`, 'Fechar', {
+        duration: 6000,
+        panelClass: ['warning-snackbar'],
+      });
+    }
+
+    this.editingRowTicker = element.tickerFormatado;
+    this.originalAtivoBeforeEdit = JSON.parse(JSON.stringify(element));
+    this.currentEditedAtivo = { ...element, category };
+    console.log('startEdit: Editing row', {
+      editingRowTicker: this.editingRowTicker,
+      elementTicker: element.tickerFormatado,
+      category,
+      typeEditingRowTicker: typeof this.editingRowTicker,
+      typeElementTicker: typeof element.tickerFormatado,
+    });
+
+    this.cdr.detectChanges();
   }
 
-  // Método para cancelar a edição em linha
-   cancelEdit(): void {
-    if (this.editingRowId !== null && this.originalAtivoBeforeEdit) {
+  isEditing(element: AtivoVO, category: string): boolean {
+    const isEditing = this.editingRowTicker === element.tickerFormatado &&
+                      this.currentEditedAtivo &&
+                      (this.currentEditedAtivo as any).category === category;
+    console.log('isEditing check:', {
+      elementTicker: element.tickerFormatado,
+      elementDescription: element.descricaoFormatada,
+      category,
+      editingRowTicker: this.editingRowTicker,
+      currentEditedCategory: this.currentEditedAtivo ? (this.currentEditedAtivo as any).category : null,
+      result: isEditing,
+    });
+    return !!isEditing;
+  }
+
+  cancelEdit(): void {
+    if (this.editingRowTicker !== null && this.originalAtivoBeforeEdit && this.currentEditedAtivo) {
+      const category = (this.currentEditedAtivo as any).category;
       let dataSourceToUpdate: MatTableDataSource<AtivoVO> | undefined;
 
-      // Usar a categoria armazenada no currentEditedAtivo para determinar o dataSource
-      const categoryOfEditedItem = (this.currentEditedAtivo as any)?.category;
-
-      switch (categoryOfEditedItem) {
+      switch (category) {
         case 'acoes':
           dataSourceToUpdate = this.acoesDataSource;
           break;
@@ -1027,79 +1101,77 @@ startEdit(element: AtivoVO, category: string): void {
         case 'assets':
           dataSourceToUpdate = this.assetsDataSource;
           break;
+        default:
+          console.warn(`cancelEdit: Invalid category ${category}`);
       }
 
       if (dataSourceToUpdate) {
         const data = dataSourceToUpdate.data;
-        const index = data.findIndex(item => item.id === this.editingRowId);
+        const index = data.findIndex(item => item.tickerFormatado === this.editingRowTicker);
         if (index !== -1) {
-          // Restaura o objeto original na posição correta
           data[index] = this.originalAtivoBeforeEdit;
-          // Atribui uma nova referência ao 'data' para acionar a atualização da tabela
           dataSourceToUpdate.data = [...data];
-          console.log(`Ativo com ID ${this.editingRowId} na categoria ${categoryOfEditedItem} restaurado para o estado original.`);
+          console.log(`cancelEdit: Restored row with ticker ${this.editingRowTicker} in category ${category}`);
+        } else {
+          console.warn(`cancelEdit: Row with ticker ${this.editingRowTicker} not found in category ${category}`);
         }
       } else {
-        console.warn(`Não foi possível determinar o DataSource para restaurar o ativo com ID ${this.editingRowId}.`);
+        console.warn(`cancelEdit: No dataSource found for category ${category}`);
       }
     }
-    // Limpa os estados de edição
-    this.editingRowId = null;
+
+    this.editingRowTicker = null;
     this.currentEditedAtivo = null;
     this.originalAtivoBeforeEdit = null;
     this.cdr.markForCheck();
   }
 
-  // Método para salvar a edição em linha
   saveEdit(element: AtivoVO, category: string): void {
     if (!this.currentEditedAtivo || !this.currentUserId) {
-      console.error('Dados de edição ou ID do usuário não disponíveis para salvar.');
-      this.snackBar.open('Erro ao salvar: dados incompletos.', 'Fechar', {
-        duration: 5000,
+      console.error('saveEdit: Missing currentEditedAtivo or currentUserId.');
+      this.snackBar.open('Erro ao salvar: dados inválidos.', 'Fechar', {
+        duration: 6000,
         panelClass: ['error-snackbar'],
       });
       return;
     }
 
+    const updatedAtivo = { ...this.currentEditedAtivo, tickerFormatado: element.tickerFormatado };
+    console.log('saveEdit: Saving row', {
+      elementTicker: element.tickerFormatado,
+      category,
+      updatedAtivo,
+    });
+
     this.dashboardSrv
-      .updateAtivo(this.currentUserId, this.currentEditedAtivo, category)
+      .updateAtivo(this.currentUserId, updatedAtivo, category)
       .pipe(
         catchError((error) => {
-          console.error(`Erro ao atualizar ativo na categoria ${category}:`, error);
-          this.snackBar.open(error.message || 'Erro ao atualizar ativo.', 'Fechar', {
-            duration: 5000,
+          console.error(`saveEdit: Error updating ativo in ${category}:`, error);
+          this.snackBar.open(error.message || 'Erro ao salvar ativo.', 'Fechar', {
+            duration: 6000,
             panelClass: ['error-snackbar'],
           });
-          // Não limpa o estado de edição aqui, permitindo que o usuário tente novamente
           return of(null);
         }),
         finalize(() => {
-          this.cdr.markForCheck(); // Garante que a UI é atualizada após a tentativa de salvar
+          this.cdr.markForCheck();
         })
       )
-      .subscribe((updateResult: any) => {
-        if (updateResult !== null) {
-          // Verifica se não houve erro capturado
+      .subscribe((result) => {
+        if (result !== null) {
           this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
-          this.editingRowId = null;
+          this.editingRowTicker = null;
           this.currentEditedAtivo = null;
-          this.originalAtivoBeforeEdit = null; // Limpa a cópia original após salvar com sucesso
-
-          // Recarrega os dados após salvar para refletir quaisquer alterações no servidor
-          // e garantir que todas as tabelas e gráficos estejam sincronizados.
+          this.originalAtivoBeforeEdit = null;
           this.loadData(this.currentUserId!);
         }
       });
   }
 
-  // Helper para verificar se a linha está em modo de edição
-isEditing(element: AtivoVO, category: string): boolean {
-  return this.editingRowId === element.id && (this.currentEditedAtivo as any)?.category === category;
-
-}
 
   openDeleteDialog(element: AtivoVO, category: string): void {
     console.log(`Abrindo diálogo de exclusão para ${category}:`, element);

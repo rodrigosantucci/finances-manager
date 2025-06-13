@@ -397,3 +397,19 @@ mat-icon {
 .action-buttons-group button mat-icon {
   vertical-align: middle; /* Ajuda a centralizar o ícone */
 }
+
+
+::ng-deep .mat-mdc-form-field-flex {
+  height: 50px !important; /* Garante que o campo de formulário tenha altura automática */
+
+}
+
+::ng-deep div .mat-mdc-form-field-infix {
+  width: 100px !important;
+
+}
+
+::ng-deep .mat-mdc-input-element {
+  font-size: 14px !important; /* Ajusta o tamanho da fonte do input */
+  text-align: center !important;
+}

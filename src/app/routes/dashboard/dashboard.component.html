@@ -117,6 +117,7 @@
     </div>
   </section>
 
+  <!-- Ações Section -->
   <section class="acoes-section mb-4" aria-labelledby="acoes-title">
     <h2 id="acoes-title" class="section-title">Ações</h2>
     <div class="row">
@@ -127,13 +128,13 @@
               <ng-container matColumnDef="tickerFormatado">
                 <th mat-header-cell *matHeaderCellDef>Ticker</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editTicker">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editTicker">
                     {{element.tickerFormatado}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span style="display: none;">Debug: editingRowTicker={{editingRowTicker}}, element.ticker={{element.tickerFormatado}}, type_editingRowTicker={{typeof editingRowTicker}}, type_elementTicker={{typeof element.tickerFormatado}}</span>
                   </ng-container>
                   <ng-template #editTicker>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.tickerFormatado" name="ticker_{{element.id}}" required [disabled]="true" title="Ticker não editável" />
+                      <input matInput [(ngModel)]="element.tickerFormatado" name="ticker_{{element.tickerFormatado}}_acoes" required [disabled]="true" title="Ticker não editável" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -142,13 +143,12 @@
               <ng-container matColumnDef="descricaoFormatada">
                 <th mat-header-cell *matHeaderCellDef>Nome</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editDescricao">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editDescricao">
                     {{element.descricaoFormatada}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editDescricao>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.descricaoFormatada" name="descricao_{{element.id}}" required />
+                      <input matInput [(ngModel)]="element.descricaoFormatada" name="descricao_{{element.tickerFormatado}}_acoes" required />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -157,13 +157,12 @@
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editQuantidade">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editQuantidade">
                     {{element.quantidadeFormatada | quantidadeFormat}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editQuantidade>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.quantidadeFormatada" name="quantidade_{{element.id}}" required min="0" />
+                      <input matInput type="number" [(ngModel)]="element.quantidadeFormatada" name="quantidade_{{element.tickerFormatado}}_acoes" required min="0" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -172,13 +171,12 @@
               <ng-container matColumnDef="precoMedioFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editPrecoMedio">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoMedio">
                     {{element.precoMedioFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.precoMedioFormatado" name="precoMedio_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.precoMedioFormatada" name="precoMedio_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -187,13 +185,12 @@
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editValorInvestido">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editValorInvestido">
                     {{element.valorInvestidoFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editValorInvestido>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.valorInvestidoFormatado" name="valorInvestido_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -216,20 +213,47 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'acoes' || !currentEditedAtivo; else editActions">
-                    <button mat-icon-button color="primary" (click)="startEdit(element, 'acoes')" matTooltip="Editar ação" aria-label="Editar ação">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editActions">
+                    <button
+                      mat-icon-button
+                      color="primary"
+                      (click)="startEdit(element, 'acoes')"
+                      matTooltip="Editar ação"
+                      aria-label="Editar ação"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'acoes')" matTooltip="Excluir ação" aria-label="Excluir ação">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      (click)="openDeleteDialog(element, 'acoes')"
+                      matTooltip="Excluir ação"
+                      aria-label="Excluir ação"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>delete</mat-icon>
                     </button>
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span *ngIf="!element.tickerFormatado" class="text-danger" matTooltip="Ticker inválido">Ação indisponível</span>
                   </ng-container>
                   <ng-template #editActions>
-                    <button mat-icon-button color="accent" (click)="saveEdit(element, 'acoes')" [disabled]="!currentEditedAtivo?.quantidadeFormatada || !currentEditedAtivo?.precoMedioFormatado" matTooltip="Salvar edição" aria-label="Salvar edição da ação">
+                    <button
+                      mat-icon-button
+                      color="accent"
+                      (click)="saveEdit(element, 'acoes')"
+                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                      matTooltip="Salvar edição"
+                      aria-label="Salvar edição da ação"
+                    >
                       <mat-icon>save</mat-icon>
                     </button>
-                    <button mat-icon-button color="basic" (click)="cancelEdit()" matTooltip="Cancelar edição" aria-label="Cancelar edição da ação">
+                    <button
+                      mat-icon-button
+                      color="basic"
+                      (click)="cancelEdit()"
+                      matTooltip="Cancelar edição"
+                      aria-label="Cancelar edição da ação"
+                    >
                       <mat-icon>cancel</mat-icon>
                     </button>
                   </ng-template>
@@ -254,7 +278,8 @@
     </div>
   </section>
 
-  <section class="acoes-section mb-4" aria-labelledby="fundos-title">
+  <!-- Fundos Section -->
+  <section class="fundos-section mb-4" aria-labelledby="fundos-title">
     <h2 id="fundos-title" class="section-title">Fundos</h2>
     <div class="row">
       <div class="col-12 col-md-8">
@@ -264,13 +289,13 @@
               <ng-container matColumnDef="tickerFormatado">
                 <th mat-header-cell *matHeaderCellDef>Ticker</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editTicker">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editTicker">
                     {{element.tickerFormatado}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span style="display: none;">Debug: editingRowTicker={{editingRowTicker}}, element.ticker={{element.tickerFormatado}}, type_editingRowTicker={{typeof editingRowTicker}}, type_elementTicker={{typeof element.tickerFormatado}}</span>
                   </ng-container>
                   <ng-template #editTicker>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.tickerFormatado" name="ticker_{{element.id}}" required [disabled]="true" title="Ticker não editável" />
+                      <input matInput [(ngModel)]="element.tickerFormatado" name="ticker_{{element.tickerFormatado}}_fundos" required [disabled]="true" title="Ticker não editável" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -279,13 +304,12 @@
               <ng-container matColumnDef="descricaoFormatada">
                 <th mat-header-cell *matHeaderCellDef>Nome</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editDescricao">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editDescricao">
                     {{element.descricaoFormatada}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editDescricao>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.descricaoFormatada" name="descricao_{{element.id}}" required />
+                      <input matInput [(ngModel)]="element.descricaoFormatada" name="descricao_{{element.tickerFormatado}}_fundos" required />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -294,13 +318,12 @@
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editQuantidade">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editQuantidade">
                     {{element.quantidadeFormatada | quantidadeFormat}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editQuantidade>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.quantidadeFormatada" name="quantidade_{{element.id}}" required min="0" />
+                      <input matInput type="number" [(ngModel)]="element.quantidadeFormatada" name="quantidade_{{element.tickerFormatado}}_fundos" required min="0" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -309,13 +332,12 @@
               <ng-container matColumnDef="precoMedioFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editPrecoMedio">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editPrecoMedio">
                     {{element.precoMedioFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.precoMedioFormatado" name="precoMedio_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.precoMedioFormatada" name="precoMedio_{{element.tickerFormatado}}_fundos" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -324,13 +346,12 @@
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editValorInvestido">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editValorInvestido">
                     {{element.valorInvestidoFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editValorInvestido>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.valorInvestidoFormatado" name="valorInvestido_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_fundos" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -353,20 +374,47 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'fundos' || !currentEditedAtivo; else editActions">
-                    <button mat-icon-button color="primary" (click)="startEdit(element, 'fundos')" matTooltip="Editar fundo" aria-label="Editar fundo">
+                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editActions">
+                    <button
+                      mat-icon-button
+                      color="primary"
+                      (click)="startEdit(element, 'fundos')"
+                      matTooltip="Editar fundo"
+                      aria-label="Editar fundo"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'fundos')" matTooltip="Excluir fundo" aria-label="Excluir fundo">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      (click)="openDeleteDialog(element, 'fundos')"
+                      matTooltip="Excluir fundo"
+                      aria-label="Excluir fundo"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>delete</mat-icon>
                     </button>
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span *ngIf="!element.tickerFormatado" class="text-danger" matTooltip="Ticker inválido">Ação indisponível</span>
                   </ng-container>
                   <ng-template #editActions>
-                    <button mat-icon-button color="accent" (click)="saveEdit(element, 'fundos')" [disabled]="!currentEditedAtivo?.quantidadeFormatada || !currentEditedAtivo?.precoMedioFormatado" matTooltip="Salvar edição" aria-label="Salvar edição do fundo">
+                    <button
+                      mat-icon-button
+                      color="accent"
+                      (click)="saveEdit(element, 'fundos')"
+                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                      matTooltip="Salvar edição"
+                      aria-label="Salvar edição do fundo"
+                    >
                       <mat-icon>save</mat-icon>
                     </button>
-                    <button mat-icon-button color="basic" (click)="cancelEdit()" matTooltip="Cancelar edição" aria-label="Cancelar edição do fundo">
+                    <button
+                      mat-icon-button
+                      color="basic"
+                      (click)="cancelEdit()"
+                      matTooltip="Cancelar edição"
+                      aria-label="Cancelar edição do fundo"
+                    >
                       <mat-icon>cancel</mat-icon>
                     </button>
                   </ng-template>
@@ -391,7 +439,8 @@
     </div>
   </section>
 
-  <section class="acoes-section mb-4" aria-labelledby="caixa-title">
+  <!-- Caixa Section -->
+  <section class="caixa-section mb-4" aria-labelledby="caixa-title">
     <h2 id="caixa-title" class="section-title">Caixa</h2>
     <div class="row">
       <div class="col-12 col-md-8">
@@ -401,13 +450,13 @@
               <ng-container matColumnDef="tickerFormatado">
                 <th mat-header-cell *matHeaderCellDef>Ticker</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editTicker">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editTicker">
                     {{element.tickerFormatado}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span style="display: none;">Debug: editingRowTicker={{editingRowTicker}}, element.ticker={{element.tickerFormatado}}, type_editingRowTicker={{typeof editingRowTicker}}, type_elementTicker={{typeof element.tickerFormatado}}</span>
                   </ng-container>
                   <ng-template #editTicker>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.tickerFormatado" name="ticker_{{element.id}}" required [disabled]="true" title="Ticker não editável" />
+                      <input matInput [(ngModel)]="element.tickerFormatado" name="ticker_{{element.tickerFormatado}}_caixa" required [disabled]="true" title="Ticker não editável" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -416,13 +465,12 @@
               <ng-container matColumnDef="descricaoFormatada">
                 <th mat-header-cell *matHeaderCellDef>Nome</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editDescricao">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editDescricao">
                     {{element.descricaoFormatada}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editDescricao>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.descricaoFormatada" name="descricao_{{element.id}}" required />
+                      <input matInput [(ngModel)]="element.descricaoFormatada" name="descricao_{{element.tickerFormatado}}_caixa" required />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -431,13 +479,12 @@
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editQuantidade">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editQuantidade">
                     {{element.quantidadeFormatada | quantidadeFormat}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editQuantidade>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.quantidadeFormatada" name="quantidade_{{element.id}}" required min="0" />
+                      <input matInput type="number" [(ngModel)]="element.quantidadeFormatada" name="quantidade_{{element.tickerFormatado}}_caixa" required min="0" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -446,13 +493,12 @@
               <ng-container matColumnDef="precoMedioFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editPrecoMedio">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editPrecoMedio">
                     {{element.precoMedioFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.precoMedioFormatado" name="precoMedio_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.precoMedioFormatada" name="precoMedio_{{element.tickerFormatado}}_caixa" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -461,13 +507,12 @@
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editValorInvestido">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorInvestido">
                     {{element.valorInvestidoFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editValorInvestido>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.valorInvestidoFormatado" name="valorInvestido_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_caixa" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -490,20 +535,47 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'caixa' || !currentEditedAtivo; else editActions">
-                    <button mat-icon-button color="primary" (click)="startEdit(element, 'caixa')" matTooltip="Editar caixa" aria-label="Editar caixa">
+                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editActions">
+                    <button
+                      mat-icon-button
+                      color="primary"
+                      (click)="startEdit(element, 'caixa')"
+                      matTooltip="Editar caixa"
+                      aria-label="Editar caixa"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'caixa')" matTooltip="Excluir caixa" aria-label="Excluir caixa">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      (click)="openDeleteDialog(element, 'caixa')"
+                      matTooltip="Excluir caixa"
+                      aria-label="Excluir caixa"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>delete</mat-icon>
                     </button>
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span *ngIf="!element.tickerFormatado" class="text-danger" matTooltip="Ticker inválido">Ação indisponível</span>
                   </ng-container>
                   <ng-template #editActions>
-                    <button mat-icon-button color="accent" (click)="saveEdit(element, 'caixa')" [disabled]="!currentEditedAtivo?.quantidadeFormatada || !currentEditedAtivo?.precoMedioFormatado" matTooltip="Salvar edição" aria-label="Salvar edição de caixa">
+                    <button
+                      mat-icon-button
+                      color="accent"
+                      (click)="saveEdit(element, 'caixa')"
+                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                      matTooltip="Salvar edição"
+                      aria-label="Salvar edição do caixa"
+                    >
                       <mat-icon>save</mat-icon>
                     </button>
-                    <button mat-icon-button color="basic" (click)="cancelEdit()" matTooltip="Cancelar edição" aria-label="Cancelar edição de caixa">
+                    <button
+                      mat-icon-button
+                      color="basic"
+                      (click)="cancelEdit()"
+                      matTooltip="Cancelar edição"
+                      aria-label="Cancelar edição do caixa"
+                    >
                       <mat-icon>cancel</mat-icon>
                     </button>
                   </ng-template>
@@ -528,7 +600,8 @@
     </div>
   </section>
 
-  <section class="acoes-section mb-4" aria-labelledby="assets-title">
+  <!-- Assets Section -->
+  <section class="assets-section mb-4" aria-labelledby="assets-title">
     <h2 id="assets-title" class="section-title">Assets Internacionais</h2>
     <div class="row">
       <div class="col-12 col-md-8">
@@ -538,13 +611,13 @@
               <ng-container matColumnDef="tickerFormatado">
                 <th mat-header-cell *matHeaderCellDef>Ticker</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editTicker">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editTicker">
                     {{element.tickerFormatado}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span style="display: none;">Debug: editingRowTicker={{editingRowTicker}}, element.ticker={{element.tickerFormatado}}, type_editingRowTicker={{typeof editingRowTicker}}, type_elementTicker={{typeof element.tickerFormatado}}</span>
                   </ng-container>
                   <ng-template #editTicker>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.tickerFormatado" name="ticker_{{element.id}}" required [disabled]="true" title="Ticker não editável" />
+                      <input matInput [(ngModel)]="element.tickerFormatado" name="ticker_{{element.tickerFormatado}}_assets" required [disabled]="true" title="Ticker não editável" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -553,13 +626,12 @@
               <ng-container matColumnDef="descricaoFormatada">
                 <th mat-header-cell *matHeaderCellDef>Nome</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editDescricao">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editDescricao">
                     {{element.descricaoFormatada}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editDescricao>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput [(ngModel)]="currentEditedAtivo!.descricaoFormatada" name="descricao_{{element.id}}" required />
+                      <input matInput [(ngModel)]="element.descricaoFormatada" name="descricao_{{element.tickerFormatado}}_assets" required />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -568,13 +640,12 @@
               <ng-container matColumnDef="quantidadeFormatada">
                 <th mat-header-cell *matHeaderCellDef>Quantidade</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editQuantidade">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editQuantidade">
                     {{element.quantidadeFormatada | quantidadeFormat}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editQuantidade>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.quantidadeFormatada" name="quantidade_{{element.id}}" required min="0" />
+                      <input matInput type="number" [(ngModel)]="element.quantidadeFormatada" name="quantidade_{{element.tickerFormatado}}_assets" required min="0" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -583,13 +654,12 @@
               <ng-container matColumnDef="precoMedioFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editPrecoMedio">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editPrecoMedio">
                     {{element.precoMedioFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.precoMedioFormatado" name="precoMedio_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.precoMedioFormatada" name="precoMedio_{{element.tickerFormatado}}_assets" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -598,13 +668,12 @@
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editValorInvestido">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editValorInvestido">
                     {{element.valorInvestidoFormatado | currency:'BRL'}}
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
                   </ng-container>
                   <ng-template #editValorInvestido>
                     <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="currentEditedAtivo!.valorInvestidoFormatado" name="valorInvestido_{{element.id}}" required min="0" step="0.01" />
+                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_assets" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -627,20 +696,47 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Ações</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="editingRowId !== element.id || currentEditedAtivo?.category !== 'assets' || !currentEditedAtivo; else editActions">
-                    <button mat-icon-button color="primary" (click)="startEdit(element, 'assets')" matTooltip="Editar ativo internacional" aria-label="Editar ativo internacional">
+                  <ng-container *ngIf="!isEditing(element, 'assets'); else editActions">
+                    <button
+                      mat-icon-button
+                      color="primary"
+                      (click)="startEdit(element, 'assets')"
+                      matTooltip="Editar asset"
+                      aria-label="Editar asset"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="openDeleteDialog(element, 'assets')" matTooltip="Excluir ativo internacional" aria-label="Excluir ativo internacional">
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      (click)="openDeleteDialog(element, 'assets')"
+                      matTooltip="Excluir asset"
+                      aria-label="Excluir asset"
+                      *ngIf="element.tickerFormatado"
+                    >
                       <mat-icon>delete</mat-icon>
                     </button>
-                    <span style="display: none;">Debug: editingRowId={{editingRowId}}, element.id={{element.id}}, category={{currentEditedAtivo?.category}}</span>
+                    <span *ngIf="!element.tickerFormatado" class="text-danger" matTooltip="Ticker inválido">Ação indisponível</span>
                   </ng-container>
                   <ng-template #editActions>
-                    <button mat-icon-button color="accent" (click)="saveEdit(element, 'assets')" [disabled]="!currentEditedAtivo?.quantidadeFormatada || !currentEditedAtivo?.precoMedioFormatado" matTooltip="Salvar edição" aria-label="Salvar edição do ativo internacional">
+                    <button
+                      mat-icon-button
+                      color="accent"
+                      (click)="saveEdit(element, 'assets')"
+                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                      matTooltip="Salvar edição"
+                      aria-label="Salvar edição do asset"
+                    >
                       <mat-icon>save</mat-icon>
                     </button>
-                    <button mat-icon-button color="basic" (click)="cancelEdit()" matTooltip="Cancelar edição" aria-label="Cancelar edição do ativo internacional">
+                    <button
+                      mat-icon-button
+                      color="basic"
+                      (click)="cancelEdit()"
+                      matTooltip="Cancelar edição"
+                      aria-label="Cancelar edição do asset"
+                    >
                       <mat-icon>cancel</mat-icon>
                     </button>
                   </ng-template>
@@ -657,8 +753,8 @@
       <div class="col-12 col-md-4">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
-            <div #chart5 id="chart5" role="img" aria-label="Gráfico de distribuição de ativos internacionais"></div>
-            <p *ngIf="!(assetsChart$ | async)?.series?.length" class="no-data-text">Nenhum dado disponível para ativos internacionais</p>
+            <div #chart5 id="chart5" role="img" aria-label="Gráfico de distribuição de assets"></div>
+            <p *ngIf="!(assetsChart$ | async)?.series?.length" class="no-data-text">Nenhum dado disponível para assets</p>
           </mat-card-content>
         </mat-card>
       </div>
