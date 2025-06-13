@@ -373,7 +373,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       isTransparent: false,
       displayMode: 'compact',
       colorTheme: this.tema,
-      locale: 'pt_BR',
+      locale: 'pt-BR',
     });
     this.renderer.appendChild(tradingViewElement, script);
   }

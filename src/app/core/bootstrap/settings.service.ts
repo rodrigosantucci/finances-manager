@@ -4,7 +4,7 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AppDirectionality, LocalStorageService } from '@shared';
-import { enUS, Locale, ptBR, zhTW } from 'date-fns/locale';
+import { enUS, Locale, ptBR} from 'date-fns/locale';
 import { BehaviorSubject } from 'rxjs';
 import { AppSettings, AppTheme, defaults } from '../settings';
 
@@ -77,7 +77,7 @@ export class SettingsService {
   getTranslateLang() {
     if (this.options.language === 'auto') {
       const browserLang = navigator.language;
-      return this.languages.includes(browserLang) ? browserLang : 'en-US';
+      return this.languages.includes(browserLang) ? browserLang : 'pt-BR';
     }
     return this.options.language;
   }

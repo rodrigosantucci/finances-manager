@@ -1,12 +1,17 @@
+
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import {
   ApplicationConfig,
   importProvidersFrom,
   inject,
   provideAppInitializer,
+  LOCALE_ID,
 } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+import localeEn from '@angular/common/locales/en';
 
 import { provideDateFnsAdapter } from '@angular/material-date-fns-adapter';
 import { MAT_CARD_CONFIG } from '@angular/material/card';
@@ -17,7 +22,6 @@ import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { provideToastr } from 'ngx-toastr';
-
 
 import {
   apiInterceptor,
@@ -38,9 +42,18 @@ import { PaginatorI18nService } from '@shared';
 import { routes } from './app.routes';
 import { FormlyConfigModule } from './formly-config';
 
+// Register Angular locales
+registerLocaleData(localePt, 'pt-BR');
+registerLocaleData(localeEn, 'en-US');
+
 // Required for AOT compilation
 function TranslateHttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './i18n/', '.json');
+}
+
+// Factory for LOCALE_ID
+function localeIdFactory(settingsService: SettingsService) {
+  return settingsService.getTranslateLang();
 }
 
 // Http interceptor providers in outside-in order
@@ -57,7 +70,12 @@ const interceptors = [
 export const appConfig: ApplicationConfig = {
   providers: [
     { provide: BASE_URL, useValue: environment.baseUrl },
-    { provide: AUTH_URL, useValue: environment.authUrl},
+    { provide: AUTH_URL, useValue: environment.authUrl },
+    {
+      provide: LOCALE_ID,
+      useFactory: localeIdFactory,
+      deps: [SettingsService],
+    },
     provideAppInitializer(() => inject(TranslateLangService).load()),
     provideAppInitializer(() => inject(StartupService).load()),
     provideAnimationsAsync(),
