@@ -264,67 +264,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
-    async onUpdateCotacoes(): Promise<void> {
-    if (this.isUpdating) return;
-    this.isUpdating = true;
 
-    const user = this.authService.user().getValue();
-    const usuarioId = user?.id;
-
-    if (usuarioId === undefined || usuarioId === null) {
-      console.error('ID do usuário não disponível para atualizar cotações.');
-      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
-        duration: 5000,
-        panelClass: ['error-snackbar'],
-      });
-      this.isUpdating = false;
-      return;
-    }
-
-    this.patrimonioService.getUserTickers(usuarioId).subscribe({
-      next: (tickers) => {
-        if (tickers.length === 0) {
-          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.isUpdating = false;
-          return;
-        }
-
-        this.cotacaoService.atualizarCotacoes(tickers, 'BRL').subscribe({
-          next: (cotacoes) => {
-            this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
-              duration: 3000,
-              panelClass: ['success-snackbar'],
-            });
-            if (this.currentUserId) {
-              this.loadData(this.currentUserId); // Recarrega os dados do componente
-            } else {
-              console.error('ID do usuário não disponível para recarregar dados após atualização de cotações.');
-            }
-            this.isUpdating = false;
-          },
-          error: (error) => {
-            console.error('Erro ao atualizar cotações:', error);
-            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-            this.isUpdating = false;
-          },
-        });
-      },
-      error: (error) => {
-        console.error('Erro ao buscar tickers:', error);
-        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.isUpdating = false;
-      },
-    });
-  }
 
   ngOnInit() {
     this.authService.user().pipe(filter((user) => !!user?.id), take(1)).subscribe((user) => {
@@ -1190,7 +1130,7 @@ startEdit(element: AtivoVO, category: string): void {
         console.log(`Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`);
         if (this.currentUserId) {
           this.dashboardSrv
-            .deleteAtivo(this.currentUserId, element.id, category)
+            .deleteAtivo(this.currentUserId, element.tickerFormatado, category)
             .pipe(
               catchError((error) => {
                 console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);

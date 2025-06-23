@@ -403,54 +403,32 @@ export class DashboardService {
     );
   }
 
-  deleteAtivo(usuarioId: number | string, ativoId: number | string, category: string): Observable<void> {
+  deleteAtivo(usuarioId: number | string, tickerFormatado: string | string, category: string): Observable<void> {
     let url: string;
-    switch (category) {
-      case 'acoes':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/acoes/${ativoId}`;
-        break;
-      case 'fundos':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/fundos/${ativoId}`;
-        break;
-      case 'caixa':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/caixa/${ativoId}`;
-        break;
-      case 'assets':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/assets/${ativoId}`;
-        break;
-      default:
+    url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${tickerFormatado}`;
+    if(url === undefined || url === null) {
         console.error(`Categoria inválida para exclusão: ${category}`);
         return throwError(() => new Error('Categoria inválida'));
     }
 
-    console.log(`DashboardService: Excluindo ativo ID ${ativoId} na categoria ${category} para usuário ${usuarioId} na URL: ${url}`);
+    console.log(`DashboardService: Excluindo Ticker ${tickerFormatado} na categoria ${category} para usuário ${usuarioId} na URL: ${url}`);
     return this.http.delete<void>(url).pipe(
-      tap(() => console.log(`Ativo ID ${ativoId} excluído com sucesso da categoria ${category}.`)),
+      tap(() => console.log(`Ticker ${tickerFormatado} excluído com sucesso da categoria ${category}.`)),
       catchError(error => {
-        console.error(`Erro ao excluir ativo ID ${ativoId} da categoria ${category}:`, error);
-        return throwError(() => new Error(`Erro ao excluir ativo: ${error.message || 'Erro desconhecido'}`));
+        console.error(`Erro ao excluir Ticker ${tickerFormatado} da categoria ${category}:`, error);
+        return throwError(() => new Error(`Erro ao excluir Ticker: ${error.message || 'Erro desconhecido'}`));
       })
     );
   }
 
   updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
     let url: string;
-    switch (category) {
-      case 'acoes':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/acoes/${ativo.id}`;
-        break;
-      case 'fundos':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/fundos/${ativo.id}`;
-        break;
-      case 'caixa':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/caixa/${ativo.id}`;
-        break;
-      case 'assets':
-        url = `${this.apiUserPatrimonioPrefix}${usuarioId}/assets/${ativo.id}`;
-        break;
-      default:
-        console.error(`Categoria inválida para atualização: ${category}`);
-        return throwError(() => new Error('Categoria inválida'));
+
+    url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${ativo.tickerFormatado}`;
+
+    if (url === undefined || url === null) {
+      console.error(`Categoria inválida para atualização: ${category}`);
+      return throwError(() => new Error('Categoria inválida'));
     }
 
     const ativoParaEnviar = { ...ativo };
