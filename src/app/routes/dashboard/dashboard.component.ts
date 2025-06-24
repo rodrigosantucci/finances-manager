@@ -672,7 +672,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.getTotalValorAtualAssets();
 
     const btc = this.assetsDataSource.data
-      .filter((asset) => asset.tickerFormatado?.toUpperCase() === 'USDBTC')
+      .filter((asset) => asset.tickerFormatado?.toUpperCase() === 'BTC/USD')
       .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
       console.log('getPercentualBitcoin: BTC value:', btc);
     const percentual = totalValorAtualGeral > 0 ? (btc / totalValorAtualGeral) * 100 : 0;

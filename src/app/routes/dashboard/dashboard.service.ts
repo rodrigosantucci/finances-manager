@@ -52,7 +52,7 @@ export class DashboardService {
   }
 
   private getCotacaoUSD(): Observable<number> {
-    const url = `${this.apiCotacoesPrefix}?tickers=USDBRL`;
+    const url = `${this.apiCotacoesPrefix}?tickers=USD/BRL`;
     console.log(`DashboardService: Solicitando cotação USD da URL: ${url}`);
 
     return this.http.get<CotacaoUSD[]>(url).pipe(
