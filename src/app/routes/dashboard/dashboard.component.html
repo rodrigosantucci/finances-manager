@@ -174,6 +174,20 @@
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
+              <ng-container matColumnDef="precoAtualFormatado">
+                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
+                <td mat-cell *matCellDef="let element">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
+                    {{element.precoAtualFormatado | currency:'BRL'}}
+                  </ng-container>
+                  <ng-template #editPrecoAtual>
+                    <mat-form-field appearance="outline" class="edit-input-field">
+                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
+                    </mat-form-field>
+                  </ng-template>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
@@ -332,6 +346,20 @@
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
                       <input matInput type="number" [(ngModel)]="element.precoMedioFormatado" name="precoMedio_{{element.tickerFormatado}}_fundos" required min="0" step="0.01" />
+                    </mat-form-field>
+                  </ng-template>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+                            <ng-container matColumnDef="precoAtualFormatado">
+                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
+                <td mat-cell *matCellDef="let element">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
+                    {{element.precoAtualFormatado | currency:'BRL'}}
+                  </ng-container>
+                  <ng-template #editPrecoAtual>
+                    <mat-form-field appearance="outline" class="edit-input-field">
+                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
@@ -658,6 +686,20 @@
                   <ng-template #editPrecoMedio>
                     <mat-form-field appearance="outline" class="edit-input-field">
                       <input matInput type="number" [(ngModel)]="element.precoMedioFormatado" name="precoMedio_{{element.tickerFormatado}}_assets" required min="0" step="0.01" />
+                    </mat-form-field>
+                  </ng-template>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+                            <ng-container matColumnDef="precoAtualFormatado">
+                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
+                <td mat-cell *matCellDef="let element">
+                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
+                    {{element.precoAtualFormatado | currency:'BRL'}}
+                  </ng-container>
+                  <ng-template #editPrecoAtual>
+                    <mat-form-field appearance="outline" class="edit-input-field">
+                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
                     </mat-form-field>
                   </ng-template>
                 </td>
