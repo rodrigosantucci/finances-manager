@@ -49,7 +49,7 @@
               Informe o Ticker
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('minlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
-              Mínimo 3 caracteres
+              Mínimo 1 caractere
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('maxlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
               Máximo 10 caracteres

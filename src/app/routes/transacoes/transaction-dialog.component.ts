@@ -93,7 +93,7 @@ export class TransactionDialogComponent implements OnInit {
     });
 
     this.formGroupDetalhesAtivo = this.fb.group({
-      ticker: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(10)]],
+      ticker: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(10)]],
       description: ['', this.descriptionValidator.bind(this)],
       quantity: ['', [Validators.required, Validators.min(1)]],
       corretora: ['', Validators.required],

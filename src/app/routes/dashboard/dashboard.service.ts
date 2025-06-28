@@ -29,6 +29,7 @@ export interface AtivoVO {
   quantidadeFormatada: number;
   valorInvestidoFormatado: number;
   precoMedioFormatado: number;
+  precoAtualFormatado: number;
   valorAtualFormatado: number;
   lucroPrejuizoFormatado: number;
   category?: string;
@@ -239,7 +240,7 @@ export class DashboardService {
     );
   }
 
-  getPatrimonioAcoes(): Observable<AtivoVO[]> {
+getPatrimonioAcoes(): Observable<AtivoVO[]> {
     return this.getUsuarioIdObservable().pipe(
       switchMap(usuarioId => {
         if (usuarioId === undefined || usuarioId === null) {
@@ -254,22 +255,51 @@ export class DashboardService {
           acoes: this.http.get<AtivoVO[]>(acoesUrl),
           cotacao: this.getCotacaoUSD()
         }).pipe(
-          map(({ acoes, cotacao }) => {
+          switchMap(({ acoes, cotacao }) => {
             console.log(`DashboardService: Ações brutas recebidas:`, acoes);
             console.log(`DashboardService: Cotação USD recebida para ações: ${cotacao}`);
 
             if (!acoes || acoes.length === 0) {
               console.log(`DashboardService: Nenhuma ação encontrada para usuário ${usuarioId}.`);
-              return [];
+              return of([]);
             }
 
+            // Converte os valores de USD para BRL, se necessário
             const acoesConvertidasNumeric = this.convertUsdToBrlNumeric(acoes, cotacao);
             console.log(`DashboardService: Ações após conversão USD->BRL:`, acoesConvertidasNumeric);
 
-            return acoesConvertidasNumeric.map(ativo => ({
-              ...ativo,
-              category: 'acoes'
-            }));
+            // Extrai os tickers das ações e cria a query string
+            const tickers = acoesConvertidasNumeric.map(ativo => ativo.tickerFormatado).join(',');
+            const cotacoesUrl = `${this.apiCotacoesPrefix}?tickers=${tickers}`;
+            console.log(`DashboardService: Solicitando cotações para tickers: ${tickers} da URL: ${cotacoesUrl}`);
+
+            // Faz uma única chamada à API de Cotações
+            return this.http.get<CotacaoUSD[]>(cotacoesUrl).pipe(
+              map(cotacoes => {
+                // Mapeia as cotações para um objeto para fácil acesso
+                const cotacoesMap = new Map<string, number>(
+                  cotacoes.map(c => [c.ticker, c.valorCotacao])
+                );
+
+                // Atualiza as ações com os preços atuais e a categoria
+                return acoesConvertidasNumeric.map(ativo => ({
+                  ...ativo,
+                  precoAtualFormatado: cotacoesMap.get(ativo.tickerFormatado) || 0,
+                  category: 'acoes'
+                }));
+              }),
+              catchError(error => {
+                console.error(`DashboardService: Erro ao buscar cotações para tickers ${tickers}:`, error);
+                // Retorna ações com precoAtualFormatado zerado em caso de erro
+                return of(
+                  acoesConvertidasNumeric.map(ativo => ({
+                    ...ativo,
+                    precoAtualFormatado: 0,
+                    category: 'acoes'
+                  }))
+                );
+              })
+            );
           }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar ações para usuário ${usuarioId}:`, error);
@@ -278,9 +308,9 @@ export class DashboardService {
         );
       })
     );
-  }
+}
 
-  getPatrimonioFundos(): Observable<AtivoVO[]> {
+getPatrimonioFundos(): Observable<AtivoVO[]> {
     return this.getUsuarioIdObservable().pipe(
       switchMap(usuarioId => {
         if (usuarioId === undefined || usuarioId === null) {
@@ -295,22 +325,51 @@ export class DashboardService {
           fundos: this.http.get<AtivoVO[]>(fundosUrl),
           cotacao: this.getCotacaoUSD()
         }).pipe(
-          map(({ fundos, cotacao }) => {
+          switchMap(({ fundos, cotacao }) => {
             console.log(`DashboardService: Fundos brutos recebidos:`, fundos);
             console.log(`DashboardService: Cotação USD recebida para fundos: ${cotacao}`);
 
             if (!fundos || fundos.length === 0) {
               console.log(`DashboardService: Nenhum fundo encontrado para usuário ${usuarioId}.`);
-              return [];
+              return of([]);
             }
 
+            // Converte os valores de USD para BRL, se necessário
             const fundosConvertidosNumeric = this.convertUsdToBrlNumeric(fundos, cotacao);
             console.log(`DashboardService: Fundos após conversão USD->BRL:`, fundosConvertidosNumeric);
 
-            return fundosConvertidosNumeric.map(ativo => ({
-              ...ativo,
-              category: 'fundos'
-            }));
+            // Extrai os tickers dos fundos e cria a query string
+            const tickers = fundosConvertidosNumeric.map(ativo => ativo.tickerFormatado).join(',');
+            const cotacoesUrl = `${this.apiCotacoesPrefix}?tickers=${tickers}`;
+            console.log(`DashboardService: Solicitando cotações para tickers: ${tickers} da URL: ${cotacoesUrl}`);
+
+            // Faz uma única chamada à API de Cotações
+            return this.http.get<CotacaoUSD[]>(cotacoesUrl).pipe(
+              map(cotacoes => {
+                // Mapeia as cotações para um objeto para fácil acesso
+                const cotacoesMap = new Map<string, number>(
+                  cotacoes.map(c => [c.ticker, c.valorCotacao])
+                );
+
+                // Atualiza os fundos com os preços atuais e a categoria
+                return fundosConvertidosNumeric.map(ativo => ({
+                  ...ativo,
+                  precoAtualFormatado: cotacoesMap.get(ativo.tickerFormatado) || 0,
+                  category: 'fundos'
+                }));
+              }),
+              catchError(error => {
+                console.error(`DashboardService: Erro ao buscar cotações para tickers ${tickers}:`, error);
+                // Retorna fundos com precoAtualFormatado zerado em caso de erro
+                return of(
+                  fundosConvertidosNumeric.map(ativo => ({
+                    ...ativo,
+                    precoAtualFormatado: 0,
+                    category: 'fundos'
+                  }))
+                );
+              })
+            );
           }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar fundos para usuário ${usuarioId}:`, error);
@@ -319,7 +378,7 @@ export class DashboardService {
         );
       })
     );
-  }
+}
 
   getPatrimonioCaixa(): Observable<AtivoVO[]> {
     return this.getUsuarioIdObservable().pipe(
@@ -377,22 +436,58 @@ export class DashboardService {
           assets: this.http.get<AtivoVO[]>(assetsUrl),
           cotacao: this.getCotacaoUSD()
         }).pipe(
-          map(({ assets, cotacao }) => {
+          switchMap(({ assets, cotacao }) => {
             console.log(`DashboardService: Assets brutos recebidos:`, assets);
             console.log(`DashboardService: Cotação USD recebida para assets: ${cotacao}`);
 
             if (!assets || assets.length === 0) {
               console.log(`DashboardService: Nenhum ativo internacional encontrado para usuário ${usuarioId}.`);
-              return [];
+              return of([]);
             }
 
+            // Converte os valores de USD para BRL, se necessário
             const assetsConvertidosNumeric = this.convertUsdToBrlNumeric(assets, cotacao);
             console.log(`DashboardService: Assets após conversão USD->BRL:`, assetsConvertidosNumeric);
 
-            return assetsConvertidosNumeric.map(ativo => ({
-              ...ativo,
-              category: 'assets'
-            }));
+            // Extrai os tickers dos assets e cria a query string
+            const tickers = assetsConvertidosNumeric.map(ativo => ativo.tickerFormatado).join(',');
+            const cotacoesUrl = `${this.apiCotacoesPrefix}?tickers=${tickers}`;
+            console.log(`DashboardService: Solicitando cotações para tickers: ${tickers} da URL: ${cotacoesUrl}`);
+
+            // Faz uma única chamada à API de Cotações
+            return this.http.get<CotacaoUSD[]>(cotacoesUrl).pipe(
+              map(cotacoes => {
+                // Mapeia as cotações para um objeto para fácil acesso
+                const cotacoesMap = new Map<string, { valorCotacao: number, cambio: string }>(
+                  cotacoes.map(c => [c.ticker, { valorCotacao: c.valorCotacao, cambio: c.cambio }])
+                );
+
+                // Atualiza os assets com os preços atuais e a categoria
+                return assetsConvertidosNumeric.map(ativo => {
+                  const cotacaoAtivo = cotacoesMap.get(ativo.tickerFormatado);
+                  const precoAtual = cotacaoAtivo
+                    ? (cotacaoAtivo.cambio === 'USD' ? cotacaoAtivo.valorCotacao * cotacao : cotacaoAtivo.valorCotacao)
+                    : 0;
+
+                  return {
+                    ...ativo,
+                    precoAtualFormatado: precoAtual,
+                    category: 'assets'
+                  };
+                });
+              }),
+              catchError(error => {
+                console.error(`DashboardService: Erro ao buscar cotações para tickers ${tickers}:`, error);
+                // Retorna assets com precoAtualFormatado zerado em caso de erro
+                return of(
+                  assetsConvertidosNumeric.map(ativo => ({
+                    ...ativo,
+                    precoAtualFormatado: 0,
+                    category: 'assets'
+                  }))
+                );
+              })
+            );
           }),
           catchError(error => {
             console.error(`DashboardService: Erro ao buscar assets para usuário ${usuarioId}:`, error);
@@ -401,7 +496,7 @@ export class DashboardService {
         );
       })
     );
-  }
+}
 
   deleteAtivo(usuarioId: number | string, tickerFormatado: string | string, category: string): Observable<void> {
     let url: string;
