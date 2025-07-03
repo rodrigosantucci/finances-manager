@@ -498,71 +498,100 @@ getPatrimonioFundos(): Observable<AtivoVO[]> {
     );
 }
 
-  deleteAtivo(usuarioId: number | string, tickerFormatado: string | string, category: string): Observable<void> {
-    let url: string;
-    url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${tickerFormatado}`;
-    if(url === undefined || url === null) {
-        console.error(`Categoria inválida para exclusão: ${category}`);
+public deleteAtivo(usuarioId: number | string, tickerFormatado: string, category: string): Observable<void> {
+  if (!['fundos', 'acoes', 'caixa', 'assets'].includes(category)) {
+    console.error(`Categoria inválida para exclusão: ${category}`);
+    return throwError(() => new Error('Categoria inválida'));
+  }
+
+  const encodedTicker = encodeURIComponent(tickerFormatado);
+  const url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${encodedTicker}`;
+  console.log(`DashboardService: Excluindo Ticker ${tickerFormatado} na categoria ${category} para usuário ${usuarioId} na URL: ${url}`);
+
+  return this.http.delete<void>(url, { observe: 'response' }).pipe(
+    tap(response => {
+      if (response.status === 204) {
+        console.log(`Ticker ${tickerFormatado} excluído com sucesso da categoria ${category} (204 No Content).`);
+      } else {
+        console.warn(`Resposta inesperada ao excluir Ticker ${tickerFormatado}: status ${response.status}`);
+      }
+    }),
+    map(() => void 0),
+    catchError(error => {
+      console.error(`Erro ao excluir Ticker ${tickerFormatado} da categoria ${category}:`, error);
+      return throwError(() => new Error(`Erro ao excluir Ticker: ${error.message || 'Erro desconhecido'}`));
+    })
+  );
+}
+
+updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
+    if (!['fundos', 'acoes', 'caixa', 'assets'].includes(category)) {
+        console.error(`Categoria inválida para atualização: ${category}`);
         return throwError(() => new Error('Categoria inválida'));
     }
 
-    console.log(`DashboardService: Excluindo Ticker ${tickerFormatado} na categoria ${category} para usuário ${usuarioId} na URL: ${url}`);
-    return this.http.delete<void>(url).pipe(
-      tap(() => console.log(`Ticker ${tickerFormatado} excluído com sucesso da categoria ${category}.`)),
-      catchError(error => {
-        console.error(`Erro ao excluir Ticker ${tickerFormatado} da categoria ${category}:`, error);
-        return throwError(() => new Error(`Erro ao excluir Ticker: ${error.message || 'Erro desconhecido'}`));
-      })
-    );
-  }
-
-  updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
-    let url: string;
-
-    url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${ativo.tickerFormatado}`;
-
-    if (url === undefined || url === null) {
-      console.error(`Categoria inválida para atualização: ${category}`);
-      return throwError(() => new Error('Categoria inválida'));
+    if (!ativo.tickerFormatado || ativo.tickerFormatado.trim() === '') {
+        console.error(`Ticker inválido para ativo na categoria ${category}:`, ativo);
+        return throwError(() => new Error('Ticker inválido'));
     }
 
-    const ativoParaEnviar = { ...ativo };
-    ativoParaEnviar.valorInvestidoFormatado = ativo.valorInvestidoFormatado;
-    ativoParaEnviar.precoMedioFormatado = ativo.precoMedioFormatado;
-    ativoParaEnviar.valorAtualFormatado = ativo.valorAtualFormatado;
-    ativoParaEnviar.lucroPrejuizoFormatado = ativo.lucroPrejuizoFormatado;
-    ativoParaEnviar.quantidadeFormatada = ativo.quantidadeFormatada;
+    const encodedTicker = encodeURIComponent(ativo.tickerFormatado);
+    const url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${encodedTicker}`;
+    console.log('URL gerada:', url);
 
-    console.log(`DashboardService: Atualizando ativo ID ${ativo.id} na categoria ${category} na URL: ${url}`);
-    return this.http.put<void>(url, ativoParaEnviar).pipe(
-      tap(() => console.log(`Ativo ID ${ativo.id} atualizado com sucesso na categoria ${category}.`)),
-      catchError(error => {
-        console.error(`Erro ao atualizar ativo ID ${ativo.id} na categoria ${category}:`, error);
-        return throwError(() => new Error(`Erro ao atualizar ativo: ${error.message || 'Erro desconhecido'}`));
-      })
+    const ativoParaEnviar = {
+        idPatrimonio: ativo.id || 0, // Necessário para identificar o registro
+        descricao: ativo.descricaoFormatada || '', // Campo editável: Nome
+        quantidade: Number(ativo.quantidadeFormatada) || 0, // Campo editável: Quantidade
+        precoMedio: Number(ativo.precoMedioFormatado) || 0, // Campo editável: Preço Médio
+        valorInvestido: Number(ativo.valorInvestidoFormatado) || 0, // Campo editável: Valor Investido
+        ticker: ativo.tickerFormatado, // Necessário para referência
+        usuario: {
+            id: Number(usuarioId) || 0 // Necessário para associação com o usuário
+        },
+    };
+
+    console.log('Payload enviado:', JSON.stringify(ativoParaEnviar, null, 2));
+
+    return this.http.put<void>(url, ativoParaEnviar, {
+        headers: { 'Content-Type': 'application/json' }
+    }).pipe(
+        tap(() => console.log(`Ativo com ticker ${ativo.tickerFormatado} atualizado com sucesso na categoria ${category}.`)),
+        catchError(error => {
+            console.error(`Erro ao atualizar ativo com ticker ${ativo.tickerFormatado} na categoria ${category}:`, {
+                status: error.status,
+                statusText: error.statusText,
+                error: error.error
+            });
+            return throwError(() => new Error(`Erro ao atualizar ativo: ${error.error?.message || error.message || 'Erro desconhecido'}`));
+        })
     );
-  }
+}
 
   addTransaction(userId: number | string, transactionData: any): Observable<any> {
-    const category = transactionData.category;
-    if (!category) {
-      return throwError(() => new Error('Categoria da transação não especificada.'));
-    }
+      const category = transactionData.category;
+      if (!['fundos', 'acoes', 'assets'].includes(category)) {
+          console.error(`Categoria inválida para transação: ${category}`);
+          return throwError(() => new Error('Categoria inválida'));
+      }
 
-    const url = `${this.apiUserPatrimonioPrefix}${userId}/${category}`;
-    console.log(`DashboardService: Adicionando transação na categoria ${category} para usuário ${userId} na URL: ${url}`);
+      const url = `${this.apiUserPatrimonioPrefix}${userId}/${category}`;
+      console.log(`DashboardService: Adicionando transação na categoria ${category} para usuário ${userId} na URL: ${url}`);
 
-    const dataToSend = { ...transactionData };
-    dataToSend.valorInvestido = this.parseFormattedString(transactionData.valorInvestido?.toString()).toString();
-    dataToSend.precoMedio = this.parseFormattedString(transactionData.precoMedio?.toString()).toString();
-    dataToSend.quantidade = this.parseFormattedString(transactionData.quantidade?.toString()).toString();
+      const dataToSend = {
+          ...transactionData,
+          ticker: transactionData.ticker || '',
+          quantidade: Number(this.parseFormattedString(transactionData.quantidade?.toString())) || 0,
+          precoMedio: Number(this.parseFormattedString(transactionData.precoMedio?.toString())) || 0,
+          valorInvestido: Number(this.parseFormattedString(transactionData.valorInvestido?.toString())) || 0
+      };
 
-    return this.http.post<any>(url, dataToSend).pipe(
-      tap(response => console.log(`Transação adicionada com sucesso:`, response)),
-      catchError(error => {
-        console.error(`Erro ao adicionar transação na categoria ${category}:`, error);
-        return throwError(() => new Error(`Erro ao adicionar transação: ${error.message || 'Erro desconhecido'}`));
-      })
-    );
+      return this.http.post<any>(url, dataToSend).pipe(
+          tap(response => console.log(`Transação adicionada com sucesso na categoria ${category}:`, response)),
+          catchError(error => {
+              console.error(`Erro ao adicionar transação na categoria ${category}:`, error);
+              return throwError(() => new Error(`Erro ao adicionar transação: ${error.message || 'Erro desconhecido'}`));
+          })
+      );
   }
 }

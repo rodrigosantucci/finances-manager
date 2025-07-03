@@ -901,275 +901,332 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   openTransactionDialog(): void {
     console.log('Abrindo diálogo de nova transação');
     const dialogRef = this.dialog.open(TransactionDialogComponent, {
-      width: '600px',
-      disableClose: true,
-      autoFocus: true,
-      data: {
-        title: 'Nova Transação',
-        action: 'create',
-        transaction: null,
-      },
+        width: '600px',
+        disableClose: true,
+        autoFocus: true,
+        data: {
+            title: 'Nova Transação',
+            action: 'create',
+            transaction: null,
+        },
     });
 
     dialogRef.afterClosed().subscribe((result: any) => {
-      if (result) {
-        console.log('Transação submetida:', result);
-        if (this.currentUserId) {
-          this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
-            duration: 3000,
-            panelClass: ['success-snackbar'],
-          });
-          this.loadData(this.currentUserId);
+        if (result && this.currentUserId) {
+            console.log('Transação submetida:', result);
+            // Ensure category is valid
+            if (!['fundos', 'acoes', 'assets'].includes(result.category)) {
+                console.error('Categoria inválida na transação:', result.category);
+                this.snackBar.open(`Erro: Categoria inválida (${result.category}).`, 'Fechar', {
+                    duration: 5000,
+                    panelClass: ['error-snackbar'],
+                });
+                return;
+            }
+
+            this.dashboardSrv
+                .addTransaction(this.currentUserId, result)
+                .pipe(
+                    catchError((error) => {
+                        console.error('Erro ao adicionar transação:', error);
+                        this.snackBar.open(error.message || 'Erro ao registrar transação.', 'Fechar', {
+                            duration: 5000,
+                            panelClass: ['error-snackbar'],
+                        });
+                        return of(null);
+                    })
+                )
+                .subscribe((response) => {
+                    if (response !== null) {
+                        this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
+                            duration: 3000,
+                            panelClass: ['success-snackbar'],
+                        });
+                        this.loadData(this.currentUserId!);
+                    }
+                });
+        } else if (!this.currentUserId) {
+            console.error('ID do usuário não disponível para registrar transação.');
+            this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+            });
         } else {
-          console.error('ID do usuário não disponível para recarregar dados após transação.');
-          this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
+            console.log('Diálogo fechado sem submissão');
         }
-      } else {
-        console.log('Diálogo fechado sem submissão');
-      }
     });
-  }
+}
 
 
 
 startEdit(element: AtivoVO, category: string): void {
     if (this.editingRowTicker !== null) {
-      console.log('startEdit: Canceling existing edit before starting new one.');
-      this.cancelEdit();
+        console.log('startEdit: Canceling existing edit before starting new one.');
+        this.cancelEdit();
     }
 
-    // Log the entire element for debugging
     console.log('startEdit: Received element:', {
-      element,
-      category,
-      ticker: element.tickerFormatado,
-      description: element.descricaoFormatada,
-    });
-
-    if (!element.tickerFormatado || element.tickerFormatado.trim() === '') {
-      console.error('startEdit: Invalid or missing ticker for element.', {
         element,
         category,
         ticker: element.tickerFormatado,
-      });
-      this.snackBar.open(`Erro: Ticker inválido para ativo na categoria ${category}.`, 'Fechar', {
-        duration: 6000,
-        panelClass: ['error-snackbar'],
-      });
-      return;
-    }
+        description: element.descricaoFormatada,
+    });
 
-    // Check for duplicate tickers in the data source
-    let dataSource: MatTableDataSource<AtivoVO>;
-    switch (category) {
-      case 'acoes':
-        dataSource = this.acoesDataSource;
-        break;
-      case 'fundos':
-        dataSource = this.fundosDataSource;
-        break;
-      case 'caixa':
-        dataSource = this.caixaDataSource;
-        break;
-      case 'assets':
-        dataSource = this.assetsDataSource;
-        break;
-      default:
-        console.error('startEdit: Invalid category:', category);
+    if (!element.tickerFormatado || element.tickerFormatado.trim() === '') {
+        console.error('startEdit: Invalid or missing ticker for element.', {
+            element,
+            category,
+            ticker: element.tickerFormatado,
+        });
+        this.snackBar.open(`Erro: Ticker inválido para ativo na categoria ${category}.`, 'Fechar', {
+            duration: 6000,
+            panelClass: ['error-snackbar'],
+        });
         return;
     }
 
+    if (!['fundos', 'acoes', 'assets'].includes(category)) {
+        console.error('startEdit: Invalid category:', category);
+        this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+            duration: 6000,
+            panelClass: ['error-snackbar'],
+        });
+        return;
+    }
+
+    let dataSource: MatTableDataSource<AtivoVO>;
+    switch (category) {
+        case 'acoes':
+            dataSource = this.acoesDataSource;
+            break;
+        case 'fundos':
+            dataSource = this.fundosDataSource;
+            break;
+        case 'assets':
+            dataSource = this.assetsDataSource;
+            break;
+        default:
+            console.error('startEdit: Invalid category:', category);
+            return;
+    }
+
     const duplicateTickers = dataSource.data.filter(
-      item => item.tickerFormatado === element.tickerFormatado
+        item => item.tickerFormatado === element.tickerFormatado
     );
     if (duplicateTickers.length > 1) {
-      console.warn('startEdit: Duplicate ticker found in category', {
-        category,
-        ticker: element.tickerFormatado,
-        count: duplicateTickers.length,
-      });
-      this.snackBar.open(`Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`, 'Fechar', {
-        duration: 6000,
-        panelClass: ['warning-snackbar'],
-      });
+        console.warn('startEdit: Duplicate ticker found in category', {
+            category,
+            ticker: element.tickerFormatado,
+            count: duplicateTickers.length,
+        });
+        this.snackBar.open(`Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`, 'Fechar', {
+            duration: 6000,
+            panelClass: ['warning-snackbar'],
+        });
     }
 
     this.editingRowTicker = element.tickerFormatado;
     this.originalAtivoBeforeEdit = JSON.parse(JSON.stringify(element));
     this.currentEditedAtivo = { ...element, category };
     console.log('startEdit: Editing row', {
-      editingRowTicker: this.editingRowTicker,
-      elementTicker: element.tickerFormatado,
-      category,
-      typeEditingRowTicker: typeof this.editingRowTicker,
-      typeElementTicker: typeof element.tickerFormatado,
+        editingRowTicker: this.editingRowTicker,
+        elementTicker: element.tickerFormatado,
+        category,
+        typeEditingRowTicker: typeof this.editingRowTicker,
+        typeElementTicker: typeof element.tickerFormatado,
     });
 
     this.cdr.detectChanges();
-  }
+}
 
   isEditing(element: AtivoVO, category: string): boolean {
-    const isEditing = this.editingRowTicker === element.tickerFormatado &&
-                      this.currentEditedAtivo &&
-                      (this.currentEditedAtivo as any).category === category;
-    console.log('isEditing check:', {
-      elementTicker: element.tickerFormatado,
-      elementDescription: element.descricaoFormatada,
-      category,
-      editingRowTicker: this.editingRowTicker,
-      currentEditedCategory: this.currentEditedAtivo ? (this.currentEditedAtivo as any).category : null,
-      result: isEditing,
-    });
-    return !!isEditing;
-  }
-
-  cancelEdit(): void {
-    if (this.editingRowTicker !== null && this.originalAtivoBeforeEdit && this.currentEditedAtivo) {
-      const category = (this.currentEditedAtivo as any).category;
-      let dataSourceToUpdate: MatTableDataSource<AtivoVO> | undefined;
-
-      switch (category) {
-        case 'acoes':
-          dataSourceToUpdate = this.acoesDataSource;
-          break;
-        case 'fundos':
-          dataSourceToUpdate = this.fundosDataSource;
-          break;
-        case 'caixa':
-          dataSourceToUpdate = this.caixaDataSource;
-          break;
-        case 'assets':
-          dataSourceToUpdate = this.assetsDataSource;
-          break;
-        default:
-          console.warn(`cancelEdit: Invalid category ${category}`);
-      }
-
-      if (dataSourceToUpdate) {
-        const data = dataSourceToUpdate.data;
-        const index = data.findIndex(item => item.tickerFormatado === this.editingRowTicker);
-        if (index !== -1) {
-          data[index] = this.originalAtivoBeforeEdit;
-          dataSourceToUpdate.data = [...data];
-          console.log(`cancelEdit: Restored row with ticker ${this.editingRowTicker} in category ${category}`);
-        } else {
-          console.warn(`cancelEdit: Row with ticker ${this.editingRowTicker} not found in category ${category}`);
-        }
-      } else {
-        console.warn(`cancelEdit: No dataSource found for category ${category}`);
-      }
-    }
-
-    this.editingRowTicker = null;
-    this.currentEditedAtivo = null;
-    this.originalAtivoBeforeEdit = null;
-    this.cdr.markForCheck();
-  }
-
-  saveEdit(element: AtivoVO, category: string): void {
-    if (!this.currentEditedAtivo || !this.currentUserId) {
-      console.error('saveEdit: Missing currentEditedAtivo or currentUserId.');
-      this.snackBar.open('Erro ao salvar: dados inválidos.', 'Fechar', {
-        duration: 6000,
-        panelClass: ['error-snackbar'],
+      const isEditing = this.editingRowTicker === element.tickerFormatado &&
+                        this.currentEditedAtivo &&
+                        this.currentEditedAtivo.category === category;
+      console.log('isEditing check:', {
+          elementTicker: element.tickerFormatado,
+          elementDescription: element.descricaoFormatada,
+          category,
+          editingRowTicker: this.editingRowTicker,
+          currentEditedCategory: this.currentEditedAtivo ? this.currentEditedAtivo.category : null,
+          result: isEditing,
       });
-      return;
+      return !!isEditing;
+  }
+
+ cancelEdit(): void {
+    if (this.editingRowTicker !== null && this.originalAtivoBeforeEdit && this.currentEditedAtivo) {
+        const category = this.currentEditedAtivo.category;
+        let dataSourceToUpdate: MatTableDataSource<AtivoVO> | undefined;
+
+        switch (category) {
+            case 'acoes':
+                dataSourceToUpdate = this.acoesDataSource;
+                break;
+            case 'fundos':
+                dataSourceToUpdate = this.fundosDataSource;
+                break;
+            case 'assets':
+                dataSourceToUpdate = this.assetsDataSource;
+                break;
+            default:
+                console.warn(`cancelEdit: Invalid category ${category}`);
+                return;
+        }
+
+        if (dataSourceToUpdate) {
+            const data = dataSourceToUpdate.data;
+            const index = data.findIndex(item => item.tickerFormatado === this.editingRowTicker);
+            if (index !== -1) {
+                data[index] = this.originalAtivoBeforeEdit;
+                dataSourceToUpdate.data = [...data];
+                console.log(`cancelEdit: Restored row with ticker ${this.editingRowTicker} in category ${category}`);
+            } else {
+                console.warn(`cancelEdit: Row with ticker ${this.editingRowTicker} not found in category ${category}`);
+            }
+        }
+
+        this.editingRowTicker = null;
+        this.currentEditedAtivo = null;
+        this.originalAtivoBeforeEdit = null;
+        this.cdr.markForCheck();
+    }
+}
+
+saveEdit(element: AtivoVO, category: string): void {
+    if (!this.currentEditedAtivo || !this.currentUserId || !['fundos', 'acoes', 'assets'].includes(category)) {
+        console.error('saveEdit: Missing currentEditedAtivo, currentUserId, or invalid category.', {
+            currentEditedAtivo: this.currentEditedAtivo,
+            currentUserId: this.currentUserId,
+            category
+        });
+        this.snackBar.open('Erro ao salvar: dados ou categoria inválidos.', 'Fechar', {
+            duration: 6000,
+            panelClass: ['error-snackbar'],
+        });
+        return;
     }
 
-    const updatedAtivo = { ...this.currentEditedAtivo, tickerFormatado: element.tickerFormatado };
+    if (!this.currentEditedAtivo.tickerFormatado || this.currentEditedAtivo.tickerFormatado.trim() === '') {
+        console.error('saveEdit: Ticker do ativo não definido.', { currentEditedAtivo: this.currentEditedAtivo });
+        this.snackBar.open('Erro ao salvar: Ticker do ativo não definido.', 'Fechar', {
+            duration: 6000,
+            panelClass: ['error-snackbar'],
+        });
+        return;
+    }
+
+    // Criar updatedAtivo com os valores editados de element
+    const updatedAtivo: AtivoVO = {
+        ...this.currentEditedAtivo, // Copiar propriedades existentes
+        tickerFormatado: element.tickerFormatado,
+        descricaoFormatada: element.descricaoFormatada,
+        quantidadeFormatada: element.quantidadeFormatada,
+        precoMedioFormatado: element.precoMedioFormatado,
+        precoAtualFormatado: element.precoAtualFormatado
+    };
     console.log('saveEdit: Saving row', {
-      elementTicker: element.tickerFormatado,
-      category,
-      updatedAtivo,
+        elementTicker: element.tickerFormatado,
+        category,
+        updatedAtivo,
     });
 
     this.dashboardSrv
-      .updateAtivo(this.currentUserId, updatedAtivo, category)
-      .pipe(
-        catchError((error) => {
-          console.error(`saveEdit: Error updating ativo in ${category}:`, error);
-          this.snackBar.open(error.message || 'Erro ao salvar ativo.', 'Fechar', {
-            duration: 6000,
-            panelClass: ['error-snackbar'],
-          });
-          return of(null);
-        }),
-        finalize(() => {
-          this.cdr.markForCheck();
-        })
-      )
-      .subscribe((result) => {
-        if (result !== null) {
-          this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
-            duration: 3000,
-            panelClass: ['success-snackbar'],
-          });
-          this.editingRowTicker = null;
-          this.currentEditedAtivo = null;
-          this.originalAtivoBeforeEdit = null;
-          this.loadData(this.currentUserId!);
-        }
-      });
-  }
+        .updateAtivo(this.currentUserId, updatedAtivo, category)
+        .pipe(
+            catchError((error) => {
+                console.error(`saveEdit: Error updating ativo in ${category}:`, {
+                    error,
+                    status: error.status,
+                    statusText: error.statusText,
+                    errorDetails: error.error
+                });
+                this.snackBar.open(error.message || 'Erro ao salvar ativo.', 'Fechar', {
+                    duration: 6000,
+                    panelClass: ['error-snackbar'],
+                });
+                return of(null);
+            }),
+            finalize(() => {
+                this.cdr.markForCheck();
+            })
+        )
+        .subscribe((result) => {
+            if (result !== null) {
+                this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
+                    duration: 3000,
+                    panelClass: ['success-snackbar'],
+                });
+                this.editingRowTicker = null;
+                this.currentEditedAtivo = null;
+                this.originalAtivoBeforeEdit = null;
+                this.loadData(this.currentUserId!);
+            }
+        });
+}
 
 
   openDeleteDialog(element: AtivoVO, category: string): void {
-    console.log(`Abrindo diálogo de exclusão para ${category}:`, element);
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '350px',
-      data: {
-        title: 'Confirmar Exclusão',
-        message: `Tem certeza que deseja excluir o ativo ${element.tickerFormatado}?`,
-        confirmText: 'Excluir',
-        cancelText: 'Cancelar',
-      },
-    });
+      if (!['fundos', 'acoes', 'assets'].includes(category)) {
+          console.error(`Categoria inválida para exclusão: ${category}`);
+          this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+          });
+          return;
+      }
 
-    dialogRef.afterClosed().subscribe((result: any) => {
-      if (result) {
-        console.log(`Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`);
-        if (this.currentUserId) {
-          this.dashboardSrv
-            .deleteAtivo(this.currentUserId, element.tickerFormatado, category)
-            .pipe(
-              catchError((error) => {
-                console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);
-                this.snackBar.open(error.message || 'Erro ao excluir ativo.', 'Fechar', {
+      console.log(`Abrindo diálogo de exclusão para ${category}:`, element);
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+          width: '350px',
+          data: {
+              title: 'Confirmar Exclusão',
+              message: `Tem certeza que deseja excluir o ativo ${element.tickerFormatado}?`,
+              confirmText: 'Excluir',
+              cancelText: 'Cancelar',
+          },
+      });
+
+      dialogRef.afterClosed().subscribe((result: any) => {
+          if (result && this.currentUserId) {
+              console.log(`Confirmada exclusão do ativo ${element.tickerFormatado} da categoria ${category}.`);
+              this.dashboardSrv
+                  .deleteAtivo(this.currentUserId, element.tickerFormatado, category)
+                  .pipe(
+                      catchError((error) => {
+                          console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);
+                          this.snackBar.open(error.message || 'Erro ao excluir ativo.', 'Fechar', {
+                              duration: 5000,
+                              panelClass: ['error-snackbar'],
+                          });
+                          return of(null);
+                      }),
+                      finalize(() => {
+                          this.cdr.markForCheck();
+                      })
+                  )
+                  .subscribe((deleteResult: any) => {
+                      if (deleteResult !== null) {
+                          this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
+                              duration: 3000,
+                              panelClass: ['success-snackbar'],
+                          });
+                          this.loadData(this.currentUserId!);
+                      }
+                  });
+          } else if (!this.currentUserId) {
+              console.error('ID do usuário não disponível para excluir ativo.');
+              this.snackBar.open('Erro: ID do usuário não disponível para exclusão.', 'Fechar', {
                   duration: 5000,
                   panelClass: ['error-snackbar'],
-                });
-                return of(null);
-              }),
-              finalize(() => {
-                this.cdr.markForCheck(); // Garante que a UI é atualizada
-              })
-            )
-            .subscribe((deleteResult: any) => {
-              if (deleteResult !== null) {
-                this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
+              });
+          } else {
+              console.log('Exclusão cancelada.');
+              this.snackBar.open('Exclusão cancelada.', 'Fechar', {
                   duration: 3000,
-                  panelClass: ['success-snackbar'],
-                });
-                this.loadData(this.currentUserId!); // Recarrega os dados após a exclusão
-              }
-            });
-        } else {
-          console.error('ID do usuário não disponível para excluir ativo.');
-          this.snackBar.open('Erro: ID do usuário não disponível para exclusão.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-        }
-      } else {
-        console.log('Exclusão cancelada.');
-        this.snackBar.open('Exclusão cancelada.', 'Fechar', {
-          duration: 3000,
-          panelClass: ['info-snackbar'],
-        });
-      }
-    });
+                  panelClass: ['info-snackbar'],
+              });
+          }
+      });
   }
 }
