@@ -54,7 +54,9 @@
               </div>
               <div class="metric text-center">
                 <p class="metric-label">Lucro/Prejuízo Total</p>
-                <p class="metric-value">
+
+
+ <p class="metric-value">
                   <span [ngClass]="getTotalLucroPrejuizoGeral() >= 0 ? 'text-success' : 'text-danger'">{{getTotalLucroPrejuizoGeral() | currency:'BRL'}}</span>
                 </p>
               </div>
@@ -177,28 +179,14 @@
               <ng-container matColumnDef="precoAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
-                    {{element.precoAtualFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editPrecoAtual>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.precoAtualFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editValorInvestido">
-                    {{element.valorInvestidoFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editValorInvestido>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.valorInvestidoFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>{{getTotalValorInvestidoAcoes() | currency:'BRL'}}</td>
               </ng-container>
@@ -351,31 +339,17 @@
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
-                            <ng-container matColumnDef="precoAtualFormatado">
+              <ng-container matColumnDef="precoAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
-                    {{element.precoAtualFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editPrecoAtual>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.precoAtualFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editValorInvestido">
-                    {{element.valorInvestidoFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editValorInvestido>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_fundos" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.valorInvestidoFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>{{getTotalValorInvestidoFundos() | currency:'BRL'}}</td>
               </ng-container>
@@ -528,17 +502,17 @@
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
+              <ng-container matColumnDef="precoAtualFormatado">
+                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
+                <td mat-cell *matCellDef="let element">
+                  {{element.precoAtualFormatado | currency:'BRL'}}
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorInvestido">
-                    {{element.valorInvestidoFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editValorInvestido>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_caixa" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.valorInvestidoFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>{{getTotalValorInvestidoCaixa() | currency:'BRL'}}</td>
               </ng-container>
@@ -691,31 +665,17 @@
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
-                            <ng-container matColumnDef="precoAtualFormatado">
+              <ng-container matColumnDef="precoAtualFormatado">
                 <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoAtual">
-                    {{element.precoAtualFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editPrecoAtual>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.precoAtualFormatado" name="precoAtual_{{element.tickerFormatado}}_acoes" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.precoAtualFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
               <ng-container matColumnDef="valorInvestidoFormatado">
                 <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
                 <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editValorInvestido">
-                    {{element.valorInvestidoFormatado | currency:'BRL'}}
-                  </ng-container>
-                  <ng-template #editValorInvestido>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input matInput type="number" [(ngModel)]="element.valorInvestidoFormatado" name="valorInvestido_{{element.tickerFormatado}}_assets" required min="0" step="0.01" />
-                    </mat-form-field>
-                  </ng-template>
+                  {{element.valorInvestidoFormatado | currency:'BRL'}}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>{{getTotalValorInvestidoAssets() | currency:'BRL'}}</td>
               </ng-container>

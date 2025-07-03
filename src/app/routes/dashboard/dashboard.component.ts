@@ -985,7 +985,7 @@ startEdit(element: AtivoVO, category: string): void {
         return;
     }
 
-    if (!['fundos', 'acoes', 'assets'].includes(category)) {
+    if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
         console.error('startEdit: Invalid category:', category);
         this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
             duration: 6000,
@@ -1004,6 +1004,9 @@ startEdit(element: AtivoVO, category: string): void {
             break;
         case 'assets':
             dataSource = this.assetsDataSource;
+            break;
+        case 'caixa':
+            dataSource = this.caixaDataSource;
             break;
         default:
             console.error('startEdit: Invalid category:', category);
@@ -1068,6 +1071,9 @@ startEdit(element: AtivoVO, category: string): void {
                 break;
             case 'assets':
                 dataSourceToUpdate = this.assetsDataSource;
+                break;
+            case 'caixa':
+                dataSourceToUpdate = this.caixaDataSource;
                 break;
             default:
                 console.warn(`cancelEdit: Invalid category ${category}`);

@@ -15,7 +15,6 @@ import { MatStepper } from '@angular/material/stepper';
 import { TransacaoService, Transacao } from './transaction.service';
 import { HttpClientModule } from '@angular/common/http';
 
-
 @Component({
   selector: 'app-transaction-dialog',
   templateUrl: './transaction-dialog.component.html',
@@ -62,20 +61,25 @@ export class TransactionDialogComponent implements OnInit {
     { value: 'FUNDO', label: 'Fundo', tipoAtivo: 2 },
     { value: 'TÍTULO', label: 'Título', tipoAtivo: 3 },
     { value: 'MOEDA', label: 'Moeda', tipoAtivo: 4 },
-    { value: 'AÇÃO EXTERIOR', label: 'Ação exterior', tipoAtivo: 4 },
-    { value: 'FUNDO EXTERIOR', label: 'Fundo Exterior', tipoAtivo: 4 },
-
+    { value: 'AÇÃO_EXTERIOR', label: 'Ação Exterior', tipoAtivo: 4 },
+    { value: 'FUNDO_EXTERIOR', label: 'Fundo Exterior', tipoAtivo: 4 },
   ];
 
   brokers = [
     'XP Investimentos',
+    'BTG Pactual',
+    'Banco Inter',
+    'Banco Itaú',
+    'Banco do Brasil',
+    'Santander',
+    'Bradesco',
+    'Banco Safra',
+    'Avenue',
     'Clear Corretora',
     'Rico',
-    'NuInvest',
-    'BTG Pactual Digital',
-    'Inter Invest',
+    'Nubank',
+    'Inter',
     'Genial Investimentos',
-    'Órama',
     'Outra'
   ];
 
@@ -181,6 +185,8 @@ export class TransactionDialogComponent implements OnInit {
       const averagePriceParsed = typeof formValue.averagePrice === 'string' ? parseFloat(formValue.averagePrice.replace(/\./g, '').replace(',', '.')) : formValue.averagePrice;
       const transactionValueParsed = typeof formValue.transactionValue === 'string' ? parseFloat(formValue.transactionValue.replace(/\./g, '').replace(',', '.')) : formValue.transactionValue;
 
+      // Definir a moeda com base no tipo de ativo
+      const moeda = ['AÇÃO_EXTERIOR', 'FUNDO_EXTERIOR', 'MOEDA'].includes(formValue.assetType) ? 'USD' : 'BRL';
 
       const transacao: Transacao = {
         ticker: formValue.ticker,
@@ -189,7 +195,7 @@ export class TransactionDialogComponent implements OnInit {
         tipoAtivo,
         quantidade: parseFloat(formValue.quantity),
         valorTransacao: transactionValueParsed,
-        moeda: 'BRL',
+        moeda,
         observacao: formValue.description,
         corretora: formValue.corretora,
         usuario: this.data.usuarioId ? { id: this.data.usuarioId } : undefined,
