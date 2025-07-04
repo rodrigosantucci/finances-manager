@@ -57,12 +57,12 @@ export class TransactionDialogComponent implements OnInit {
   ];
 
   assetTypes = [
-    { value: 'AÇÃO', label: 'Ação', tipoAtivo: 1 },
-    { value: 'FUNDO', label: 'Fundo', tipoAtivo: 2 },
-    { value: 'TÍTULO', label: 'Título', tipoAtivo: 3 },
-    { value: 'MOEDA', label: 'Moeda', tipoAtivo: 4 },
-    { value: 'AÇÃO_EXTERIOR', label: 'Ação Exterior', tipoAtivo: 4 },
-    { value: 'FUNDO_EXTERIOR', label: 'Fundo Exterior', tipoAtivo: 4 },
+    { value: 'AÇÃO', label: 'Ação', tipoAtivo: 1, category: 'acoes' },
+    { value: 'FUNDO', label: 'Fundo', tipoAtivo: 2, category: 'fundos' },
+    { value: 'TÍTULO', label: 'Título', tipoAtivo: 3, category: 'assets' },
+    { value: 'MOEDA', label: 'Moeda', tipoAtivo: 4, category: 'caixa' },
+    { value: 'AÇÃO_EXTERIOR', label: 'Ação Exterior', tipoAtivo: 4, category: 'acoes' },
+    { value: 'FUNDO_EXTERIOR', label: 'Fundo Exterior', tipoAtivo: 4, category: 'fundos' },
   ];
 
   brokers = [
@@ -117,14 +117,15 @@ export class TransactionDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.formGroupDadosIniciais.get('assetType')?.valueChanges.subscribe(() => {
+    this.formGroupDadosIniciais.get('assetType')?.valueChanges.subscribe((value: string) => {
+      console.log('Selected assetType:', value); // Debug to confirm assetType value
       this.formGroupDetalhesAtivo.get('description')?.updateValueAndValidity();
     });
   }
 
   // Validador customizado para descrição baseado no assetType
   descriptionValidator(control: AbstractControl): ValidationErrors | null {
-    const assetType = this.transactionForm?.get('dadosIniciais.assetType')?.value;
+    const assetType = this.formGroupDadosIniciais.get('assetType')?.value;
     const value = control.value?.toString().trim();
 
     if (!value) {
@@ -161,6 +162,17 @@ export class TransactionDialogComponent implements OnInit {
         ...this.formGroupValoresData.value,
       };
 
+      console.log('Form Value:', formValue); // Debug to inspect form values
+
+      if (!formValue.assetType) {
+        this.snackBar.open('Tipo de ativo não selecionado.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.isSubmitting = false;
+        return;
+      }
+
       if (formValue.assetType === 'TÍTULO') {
         formValue.description = formValue.description.replace('%', '');
       }
@@ -179,7 +191,16 @@ export class TransactionDialogComponent implements OnInit {
       }
 
       const selectedAssetType = this.assetTypes.find(type => type.value === formValue.assetType);
-      const tipoAtivo = selectedAssetType ? selectedAssetType.tipoAtivo : 1;
+      if (!selectedAssetType) {
+        this.snackBar.open('Tipo de ativo inválido.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.isSubmitting = false;
+        return;
+      }
+      const tipoAtivo = selectedAssetType.tipoAtivo;
+      const category = selectedAssetType.category; // Map assetType to category
 
       // Limpeza dos valores monetários para garantir que sejam numbers com ponto decimal para o backend
       const averagePriceParsed = typeof formValue.averagePrice === 'string' ? parseFloat(formValue.averagePrice.replace(/\./g, '').replace(',', '.')) : formValue.averagePrice;
@@ -199,7 +220,10 @@ export class TransactionDialogComponent implements OnInit {
         observacao: formValue.description,
         corretora: formValue.corretora,
         usuario: this.data.usuarioId ? { id: this.data.usuarioId } : undefined,
+        category, // Add category to transacao
       };
+
+      console.log('Transacao Object:', transacao); // Debug to inspect transacao object
 
       this.transactionService.createTransacao(transacao).subscribe({
         next: (createTransacao: Transacao) => {
@@ -207,7 +231,7 @@ export class TransactionDialogComponent implements OnInit {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
-          this.dialogRef.close(createTransacao);
+          this.dialogRef.close(createTransacao); // Return transacao with category
           this.isSubmitting = false;
         },
         error: (error: any) => {

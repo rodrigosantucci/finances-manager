@@ -39,7 +39,7 @@
         </form>
       </mat-step>
 
-      <mat-step [stepControl]="formGroupDetalhesAtivo" >
+      <mat-step [stepControl]="formGroupDetalhesAtivo">
         <form [formGroup]="formGroupDetalhesAtivo" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field ticker-field">
             <mat-label>Ticker</mat-label>
@@ -114,7 +114,7 @@
         </form>
       </mat-step>
 
-      <mat-step [stepControl]="formGroupValoresData" >
+      <mat-step [stepControl]="formGroupValoresData">
         <form [formGroup]="formGroupValoresData" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field date-field">
             <mat-label>Data da Transação</mat-label>
@@ -130,11 +130,19 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field price-field">
-            <mat-label>Preço Médio (R$)</mat-label>
+            <mat-label>
+              Preço Médio ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+                              formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
+                              formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? '$' : 'R$' }})
+            </mat-label>
             <input matInput
                    type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="averagePrice"
                    aria-required="true">
-            <mat-hint class="form-hint">Ex: 14,50 </mat-hint>
+            <mat-hint class="form-hint">
+              Ex: 14{{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+                        formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
+                        formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ',50' : ',50' }}
+            </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('averagePrice')?.hasError('required') && formGroupValoresData.get('averagePrice')?.touched">
               Informe o preço médio
             </mat-error>
@@ -144,11 +152,19 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field value-field">
-            <mat-label>Valor da Transação (R$)</mat-label>
+            <mat-label>
+              Valor da Transação ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+                                     formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
+                                     formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? '$' : 'R$' }})
+            </mat-label>
             <input matInput
                    type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="transactionValue"
                    aria-required="true">
-            <mat-hint class="form-hint">Ex: 1.450,00 </mat-hint>
+            <mat-hint class="form-hint">
+              Ex: 1.450{{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+                          formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
+                          formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ',00' : ',00' }}
+            </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('transactionValue')?.hasError('required') && formGroupValoresData.get('transactionValue')?.touched">
               Informe o valor da transação
             </mat-error>
@@ -168,6 +184,6 @@
 
   <mat-dialog-actions class="dialog-actions">
     <button mat-raised-button color="danger" (click)="onCancel()" aria-label="Cancelar">Cancelar</button>
-    <button mat-raised-button color="warn"  (click)="onClean()" aria-label="Limpar">Limpar</button>
+    <button mat-raised-button color="warn" (click)="onClean()" aria-label="Limpar">Limpar</button>
   </mat-dialog-actions>
 </div>

@@ -898,63 +898,89 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  openTransactionDialog(): void {
-    console.log('Abrindo diálogo de nova transação');
-    const dialogRef = this.dialog.open(TransactionDialogComponent, {
-        width: '600px',
-        disableClose: true,
-        autoFocus: true,
-        data: {
-            title: 'Nova Transação',
-            action: 'create',
-            transaction: null,
-        },
-    });
+openTransactionDialog(): void {
+  console.log('Abrindo diálogo de nova transação');
+  const dialogRef = this.dialog.open(TransactionDialogComponent, {
+    width: '600px',
+    disableClose: true,
+    autoFocus: true,
+    data: {
+      title: 'Nova Transação',
+      action: 'create',
+      transaction: null,
+      usuarioId: this.currentUserId, // Pass user ID
+    },
+  });
 
-    dialogRef.afterClosed().subscribe((result: any) => {
-        if (result && this.currentUserId) {
-            console.log('Transação submetida:', result);
-            // Ensure category is valid
-            if (!['fundos', 'acoes', 'assets'].includes(result.category)) {
-                console.error('Categoria inválida na transação:', result.category);
-                this.snackBar.open(`Erro: Categoria inválida (${result.category}).`, 'Fechar', {
-                    duration: 5000,
-                    panelClass: ['error-snackbar'],
-                });
-                return;
-            }
+  dialogRef.afterClosed().subscribe((result: any) => {
+    console.log('Dialog Result:', result); // Debug full result object
+    if (result && this.currentUserId) {
+      console.log('Transação submetida:', result);
 
-            this.dashboardSrv
-                .addTransaction(this.currentUserId, result)
-                .pipe(
-                    catchError((error) => {
-                        console.error('Erro ao adicionar transação:', error);
-                        this.snackBar.open(error.message || 'Erro ao registrar transação.', 'Fechar', {
-                            duration: 5000,
-                            panelClass: ['error-snackbar'],
-                        });
-                        return of(null);
-                    })
-                )
-                .subscribe((response) => {
-                    if (response !== null) {
-                        this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
-                            duration: 3000,
-                            panelClass: ['success-snackbar'],
-                        });
-                        this.loadData(this.currentUserId!);
-                    }
-                });
-        } else if (!this.currentUserId) {
-            console.error('ID do usuário não disponível para registrar transação.');
-            this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
-                duration: 5000,
-                panelClass: ['error-snackbar'],
-            });
-        } else {
-            console.log('Diálogo fechado sem submissão');
+      // Derive category if not present
+      let category = result.category;
+      if (!category && result.tipoAtivo) {
+        // Map tipoAtivo to category
+        switch (result.tipoAtivo) {
+          case 1: // AÇÃO
+            category = 'acoes';
+            break;
+          case 2: // FUNDO
+            category = 'fundos';
+            break;
+          case 3: // CAIXA
+            category = 'caixa';
+            break;
+          case 4: // MOEDA, AÇÃO_EXTERIOR, FUNDO_EXTERIOR
+            category = 'assets';
+            break;
         }
-    });
+      }
+
+      // Validate category
+      if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
+        console.error('Categoria inválida na transação:', category);
+        this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        return;
+      }
+
+      // Add category to result if missing
+      const transactionWithCategory = { ...result, category };
+
+      this.dashboardSrv
+        .addTransaction(this.currentUserId, transactionWithCategory)
+        .pipe(
+          catchError((error) => {
+            console.error('Erro ao adicionar transação:', error);
+            this.snackBar.open(error.message || 'Erro ao registrar transação.', 'Fechar', {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            });
+            return of(null);
+          })
+        )
+        .subscribe((response) => {
+          if (response !== null) {
+            this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+            });
+            this.loadData(this.currentUserId!);
+          }
+        });
+    } else if (!this.currentUserId) {
+      console.error('ID do usuário não disponível para registrar transação.');
+      this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+    } else {
+      console.log('Diálogo fechado sem submissão');
+    }
+  });
 }
 
 
@@ -1100,7 +1126,7 @@ startEdit(element: AtivoVO, category: string): void {
 }
 
 saveEdit(element: AtivoVO, category: string): void {
-    if (!this.currentEditedAtivo || !this.currentUserId || !['fundos', 'acoes', 'assets'].includes(category)) {
+    if (!this.currentEditedAtivo || !this.currentUserId || !['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
         console.error('saveEdit: Missing currentEditedAtivo, currentUserId, or invalid category.', {
             currentEditedAtivo: this.currentEditedAtivo,
             currentUserId: this.currentUserId,
@@ -1173,7 +1199,7 @@ saveEdit(element: AtivoVO, category: string): void {
 
 
   openDeleteDialog(element: AtivoVO, category: string): void {
-      if (!['fundos', 'acoes', 'assets'].includes(category)) {
+      if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
           console.error(`Categoria inválida para exclusão: ${category}`);
           this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
               duration: 5000,

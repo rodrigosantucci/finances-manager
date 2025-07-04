@@ -15,7 +15,8 @@ export interface Transacao {
   moeda: string;
   observacao?: string;
   corretora?: string;
-  usuario?: User; // Optional, for Usuario relationship
+  usuario?: User;
+  category?: string; // Optional, for categorization
 }
 
 @Injectable({
