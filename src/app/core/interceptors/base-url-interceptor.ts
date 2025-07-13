@@ -35,32 +35,32 @@ export function baseUrlInterceptor(req: HttpRequest<unknown>, next: HttpHandlerF
     const authPrefix = '/api/auth/'; // <-- Defina o prefixo para requisições de Auth
     if (originalUrl.startsWith(authPrefix) && authApiUrl) {
       baseUrlToUse = authApiUrl;
-      console.log(`[BaseUrlInterceptor] Req. Auth (${originalUrl}). Usando AUTH_API_URL.`);
+     // // console.log(`[BaseUrlInterceptor] Req. Auth (${originalUrl}). Usando AUTH_API_URL.`);
     }
     // 2. Verifica se a URL começa com o prefixo da API Principal (menos específico)
     // Esta condição só será avaliada se não corresponder ao prefixo de Auth.
     const mainPrefix = '/api/'; // <-- Defina o prefixo para requisições da API principal
      if (originalUrl.startsWith(mainPrefix) && mainApiUrl && !baseUrlToUse) { // Garante que não foi definido pela Auth
        baseUrlToUse = mainApiUrl;
-       console.log(`[BaseUrlInterceptor] Req. Principal (${originalUrl}). Usando MAIN_API_URL.`);
+     //  // console.log(`[BaseUrlInterceptor] Req. Principal (${originalUrl}). Usando MAIN_API_URL.`);
     }
     // Adicione outras lógicas 'else if' aqui para outros prefixos de API se necessário
 
     // --- Aplica a URL base escolhida ---
     if (baseUrlToUse) {
        const fullUrl = joinUrlSegments(baseUrlToUse as string, pathWithoutPrefix);
-       console.log(`[BaseUrlInterceptor] Reescrevendo URL: ${originalUrl} -> ${fullUrl}`);
+       // console.log(`[BaseUrlInterceptor] Reescrevendo URL: ${originalUrl} -> ${fullUrl}`);
        return next(req.clone({ url: fullUrl }));
     } else {
        // Se a URL é relativa, mas não corresponde a nenhum prefixo de API (ex: 'i18n/en.json', 'assets/image.png')
        // Deixe-a passar inalterada. Ela será resolvida em relação à URL onde a aplicação Angular está sendo servida (localhost:4200).
-       console.log(`[BaseUrlInterceptor] URL Relativa sem prefixo de API (${originalUrl}). Passando adiante.`);
+       // console.log(`[BaseUrlInterceptor] URL Relativa sem prefixo de API (${originalUrl}). Passando adiante.`);
        return next(req);
     }
 
   }
 
   // Se a URL já é absoluta (começa com http:// ou https://), passe adiante sem modificação.
-  console.log(`[BaseUrlInterceptor] URL Absoluta (${originalUrl}). Passando adiante.`);
+  // console.log(`[BaseUrlInterceptor] URL Absoluta (${originalUrl}). Passando adiante.`);
   return next(req);
 }

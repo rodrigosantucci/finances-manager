@@ -61,20 +61,20 @@ export class UserComponent implements OnInit, OnDestroy {
   private avatarObjectUrl: string | null = null;
 
   ngOnInit(): void {
-    console.log('UserComponent: Initializing');
+  //  console.log('UserComponent: Initializing');
     this.auth
       .user()
       .pipe(
         distinctUntilChanged((prev, curr) => prev.id === curr.id),
         tap(user => {
-          console.log('UserComponent: User received', user);
+      //    console.log('UserComponent: User received', user);
           this.user = user;
           this.loadAvatar(user.id);
         }),
         debounceTime(100)
       )
       .subscribe(() => {
-        console.log('UserComponent: Triggering change detection');
+    //    console.log('UserComponent: Triggering change detection');
         this.cdr.detectChanges();
       });
   }
@@ -86,10 +86,10 @@ export class UserComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('UserComponent: Fetching avatar for ID:', userId);
-    this.http.get(`${environment.baseUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
+  //  console.log('UserComponent: Fetching avatar for ID:', userId);
+    this.http.get(`${environment.baseUrl}api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
-        console.log('UserComponent: Avatar loaded for ID:', userId);
+   //     console.log('UserComponent: Avatar loaded for ID:', userId);
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
       },

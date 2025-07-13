@@ -58,7 +58,7 @@ export class UserPanelComponent implements OnInit, OnDestroy {
       next: (blob) => {
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
-        console.log('Avatar loaded for user ID:', userId);
+    //    console.log('Avatar loaded for user ID:', userId);
       },
       error: (error) => {
         console.warn('Failed to load avatar:', error);

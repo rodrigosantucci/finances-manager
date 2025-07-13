@@ -11,13 +11,13 @@ import { RegisterComponent } from './routes/sessions/register/register.component
 
 export const routes: Routes = [
   {
-    path: '', // Esta é a rota principal que usa o AdminLayoutComponent
+    path: '',
     component: AdminLayoutComponent,
-    canActivate: [authGuard], // <-- authGuard verifica se o AdminLayoutComponent pode ser ativado
-    canActivateChild: [authGuard], // <-- authGuard verifica se as rotas filhas (incluindo dashboard) podem ser ativadas
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent }, // <-- Esta rota é filha e já está protegida
+      { path: 'dashboard', component: DashboardComponent },
       { path: '403', component: Error403Component },
       { path: '404', component: Error404Component },
       { path: '500', component: Error500Component },
@@ -52,12 +52,12 @@ export const routes: Routes = [
     ],
   },
   {
-    path: 'auth', // Rotas de autenticação (login/registro)
+    path: 'auth',
     component: AuthLayoutComponent,
     children: [
-      { path: 'login', component: LoginComponent }, // Não protegida
-      { path: 'register', component: RegisterComponent }, // Não protegida
+      { path: 'login', component: LoginComponent },
+      { path: 'register', component: RegisterComponent },
     ],
-  }
-  ,
+  },
+  { path: '**', redirectTo: 'dashboard' },
 ];

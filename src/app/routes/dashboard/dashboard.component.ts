@@ -405,7 +405,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroyChart(chartInstance: ApexCharts | undefined, chartId: string): void {
     if (chartInstance) {
       chartInstance.destroy();
-      console.log(`Instância de #${chartId} destruída.`);
+   //   console.log(`Instância de #${chartId} destruída.`);
     }
   }
 
@@ -414,7 +414,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadData(userId: number | string): void {
-    console.log(`DashboardComponent: Iniciando carregamento de dados para usuário ${userId}...`);
+  //  console.log(`DashboardComponent: Iniciando carregamento de dados para usuário ${userId}...`);
     this.isLoading = true;
     this.hasError = false;
     this.cdr.markForCheck();
@@ -447,7 +447,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       )
       .subscribe(([distribuicao, acoes, fundos, caixa, assets]) => {
-        console.log('Dados recebidos para tabelas:', { distribuicao, acoes, fundos, caixa, assets });
+    //    console.log('Dados recebidos para tabelas:', { distribuicao, acoes, fundos, caixa, assets });
         this.distribuicaoDataSource.data = distribuicao;
         this.acoesDataSource.data = acoes;
         this.fundosDataSource.data = fundos;
@@ -466,7 +466,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Aceita o ID do usuário como parâmetro
   setupCharts(userId: number | string): void {
-    console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
+  //  console.log(`DashboardComponent: Configurando gráficos para usuário ${userId}...`);
 
     this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
       catchError((error) => {
@@ -477,7 +477,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         return of([]);
       }),
       map((distribuicao: PatrimonioDistribuicaoVO[]) => {
-        console.log('Dados brutos para #chart1:', distribuicao);
+      //  console.log('Dados brutos para #chart1:', distribuicao);
         const validDistribuicao = distribuicao.filter(
           (d) =>
             typeof d.valorTotal === 'number' &&
@@ -489,8 +489,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         const series = validDistribuicao.map((d) => d.percentual);
         const labels = validDistribuicao.map((d) => d.tipoAtivo);
 
-        console.log('Series para #chart1 (valores):', series);
-        console.log('Labels para #chart1:', labels);
+      //  console.log('Series para #chart1 (valores):', series);
+      //  console.log('Labels para #chart1:', labels);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart1', { series, labels });
@@ -503,14 +503,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.acoesChart$ = this.acoesDataSource.connect().pipe(
       map((acoes: AtivoVO[]) => {
-        console.log('Dados brutos para #chart2:', acoes);
+      //  console.log('Dados brutos para #chart2:', acoes);
         const validAcoes = acoes.filter(
           (a) => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado && a.tickerFormatado.trim() !== ''
         );
         const series = validAcoes.map((a) => this.parseAndValidateNumber(a.valorAtualFormatado));
         const labels = validAcoes.map((a) => a.tickerFormatado);
-        console.log('Series para #chart2 (valores):', series);
-        console.log('Labels para #chart2:', labels);
+      //  console.log('Series para #chart2 (valores):', series);
+      //  console.log('Labels para #chart2:', labels);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart2', { series, labels });
@@ -522,14 +522,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.fundosChart$ = this.fundosDataSource.connect().pipe(
       map((fundos: AtivoVO[]) => {
-        console.log('Dados brutos para #chart3:', fundos);
+    //    console.log('Dados brutos para #chart3:', fundos);
         const validFundos = fundos.filter(
           (f) => this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 && f.tickerFormatado && f.tickerFormatado.trim() !== ''
         );
         const series = validFundos.map((f) => this.parseAndValidateNumber(f.valorAtualFormatado));
         const labels = validFundos.map((f) => f.tickerFormatado);
-        console.log('Series para #chart3 (valores):', series);
-        console.log('Labels para #chart3:', labels);
+    //    console.log('Series para #chart3 (valores):', series);
+    //    console.log('Labels para #chart3:', labels);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart3', { series, labels });
@@ -541,14 +541,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.caixaChart$ = this.caixaDataSource.connect().pipe(
       map((caixa: AtivoVO[]) => {
-        console.log('Dados brutos para #chart4:', caixa);
+    //    console.log('Dados brutos para #chart4:', caixa);
         const validCaixa = caixa.filter(
           (c) => this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 && c.tickerFormatado && c.tickerFormatado.trim() !== ''
         );
         const series = validCaixa.map((c) => this.parseAndValidateNumber(c.valorAtualFormatado));
         const labels = validCaixa.map((c) => c.tickerFormatado);
-        console.log('Series para #chart4 (valores):', series);
-        console.log('Labels para #chart4:', labels);
+    //    console.log('Series para #chart4 (valores):', series);
+    //    console.log('Labels para #chart4:', labels);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart4', { series, labels });
@@ -560,14 +560,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.assetsChart$ = this.assetsDataSource.connect().pipe(
       map((assets: AtivoVO[]) => {
-        console.log('Dados brutos para #chart5:', assets);
+    //    console.log('Dados brutos para #chart5:', assets);
         const validAssets = assets.filter(
           (a) => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado && a.tickerFormatado.trim() !== ''
         );
         const series = validAssets.map((a) => this.parseAndValidateNumber(a.valorAtualFormatado));
         const labels = validAssets.map((a) => a.tickerFormatado);
-        console.log('Series para #chart5 (valores):', series);
-        console.log('Labels para #chart5:', labels);
+    //    console.log('Series para #chart5 (valores):', series);
+    //    console.log('Labels para #chart5:', labels);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart5', { series, labels });
@@ -677,7 +677,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const btc = this.assetsDataSource.data
       .filter((asset) => asset.tickerFormatado?.toUpperCase() === 'BTC/USD')
       .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
-      console.log('getPercentualBitcoin: BTC value:', btc);
+  //    console.log('getPercentualBitcoin: BTC value:', btc);
     const percentual = totalValorAtualGeral > 0 ? (btc / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
@@ -689,7 +689,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private sumUSD(): number {
     const allAssets = [...this.acoes, ...this.fundos, ...this.caixa, ...this.assets];
-    console.log('sumUSD: All assets:', allAssets);
+  //  console.log('sumUSD: All assets:', allAssets);
 
     const totalUSD = allAssets
       .filter((ativo) => {
@@ -697,13 +697,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         return moeda === 'USD';
       })
       .reduce((sum, ativo) => sum + this.getNumericValue(ativo.valorAtualFormatado), 0);
-    console.log('sumUSD: Total USD:', totalUSD);
+  //  console.log('sumUSD: Total USD:', totalUSD);
     return totalUSD;
   }
 
   getTotalValorExterior(): number {
     const total = this.sumUSD();
-    console.log('getTotalValorExterior: Total USD value:', total);
+  //  console.log('getTotalValorExterior: Total USD value:', total);
     return total;
   }
 
@@ -716,7 +716,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.getTotalValorAtualAssets();
     const percentual = totalValorAtualGeral > 0 ? (exterior / totalValorAtualGeral) * 100 : 0;
     const roundedPercentual = Math.round(percentual); // Round to nearest integer
-    console.log('getPercentualExterior:', { totalValorAtualGeral, exterior, percentual: roundedPercentual });
+  //  console.log('getPercentualExterior:', { totalValorAtualGeral, exterior, percentual: roundedPercentual });
     return roundedPercentual;
   }
 
@@ -728,7 +728,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.dashboardSrv.getPatrimonioAssets().pipe(take(1), catchError(() => of([]))),
     ]).subscribe(
       ([acoes, fundos, caixa, assets]: [AtivoVO[], AtivoVO[], AtivoVO[], AtivoVO[]]) => {
-        console.log('fetchAndCacheData: Data fetched', { acoes, fundos, caixa, assets });
+     //   console.log('fetchAndCacheData: Data fetched', { acoes, fundos, caixa, assets });
         this.acoes = acoes;
         this.fundos = fundos;
         this.caixa = caixa;
@@ -869,7 +869,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (instance) {
       instance.destroy();
-      console.log(`Instância anterior de ${chartId} destruída.`);
+    //  console.log(`Instância anterior de ${chartId} destruída.`);
     }
 
     try {
@@ -892,14 +892,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.chartInstance5 = newInstance;
           break;
       }
-      console.log(`Gráfico ${chartId} renderizado com sucesso.`);
+   //   console.log(`Gráfico ${chartId} renderizado com sucesso.`);
     } catch (e) {
       console.error(`Erro ao renderizar gráfico ${chartId}:`, e);
     }
   }
 
 openTransactionDialog(): void {
-  console.log('Abrindo diálogo de nova transação');
+//  console.log('Abrindo diálogo de nova transação');
   const dialogRef = this.dialog.open(TransactionDialogComponent, {
     width: '600px',
     disableClose: true,
@@ -913,9 +913,9 @@ openTransactionDialog(): void {
   });
 
   dialogRef.afterClosed().subscribe((result: any) => {
-    console.log('Dialog Result:', result); // Debug full result object
+  //  console.log('Dialog Result:', result); // Debug full result object
     if (result && this.currentUserId) {
-      console.log('Transação submetida:', result);
+   //   console.log('Transação submetida:', result);
 
       // Derive category if not present
       let category = result.category;
@@ -978,7 +978,7 @@ openTransactionDialog(): void {
         panelClass: ['error-snackbar'],
       });
     } else {
-      console.log('Diálogo fechado sem submissão');
+    //  console.log('Diálogo fechado sem submissão');
     }
   });
 }
@@ -1072,14 +1072,14 @@ startEdit(element: AtivoVO, category: string): void {
       const isEditing = this.editingRowTicker === element.tickerFormatado &&
                         this.currentEditedAtivo &&
                         this.currentEditedAtivo.category === category;
-      console.log('isEditing check:', {
+/*       console.log('isEditing check:', {
           elementTicker: element.tickerFormatado,
           elementDescription: element.descricaoFormatada,
           category,
           editingRowTicker: this.editingRowTicker,
           currentEditedCategory: this.currentEditedAtivo ? this.currentEditedAtivo.category : null,
           result: isEditing,
-      });
+      }); */
       return !!isEditing;
   }
 

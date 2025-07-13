@@ -80,7 +80,7 @@ export class AuthService {
             this.user$.next({}); // Atualiza o BehaviorSubject com objeto vazio
              console.warn('AuthService: Login bem-sucedido, mas dados do usuário não retornados pela API.');
         }
-         console.log('AuthService: Login bem-sucedido. Token e dados do usuário (se retornados) salvos.');
+      //   console.log('AuthService: Login bem-sucedido. Token e dados do usuário (se retornados) salvos.');
       }),
       // Mapeia para o status de autenticação após o tap
       map(() => this.check())
@@ -121,7 +121,7 @@ export class AuthService {
           this.tokenService.clear(); // Limpa o token (localStorage)
           this.clearUserData(); // Limpa os dados do usuário (localStorage)
           this.user$.next({}); // Limpa o BehaviorSubject com objeto vazio
-          console.log('AuthService: Logout realizado. Token e dados do usuário limpos.');
+     //     console.log('AuthService: Logout realizado. Token e dados do usuário limpos.');
           // Opcional: Redirecionar para a página de login aqui ou no componente que chama logout
           // this.router.navigate(['/auth/login']); // Se você injetar o Router
       }),
@@ -162,7 +162,7 @@ export class AuthService {
    private saveUserData(user: User): void {
        try {
            localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
-           console.log('AuthService: Dados do usuário salvos no localStorage.');
+      //     console.log('AuthService: Dados do usuário salvos no localStorage.');
        } catch (e) {
            console.error('AuthService: Erro ao salvar dados do usuário no localStorage', e);
        }
@@ -179,13 +179,13 @@ export class AuthService {
                // Usa isEmptyObject para verificar se o objeto não é apenas {}
                if (!isEmptyObject(user as any)) { // Exemplo de validação básica
                   this.user$.next(user); // Popula o BehaviorSubject com os dados carregados
-                  console.log('AuthService: Dados do usuário carregados do localStorage.');
+          //        console.log('AuthService: Dados do usuário carregados do localStorage.');
                } else {
                    console.warn('AuthService: Dados do usuário no localStorage inválidos ou incompletos.');
                    this.clearUserData(); // Limpa dados inválidos do storage
                }
            } else {
-               console.log('AuthService: Nenhum dado de usuário encontrado no localStorage.');
+           //    console.log('AuthService: Nenhum dado de usuário encontrado no localStorage.');
            }
        } catch (e) {
            console.error('AuthService: Erro ao carregar dados do usuário do localStorage', e);
@@ -200,30 +200,30 @@ export class AuthService {
    // Limpa os dados do usuário do localStorage
    private clearUserData(): void {
        localStorage.removeItem(this.USER_STORAGE_KEY);
-       console.log('AuthService: Dados do usuário removidos do localStorage.');
+    //   console.log('AuthService: Dados do usuário removidos do localStorage.');
    }
 
    // --- MÉTODO assignUser AJUSTADO ---
    // Este método é chamado pelo pipeline 'change$'
    private assignUser(): Observable<User> { // Mantido o tipo de retorno original
-       console.log('AuthService: assignUser() called. Checking authentication status...');
+     //  console.log('AuthService: assignUser() called. Checking authentication status...');
 
        // Verifica se o token é válido (TokenService.valid() verifica localStorage)
        if (this.check()) {
-           console.log('AuthService: Token válido encontrado.');
+       //    console.log('AuthService: Token válido encontrado.');
            // Se o token é válido, verifica se o userSubject já está populado
            if (!isEmptyObject(this.user$.getValue() as any)) {
-               console.log('AuthService: Token válido e userSubject já populado.');
+         //      console.log('AuthService: Token válido e userSubject já populado.');
                // Se já populado (provavelmente carregado do storage na inicialização ou por login), apenas emite o valor atual
                return of(this.user$.getValue());
            } else {
-                console.log('AuthService: Token válido, mas userSubject vazio. Tentando carregar do storage...');
+         //       console.log('AuthService: Token válido, mas userSubject vazio. Tentando carregar do storage...');
                 // Tenta carregar do storage. loadUserDataFromStorage() irá chamar user$.next() se encontrar dados válidos.
                 this.loadUserDataFromStorage();
 
                 // Após tentar carregar do storage, verifica novamente se o userSubject foi populado.
                 if (!isEmptyObject(this.user$.getValue() as any)) {
-                    console.log('AuthService: Dados do usuário carregados do storage pelo assignUser.');
+          //          console.log('AuthService: Dados do usuário carregados do storage pelo assignUser.');
                     return of(this.user$.getValue()); // Emite o usuário carregado
                 } else {
                     console.warn('AuthService: Token válido, mas dados do usuário ausentes no storage e userSubject vazio. Buscando da API...');
@@ -256,7 +256,7 @@ export class AuthService {
            }
        } else {
            // Token NÃO é válido
-           console.log('AuthService: Token inválido ou ausente. Limpando dados do usuário.');
+      //     console.log('AuthService: Token inválido ou ausente. Limpando dados do usuário.');
            this.clearUserData(); // Limpa dados do localStorage
            this.tokenService.clear(); // Garante que o token também seja limpo
            this.user$.next({}); // Limpa o BehaviorSubject com objeto vazio

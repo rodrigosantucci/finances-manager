@@ -28,6 +28,11 @@ describe('authGuard function unit test', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         provideRouter([
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          { path: 'settings', component: DummyComponent, canActivate: [authGuard] },
+          { path: 'profile', component: DummyComponent, canActivate: [authGuard] },
+          { path: 'media', component: DummyComponent, canActivate: [authGuard] },
+          { path: 'gallery', component: DummyComponent, canActivate: [authGuard] },
           { path: 'dashboard', component: DummyComponent, canActivate: [authGuard] },
           { path: 'auth/login', component: DummyComponent },
         ]),

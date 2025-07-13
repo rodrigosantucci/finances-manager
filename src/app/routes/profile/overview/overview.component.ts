@@ -34,17 +34,17 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   public isLoading = false; // Propriedade para controlar o estado de carregamento
 
   ngOnInit() {
-    console.log('ProfileOverviewComponent OnInit');
+   // console.log('ProfileOverviewComponent OnInit');
     // Sua lógica de OnInit existente (ex: subscrição a mudanças de tema) pode permanecer aqui.
   }
 
   ngAfterViewInit() {
     // Carrega o widget inicialmente após a view estar pronta e apenas no navegador
     if (isPlatformBrowser(this.platformId)) {
-      console.log('Initial TradingView Widget Load starting...');
+    //  console.log('Initial TradingView Widget Load starting...');
       this.loadTradingViewWidget()
         .then(() => {
-          console.log('Initial TradingView Widget script loaded successfully.');
+      //    console.log('Initial TradingView Widget script loaded successfully.');
         })
         .catch(error => {
           console.error('Error loading initial TradingView widget:', error);
@@ -65,7 +65,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
    */
   public async triggerWidgetRefresh(): Promise<void> {
     if (this.isLoading) {
-      console.log('Refresh already in progress.');
+    //  console.log('Refresh already in progress.');
       return;
     }
     if (!isPlatformBrowser(this.platformId)) {
@@ -74,10 +74,10 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     }
 
     this.isLoading = true;
-    console.log('Attempting to refresh TradingView Widget...');
+   // console.log('Attempting to refresh TradingView Widget...');
     try {
       await this.loadTradingViewWidget(); // Aguarda o carregamento do script
-      console.log('TradingView widget refresh initiated (script load successful).');
+   //   console.log('TradingView widget refresh initiated (script load successful).');
     } catch (error) {
       console.error('Error during widget refresh:', error);
     } finally {
@@ -85,7 +85,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
       // melhorando a percepção do usuário de que a ação foi concluída.
       setTimeout(() => {
         this.isLoading = false;
-        console.log('isLoading flag reset.');
+    //    console.log('isLoading flag reset.');
       }, 750); // Ajuste este valor conforme necessário
     }
   }
@@ -108,7 +108,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
       this.destroyTradingViewWidget();
 
       const currentTheme = this.settings.getThemeColor();
-      console.log('Tema detectado para o TradingView:', currentTheme);
+  //    console.log('Tema detectado para o TradingView:', currentTheme);
 
       const widgetConfig = {
         feedMode: 'all_symbols',
@@ -129,7 +129,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
         this.tradingViewScript.innerHTML = JSON.stringify(widgetConfig);
 
         this.tradingViewScript.onload = () => {
-          console.log('TradingView script loaded successfully.');
+     //     console.log('TradingView script loaded successfully.');
           resolve();
         };
         this.tradingViewScript.onerror = (errorEvent) => {

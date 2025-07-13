@@ -26,12 +26,12 @@ describe('SettingsInterceptor', () => {
   });
 
   it('should set accept language', () => {
-    settings.setLanguage('zh-TW');
+    settings.setLanguage('pt-BR');
 
     http.get('/user').subscribe();
     const testRequest = httpMock.expectOne('/user');
     testRequest.flush({ me: true });
 
-    expect(testRequest.request.headers.get('Accept-Language')).toEqual('zh-TW');
+    expect(testRequest.request.headers.get('Accept-Language')).toEqual('pt-BR');
   });
 });

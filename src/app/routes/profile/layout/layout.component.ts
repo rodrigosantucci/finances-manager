@@ -45,13 +45,13 @@ export class ProfileLayoutComponent implements OnInit, OnDestroy {
   isLoadingUser = true;
 
   ngOnInit(): void {
-    console.log('ProfileLayoutComponent: Initializing');
+ //   console.log('ProfileLayoutComponent: Initializing');
     this.auth
       .user()
       .pipe(
         distinctUntilChanged((prev, curr) => prev.id === curr.id),
         tap(user => {
-          console.log('ProfileLayoutComponent: User received', user);
+      //    console.log('ProfileLayoutComponent: User received', user);
           this.user = user;
           this.loadAvatar(user.id);
           this.isLoadingUser = false;
@@ -74,10 +74,10 @@ private loadAvatar(userId: number | undefined): void {
     return;
   }
 
-  console.log('ProfileLayoutComponent: Fetching avatar for ID:', userId);
+ // console.log('ProfileLayoutComponent: Fetching avatar for ID:', userId);
   this.http.get(`${this.apiUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
     next: (blob) => {
-      console.log('ProfileLayoutComponent: Avatar loaded for ID:', userId);
+ //     console.log('ProfileLayoutComponent: Avatar loaded for ID:', userId);
       // Libera a URL do objeto anterior se existir, para evitar vazamentos de memória
       if (this.avatarObjectUrl) {
         URL.revokeObjectURL(this.avatarObjectUrl);
@@ -90,7 +90,7 @@ private loadAvatar(userId: number | undefined): void {
 
       // Verifica se o erro é um HttpErrorResponse e se o status é 404
       if (error instanceof HttpErrorResponse && error.status === 404) {
-        console.log('ProfileLayoutComponent: Avatar not found (404), displaying placeholder.');
+  //      console.log('ProfileLayoutComponent: Avatar not found (404), displaying placeholder.');
         this.avatarUrl = this.defaultAvatarPlaceholder;
       } else {
         // Para outros tipos de erro, você pode querer exibir o placeholder ou lidar de outra forma
@@ -102,7 +102,7 @@ private loadAvatar(userId: number | undefined): void {
 }
 
   ngOnDestroy(): void {
-    console.log('ProfileLayoutComponent: Destroying');
+  //  console.log('ProfileLayoutComponent: Destroying');
     if (this.avatarObjectUrl) {
       URL.revokeObjectURL(this.avatarObjectUrl);
       this.avatarObjectUrl = null;

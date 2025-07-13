@@ -50,6 +50,17 @@ export class MenuService {
           value: '1',
         },
       },
+      {
+        route: 'media',
+        name: 'Media',
+        translationKey: 'menu.Media', // Store translation key separately
+        type: 'link',
+        icon: 'bar_chart',
+        badge: {
+          color: 'blue-50',
+          value: '2',
+        },
+      },
     ],
   };
 
