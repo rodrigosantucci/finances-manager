@@ -14,7 +14,7 @@ export interface MenuPermissions {
 export interface MenuChildrenItem {
   route: string;
   name: string;
-  translationKey?: string; // Added for translation
+  translationKey?: string;
   type: 'link' | 'sub' | 'extLink' | 'extTabLink';
   children?: MenuChildrenItem[];
   permissions?: MenuPermissions;
@@ -23,7 +23,7 @@ export interface MenuChildrenItem {
 export interface Menu {
   route: string;
   name: string;
-  translationKey?: string; // Added for translation
+  translationKey?: string;
   type: 'link' | 'sub' | 'extLink' | 'extTabLink';
   icon: string;
   label?: MenuTag;
@@ -37,66 +37,38 @@ export interface Menu {
 })
 export class MenuService {
   private readonly menu$ = new BehaviorSubject<Menu[]>([]);
-  private readonly embeddedMenuData: { menu: Menu[] } = {
-    menu: [
-      {
-        route: 'dashboard',
-        name: 'Dashboard',
-        translationKey: 'menu.Dashboard', // Store translation key separately
-        type: 'link',
-        icon: 'dashboard',
-        badge: {
-          color: 'red-50',
-          value: '1',
-        },
-      },
-      {
-        route: 'media',
-        name: 'Media',
-        translationKey: 'menu.Media', // Store translation key separately
-        type: 'link',
-        icon: 'bar_chart',
-        badge: {
-          color: 'blue-50',
-          value: '2',
-        },
-      },
-    ],
-  };
+
 
   constructor() {
+  //  console.log('MenuService: Instância criada.');
     this.loadMenuData();
   }
 
-  /** Get all the menu data. */
   getAll(): Observable<Menu[]> {
     return this.menu$.asObservable();
   }
 
-  /** Observe the change of menu data. */
   change(): Observable<Menu[]> {
     return this.menu$.pipe(share());
   }
 
-  /** Initialize the menu data. */
   set(menu: Menu[]): Observable<Menu[]> {
+  //  console.log('MenuService: set() chamado com:', menu);
     this.menu$.next(menu);
     return this.menu$.asObservable();
   }
 
-  /** Add one item to the menu data. */
   add(menu: Menu): void {
     const tmpMenu = this.menu$.value;
     tmpMenu.push(menu);
     this.menu$.next(tmpMenu);
   }
 
-  /** Reset the menu data. */
   reset(): void {
+ //   console.log('MenuService: reset() chamado. Menu será vazio.');
     this.menu$.next([]);
   }
 
-  /** Delete empty values and rebuild route. */
   buildRoute(routeArr: string[]): string {
     let route = '';
     routeArr.forEach(item => {
@@ -107,7 +79,6 @@ export class MenuService {
     return route;
   }
 
-  /** Get the menu item name based on current route. */
   getItemName(routeArr: string[]): string {
     return this.getLevel(routeArr)[routeArr.length - 1];
   }
@@ -133,7 +104,6 @@ export class MenuService {
     return this.isJsonObjEqual(routeArr, realRouteArr);
   }
 
-  /** Get the menu level. */
   getLevel(routeArr: string[]): string[] {
     let tmpArr: string[] = [];
     this.menu$.value.forEach(item => {
@@ -163,10 +133,9 @@ export class MenuService {
     return tmpArr;
   }
 
-  /** Add namespace for translation (optional, call only when needed). */
   addNamespace(menu: Menu[] | MenuChildrenItem[], namespace: string): void {
     menu.forEach(menuItem => {
-      menuItem.translationKey = `${namespace}.${menuItem.name}`; // Store in translationKey
+      menuItem.translationKey = `${namespace}.${menuItem.name}`;
       if (menuItem.children && menuItem.children.length > 0) {
         this.addNamespace(menuItem.children, namespace);
       }
@@ -175,11 +144,10 @@ export class MenuService {
 
   private loadMenuData(): void {
     try {
-      this.set(this.embeddedMenuData.menu);
-      // Optionally apply namespace for translation
-      // this.addNamespace(this.embeddedMenuData.menu, 'menu');
+      this.set(this.menu$.value);
+    //  console.log('MenuService: Dados carregados internamente:', this.menu$.value);
     } catch (error) {
-      console.error('Error setting menu data:', error);
+    console.error('Error setting menu data in MenuService:', error);
       this.set([]);
     }
   }

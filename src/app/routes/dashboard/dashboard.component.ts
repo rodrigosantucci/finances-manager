@@ -46,6 +46,9 @@ import { QuantidadeFormatPipe } from '@shared/pipes/quantidade-format.pipe';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { FormsModule } from '@angular/forms'; // Importar FormsModule para [(ngModel)]
 import { Router } from '@angular/router';
+import { PageHeaderComponent } from '@shared';
+
+
 
 @Component({
   selector: 'app-dashboard',
@@ -70,6 +73,7 @@ import { Router } from '@angular/router';
     FormsModule, // Módulo para ngModel
     MatFormFieldModule, // Importe este módulo
     MatInputModule, // Importe este módulo
+    PageHeaderComponent,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {

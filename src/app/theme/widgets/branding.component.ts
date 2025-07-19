@@ -4,8 +4,10 @@ import { Component, Input } from '@angular/core';
   selector: 'app-branding',
   template: `
     <a class="branding" href="/">
-      <!-- <img src="images/logo.jpg" class="branding-logo" alt="logo" /> -->
-
+       <img src="images/logo.png" class="branding-logo" alt="logo" />
+      @if (showName) {
+        <span class="branding-name">Gestor de Finanças</span>
+      }
     </a>
   `,
   styles: `
@@ -20,15 +22,15 @@ import { Component, Input } from '@angular/core';
     }
 
     .branding-logo {
-      width: 2rem;
-      height: 2rem;
+      width: 1.5rem;
+      height: 1.5rem;
       border-radius: 50rem;
     }
 
     .branding-name {
-      margin: 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 500;
+      margin: 0 0.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
   `,
 })

@@ -27,8 +27,15 @@ export class StartupService {
               this.setPermissions(user);
             }
           }),
-          switchMap(() => this.authService.menu()),
-          tap(menu => this.setMenu(menu))
+          switchMap(() => {
+            // Adicione um log aqui para ver o que authService.menu() retorna
+          //  console.log('StartupService: Chamando authService.menu()');
+            return this.authService.menu();
+          }),
+          tap(menu => {
+          //  console.log('StartupService: Menu recebido do authService.menu():', menu);
+            this.setMenu(menu);
+          })
         )
         .subscribe({
           next: () => resolve(),
@@ -38,18 +45,16 @@ export class StartupService {
   }
 
   private setMenu(menu: Menu[]) {
+    // Se authService.menu() já retorna o menu completo, esta linha está correta.
+    // O problema está na origem dos dados de 'menu' aqui.
     this.menuService.addNamespace(menu, 'menu');
     this.menuService.set(menu);
   }
 
   private setPermissions(user: User) {
-    // In a real app, you should get permissions and roles from the user information.
     const permissions = ['canAdd', 'canDelete', 'canEdit', 'canRead'];
     this.permissonsService.loadPermissions(permissions);
     this.rolesService.flushRoles();
     this.rolesService.addRoles({ ADMIN: permissions });
-
-    // Tips: Alternatively you can add permissions with role at the same time.
-    // this.rolesService.addRolesWithPermissions({ ADMIN: permissions });
   }
 }

@@ -6,12 +6,13 @@ import {
   Input,
   ViewEncapsulation,
   inject,
+  OnInit
 } from '@angular/core';
 import { MatRippleModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { NgxPermissionsModule } from 'ngx-permissions';
+// import { NgxPermissionsModule } from 'ngx-permissions'; // <-- REMOVIDO AQUI
 
 import { MenuService } from '@core';
 import { NavAccordionItemDirective } from './nav-accordion-item.directive';
@@ -30,7 +31,7 @@ import { NavAccordionDirective } from './nav-accordion.directive';
     NgTemplateOutlet,
     RouterLink,
     RouterLinkActive,
-    NgxPermissionsModule,
+    // NgxPermissionsModule, // <-- REMOVIDO AQUI
     MatIconModule,
     MatRippleModule,
     TranslateModule,
@@ -49,8 +50,7 @@ import { NavAccordionDirective } from './nav-accordion.directive';
     ]),
   ],
 })
-export class SidemenuComponent {
-  // The ripple effect makes page flashing on mobile
+export class SidemenuComponent implements OnInit {
   @Input() ripple = false;
 
   private readonly menu = inject(MenuService);
@@ -58,4 +58,10 @@ export class SidemenuComponent {
   menu$ = this.menu.getAll();
 
   buildRoute = this.menu.buildRoute;
+
+  ngOnInit(): void {
+    this.menu$.subscribe(menuItems => {
+   //   console.log('SidemenuComponent: Itens de menu recebidos:', menuItems);
+    });
+  }
 }
