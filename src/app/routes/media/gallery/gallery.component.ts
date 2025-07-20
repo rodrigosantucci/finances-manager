@@ -1,8 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, NgModule, OnInit } from '@angular/core';
+import { FormsModule, NgModel } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatLineModule } from '@angular/material/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatIconModule } from '@angular/material/icon';
 import { MtxPhotoviewerModule } from '@ng-matero/extensions/photoviewer';
+import { MtxSelectModule } from '@ng-matero/extensions/select';
+
 
 import { PageHeaderComponent } from '@shared';
 
@@ -10,26 +16,36 @@ import { PageHeaderComponent } from '@shared';
   selector: 'app-media-gallery',
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.scss',
-  imports: [MatGridListModule, MatLineModule, MtxPhotoviewerModule, PageHeaderComponent,  MatGridListModule, MatLineModule, MatCardModule],
+  imports: [
+    MatGridListModule,
+    MatLineModule,
+    MtxPhotoviewerModule,
+    PageHeaderComponent,
+    MatGridListModule,
+    MatLineModule,
+    MatCardModule,
+    MtxSelectModule,
+    MatFormFieldModule,
+    MtxSelectModule,
+    FormsModule,
+    MatIconModule,
+  ],
 })
 export class MediaGalleryComponent implements OnInit {
-  dir = 'images/pixabay/';
-  images: any[] = [];
 
-  dogs = [
-    { name: 'Porter', human: 'Kara' },
-    { name: 'Mal', human: 'Jeremy' },
-    { name: 'Koby', human: 'Igor' },
-    { name: 'Razzle', human: 'Ward' },
-    { name: 'Molly', human: 'Rob' },
-    { name: 'Husi', human: 'Matias' },
-  ];
+private readonly dialog = inject(MatDialog);
+
+
+  companies: any[] = [];
+  loading = false;
+  companiesNames = ['BBDC4', 'ITSA4', 'BACR4', 'PETR3', 'VALE3', 'ABEV3', 'ITUB4', 'BBAS3', 'WEGE3', 'LREN3'];
+  selectedCompanyCustom = null;
 
   tiles = [
-    { text: 'Cappuccino', cols: 3, rows: 1, color: 'lightblue' },
-    { text: 'Mocha', cols: 1, rows: 2, color: 'lightgreen' },
-    { text: 'Latte', cols: 1, rows: 1, color: 'lightpink' },
-    { text: 'Iced coffee', cols: 2, rows: 1, color: '#DDBDF1' },
+    { text: '1', cols: 3, rows: 1, color: 'lightblue' },
+    { text: '2', cols: 1, rows: 2, color: 'lightgreen' },
+    { text: '3', cols: 1, rows: 1, color: 'lightpink' },
+    { text: '4', cols: 2, rows: 1, color: '#DDBDF1' },
   ];
 
   fixedCols = 4;
@@ -39,11 +55,20 @@ export class MediaGalleryComponent implements OnInit {
   ratio = '4:1';
 
   ngOnInit(): void {
-    for (let i = 1; i <= 20; i++) {
-      this.images.push({
-        title: i,
-        src: this.dir + i + '.jpg',
-      });
-    }
+
+  }
+
+  addTag(name: string) {
+    return { name, tag: true };
+  }
+
+  addTagPromise(name: string) {
+    return new Promise(resolve => {
+      this.loading = true;
+      setTimeout(() => {
+        resolve({ id: 5, name, valid: true });
+        this.loading = false;
+      }, 1000);
+    });
   }
 }

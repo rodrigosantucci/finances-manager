@@ -1,36 +1,25 @@
-<page-header class="bg-dark text-light" title="Statistics" />
+<page-header class="bg-dark text-light" title="Estatísticas" />
 
-<mat-card>
+<mat-card class="mt-4">
   <mat-card-content>
     <section>
-      <h2>Types of coffee (fix-height grid-list)</h2>
-      <mat-grid-list role="list" [cols]="fixedCols" [rowHeight]="fixedRowHeight">
-        @for (tile of tiles; track tile) {
-          <mat-grid-tile
-            [colspan]="tile.cols"
-            [rowspan]="tile.rows"
-            [style.background]="tile.color"
-            role="listitem"
-          >
-            {{ tile.text }}
-          </mat-grid-tile>
-        }
-      </mat-grid-list>
-    </section>
+      <h2 class="section-title">Dados do ativo</h2>
 
-    <section>
-      <h2>Types of coffee (ratio-height grid list)</h2>
-      <mat-grid-list role="list" cols="2" [rowHeight]="ratio" gutterSize="4px">
-        @for (tile of tiles; track tile) {
-          <mat-grid-tile [style.background]="'lightblue'" role="listitem">
-            {{ tile.text }}
-          </mat-grid-tile>
-        }
-      </mat-grid-list>
-    </section>
+      <mat-form-field class="w-full mb-2" appearance="outline">
+        <mat-label>Selecione o ativo</mat-label>
+        <mtx-select
+          [items]="companiesNames"
+          [addTag]="addTag"
+          [hideSelected]="true"
+          [multiple]="true"
+          bindLabel="name"
+          [(ngModel)]="selectedCompanyCustom"
+        />
+        <a matSuffix href="" mat-mini-fab>
+          <mat-icon>search</mat-icon>
+        </a>
+      </mat-form-field>
 
-    <section>
-      <h2>Types of coffee (fit-height grid list)</h2>
       <mat-grid-list
         role="list"
         cols="2"
@@ -46,22 +35,108 @@
       </mat-grid-list>
     </section>
 
-    <section>
-      <h2>Angular team dogs (Grid list with header and footer)</h2>
-      <mat-grid-list role="list" cols="3" rowHeight="200px">
-        @for (dog of dogs; track dog) {
-          <mat-grid-tile role="listitem">
-            <mat-grid-tile-header>{{ dog.name }}</mat-grid-tile-header>
-            <img
-              alt="Photo of {{ dog.name }}"
-              src="https://material.angular.io/assets/img/examples/{{ dog.name }}.jpg"
-            />
-            <mat-grid-tile-footer>
-              <span mat-line>Human: {{ dog.human }}</span>
-            </mat-grid-tile-footer>
-          </mat-grid-tile>
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <div class="tradingview-widget-copyright">
+        <a href="https://br.tradingview.com/" rel="noopener nofollow" target="_blank">
+          <span class="blue-text">Monitore todos os mercados no TradingView</span>
+        </a>
+      </div>
+      <script
+        type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js"
+        async
+      >
+          {
+          "symbol": "NASDAQ:AAPL",
+          "colorTheme": "dark",
+          "isTransparent": false,
+          "locale": "br",
+          "width": "550"
         }
-      </mat-grid-list>
-    </section>
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
+
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <div class="tradingview-widget-copyright">
+        <a href="https://br.tradingview.com/" rel="noopener nofollow" target="_blank">
+          <span class="blue-text">Monitore todos os mercados no TradingView</span>
+        </a>
+      </div>
+      <script
+        type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js"
+        async
+      >
+          {
+          "colorTheme": "dark",
+          "displayMode": "single",
+          "isTransparent": false,
+          "locale": "br",
+          "interval": "1m",
+          "disableInterval": false,
+          "width": 425,
+          "height": 450,
+          "symbol": "NASDAQ:AAPL",
+          "showIntervalTabs": true
+        }
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
+
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <div class="tradingview-widget-copyright">
+        <a href="https://br.tradingview.com/" rel="noopener nofollow" target="_blank">
+          <span class="blue-text">Monitore todos os mercados no TradingView</span>
+        </a>
+      </div>
+      <script
+        type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-financials.js"
+        async
+      >
+          {
+          "symbol": "NASDAQ:AAPL",
+          "colorTheme": "dark",
+          "displayMode": "regular",
+          "isTransparent": false,
+          "locale": "br",
+          "width": 400,
+          "height": 550
+        }
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
+
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <div class="tradingview-widget-copyright">
+        <a href="https://br.tradingview.com/" rel="noopener nofollow" target="_blank">
+          <span class="blue-text">Monitore todos os mercados no TradingView</span>
+        </a>
+      </div>
+      <script
+        type="text/javascript"
+        src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js"
+        async
+      >
+          {
+          "symbol": "NASDAQ:AAPL",
+          "colorTheme": "dark",
+          "isTransparent": false,
+          "locale": "br",
+          "width": 400,
+          "height": 550
+        }
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
   </mat-card-content>
 </mat-card>

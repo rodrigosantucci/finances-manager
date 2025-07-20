@@ -5,9 +5,6 @@ import { Component, Input } from '@angular/core';
   template: `
     <a class="branding" href="/">
        <img src="images/logo.png" class="branding-logo" alt="logo" />
-      @if (showName) {
-        <span class="branding-name">Gestor de Finanças</span>
-      }
     </a>
   `,
   styles: `
@@ -22,9 +19,8 @@ import { Component, Input } from '@angular/core';
     }
 
     .branding-logo {
-      width: 1.5rem;
-      height: 1.5rem;
-      border-radius: 50rem;
+      width: 10rem;
+      height: 10rem;
     }
 
     .branding-name {

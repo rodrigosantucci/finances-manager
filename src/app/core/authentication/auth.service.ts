@@ -138,8 +138,8 @@ export class AuthService {
       },
       {
         route: 'media/gallery',
-        name: 'Statistics',
-        translationKey: 'menu.Statistics',
+        name: 'Estatísticas',
+        translationKey: 'menu.Estatisticas',
         type: 'link',
         icon: 'assessment',
         permissions: {}, // Importante manter
