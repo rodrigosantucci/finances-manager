@@ -16,4 +16,60 @@ a {
   text-transform: uppercase;
   vertical-align: middle;
 }
+/* gallery.component.scss */
 
+mat-grid-tile {
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-tile-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  border-radius: 4px;
+  p {
+    margin-top: 10px;
+    font-size: 0.9em;
+  }
+}
+
+.tradingview-widget-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.tradingview-widget-container__widget {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.tradingview-widget-copyright {
+  width: 100%;
+  text-align: center;
+  padding-top: 5px;
+  font-size: 0.7em;
+  color: #888;
+}
+
+mat-error {
+  color: #f44336;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
