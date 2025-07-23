@@ -2,6 +2,25 @@ mat-grid-tile {
   background: lightblue;
 }
 
+mat-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 80%;
+}
+
+
+:root {
+  /* Light Mode */
+  [data-theme="light"] {
+    background-color: #fefffe;
+  }
+  /* Dark Mode */
+  [data-theme="dark"] {
+     background-color: #1f1f1f;
+  }
+}
+
+
+
 .section-title {
   font-size: 1.5rem;
   font-weight: 500;
@@ -26,10 +45,9 @@ mat-grid-tile {
 .grid-tile-placeholder {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: left;
+  justify-content: left;
   width: 100%;
-  height: 100%;
   text-align: center;
   color: rgba(0, 0, 0, 0.6);
   background-color: rgba(255, 255, 255, 0.9);
@@ -54,14 +72,12 @@ mat-grid-tile {
   z-index: 1;
 }
 
-.tradingview-widget-container__widget {
-  flex-grow: 1;
-  width: 100%;
-  height: 100%;
-}
 
 .tradingview-widget-copyright {
-  width: 100%;
+  width: 0%;
+  height:0%;
+  display: flex;
+  justify-content: center;
   text-align: center;
   padding-top: 5px;
   font-size: 0.7em;
@@ -72,4 +88,25 @@ mat-error {
   color: #f44336;
   font-weight: bold;
   margin-bottom: 1rem;
+}
+
+
+
+.container { /* Substitua por sua classe ou ID do contêiner pai */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch; /* Faz com que os elementos tenham a mesma altura */
+  gap: 16px; /* Espaçamento entre os elementos */
+}
+
+#widget-actions {
+  width: 20%;
+  display: flex;
+  margin-left: 20px;
+}
+
+#ticker-select {
+  width: 80%;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }

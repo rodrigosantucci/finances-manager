@@ -1,59 +1,50 @@
 <page-header class="bg-dark text-light" title="Estatísticas" />
 
-<mat-card class="mt-4">
+<mat-card class="mt-4" >
   <mat-card-content>
     <section>
-      <mat-form-field class="w-full mb-2" appearance="outline">
-        <mat-label>Selecione o ativo</mat-label>
-        <mtx-select
-          [items]="userTickets"
-          bindLabel="name"
-          bindValue="symbol"
-          [multiple]="false"
-          [(ngModel)]="selectedTicker"
-          (change)="onTickerSelected()"
-        />
-        <!-- O botão de busca agora chama loadTradingViewWidgets() diretamente -->
-        <a matSuffix href="javascript:void(0);" mat-mini-fab (click)="loadTradingViewWidgets()">
-          <mat-icon>search</mat-icon>
-        </a>
-      </mat-form-field>
+      <div class="flex items-center gap-2 mb-4 w-full container">
+        <div id="ticker-select">
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Selecione o ativo</mat-label>
+            <mtx-select
+              [items]="userTickets"
+              bindLabel="name"
+              bindValue="symbol"
+              [multiple]="false"
+              [(ngModel)]="selectedTicker"
+              (change)="onTickerSelected()"
+            ></mtx-select>
+          </mat-form-field>
+        </div>
 
-      <!-- Mensagem de erro -->
+        <div id="widget-actions">
+          <a href="javascript:void(0);" mat-mini-fab (click)="loadTradingViewWidgets()" matTooltip="Buscar">
+            <mat-icon>search</mat-icon>
+          </a>
+          <a href="javascript:void(0);" mat-mini-fab (click)="clearWidgets()" matTooltip="Limpar">
+            <mat-icon>clear</mat-icon>
+          </a>
+        </div>
+      </div>
+
       @if (errorMessage) {
         <mat-error class="mb-4">{{ errorMessage }}</mat-error>
       }
 
-      <mat-grid-list
-        role="list"
-        cols="2"
-        rowHeight="fit"
-        [gutterSize]="ratioGutter"
-        [style.height]="fitListHeight"
-      >
-        @for (tile of tiles; track tile) {
-          <mat-grid-tile role="listitem" [style.background]="'#FFFFFF'">
-            @if (loadingWidgets) {
-              <!-- Placeholder para CADA tile enquanto a GRID INTEIRA está carregando -->
-              <div class="grid-tile-placeholder">
-                <mat-spinner diameter="50"></mat-spinner>
-                <p>Carregando {{ tile.text }}...</p>
-              </div>
-            } @else {
-              <!-- Conteúdo real do widget TradingView (será preenchido pelo TS) -->
-              <div class="tradingview-widget-container" [id]="'widget-' + tile.id">
-                <div class="tradingview-widget-container__widget"></div>
-                <div class="tradingview-widget-copyright">
-                  <a href="https://br.tradingview.com/" rel="noopener nofollow" target="_blank">
-                    <span class="blue-text">Monitore todos os mercados no TradingView</span>
-                  </a>
-                </div>
-                <!-- O script será INJETADO AQUI pelo TypeScript -->
-              </div>
-            }
-          </mat-grid-tile>
+      @if (loadingWidgets) {
+        <div class="flex justify-center my-4">
+          <mat-spinner></mat-spinner>
+        </div>
+      }
+
+      <div class="flex flex-col space-y-6">
+        @for (title of titles; track title.id) {
+          <div class="tradingview-widget-container w-full magazine-widget" id="widget-{{title.id}}">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
         }
-      </mat-grid-list>
+      </div>
     </section>
   </mat-card-content>
 </mat-card>
