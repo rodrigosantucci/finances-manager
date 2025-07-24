@@ -23,9 +23,9 @@ import { SettingsService } from '@core/bootstrap/settings.service';
 import { AuthService } from '@core/authentication';
 
 @Component({
-  selector: 'app-media-gallery',
-  templateUrl: './gallery.component.html',
-  styleUrls: ['./gallery.component.scss'],
+  selector: 'app-assets-stats',
+  templateUrl: './stats.component.html',
+  styleUrls: ['./stats.component.scss'],
   standalone: true,
   imports: [
     MatGridListModule,
@@ -40,12 +40,10 @@ import { AuthService } from '@core/authentication';
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
-    NgIf,
-    NgFor,
     MatTooltipModule,
   ],
 })
-export class MediaGalleryComponent implements OnInit, OnDestroy {
+export class AssetsStatsComponent implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
   private readonly http = inject(HttpClient);
   private readonly renderer = inject(Renderer2);

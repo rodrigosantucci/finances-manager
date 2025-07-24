@@ -5,6 +5,7 @@ import { Token, User } from './interface'; // Certifique-se de que este caminho 
 import { LoginService } from './login.service'; // Certifique-se de que este caminho está correto
 import { TokenService } from './token.service'; // Certifique-se de que este caminho está correto
 
+
 // Importe a interface Menu do seu MenuService para garantir a tipagem correta
 // Ajuste o caminho conforme a localização do seu MenuService
 import { Menu } from '../bootstrap/menu.service'; // Exemplo de caminho
@@ -15,7 +16,6 @@ import { Menu } from '../bootstrap/menu.service'; // Exemplo de caminho
 export class AuthService {
   private readonly loginService = inject(LoginService);
   private readonly tokenService = inject(TokenService);
-
   private user$ = new BehaviorSubject<User>({});
 
   private readonly USER_STORAGE_KEY = 'currentUserData';
@@ -137,7 +137,7 @@ export class AuthService {
         permissions: {}, // Mantenha para consistência com MenuService
       },
       {
-        route: 'media/gallery',
+        route: 'assets/stats',
         name: 'Estatísticas',
         translationKey: 'menu.Estatisticas',
         type: 'link',

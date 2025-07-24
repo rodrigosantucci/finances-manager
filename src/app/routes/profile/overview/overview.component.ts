@@ -117,7 +117,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
         width: '100%',
         height: '450', // Ajuste a altura conforme necessário
         colorTheme: currentTheme,
-        locale: 'pt'
+        locale: 'br'
       };
 
       this.tradingViewScript = this.renderer.createElement('script');

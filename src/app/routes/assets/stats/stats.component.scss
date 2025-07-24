@@ -4,7 +4,8 @@ mat-grid-tile {
 
 mat-card {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  width: 100%;
+  min-width: 70%;
 }
 
 
@@ -35,7 +36,7 @@ a {
   text-transform: uppercase;
   vertical-align: middle;
 }
-/* gallery.component.scss */
+
 
 mat-grid-tile {
   position: relative;

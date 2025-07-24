@@ -12,6 +12,7 @@ import { environment } from '@env/environment';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
+import { DashboardService } from 'app/routes/dashboard/dashboard.service';
 
 @Component({
   selector: 'app-profile-layout',
@@ -35,6 +36,8 @@ export class ProfileLayoutComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly dashboardService = inject(DashboardService);
+
 
   defaultAvatarPlaceholder: string = 'images/avatar.jpg';
   private readonly apiUrl: string = environment.baseUrl;
@@ -63,6 +66,7 @@ export class ProfileLayoutComponent implements OnInit, OnDestroy {
 
   logout() {
     this.auth.logout().subscribe(() => {
+      this.dashboardService.clearPatrimonioCache(); // Limpa o cache do serviço de dashboard
       this.router.navigateByUrl('/auth/login');
     });
   }

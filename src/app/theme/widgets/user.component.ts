@@ -9,6 +9,7 @@ import { AuthService, SettingsService, User } from '@core';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
+import { DashboardService } from 'app/routes/dashboard/dashboard.service';
 
 @Component({
   selector: 'app-user',
@@ -54,6 +55,7 @@ export class UserComponent implements OnInit, OnDestroy {
   private readonly settings = inject(SettingsService);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly dashboardService = inject(DashboardService);
 
   user!: User;
   defaultAvatarPlaceholder: string = 'images/avatar.jpg';
@@ -110,6 +112,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   logout() {
     this.auth.logout().subscribe(() => {
+      this.dashboardService.clearPatrimonioCache(); // Limpa o cache do serviço de dashboard
       this.router.navigateByUrl('/auth/login');
     });
   }
