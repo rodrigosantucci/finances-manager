@@ -144,6 +144,14 @@ export class AuthService {
         icon: 'assessment',
         permissions: {}, // Importante manter
       },
+      {
+        route: 'ia/assistant',
+        name: 'Assistente IA',
+        translationKey: 'menu.AssistenteIA',
+        type: 'link',
+        icon: 'adb',
+        permissions: {}, // Importante manter
+      },
     ];
 
 //    console.log('AuthService.menu() está a retornar:', fullMenu); // Log para depuração

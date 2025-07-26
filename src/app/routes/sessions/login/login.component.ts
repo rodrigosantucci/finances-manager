@@ -1,3 +1,4 @@
+// src/app/routes/sessions/login/login.component.ts
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,6 +18,7 @@ import { AuthService } from '@core/authentication';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
+  standalone: true, // Adicione standalone: true se este for um componente standalone
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -66,7 +68,17 @@ export class LoginComponent {
           this.router.navigateByUrl('/');
         },
         error: (errorRes: HttpErrorResponse) => {
-          if (errorRes.status === 422) {
+          this.isSubmitting = false; // Importante para reabilitar o botão
+
+          if (errorRes.status === 401) {
+            // Defina um erro personalizado para o formulário
+            this.loginForm.setErrors({ invalidCredentials: true });
+            // Opcional: Marcar os campos como 'touched' para exibir os erros imediatamente
+            this.username.markAsTouched();
+            this.password.markAsTouched();
+            console.log('Login ou senha inválidos.');
+          } else if (errorRes.status === 422) {
+            // Lógica existente para erros de validação (ex: campos faltando)
             const form = this.loginForm;
             const errors = errorRes.error.errors;
             Object.keys(errors).forEach(key => {
@@ -74,8 +86,10 @@ export class LoginComponent {
                 remote: errors[key][0],
               });
             });
+          } else {
+            // Tratamento de outros erros HTTP, se necessário
+            console.error('Erro de login:', errorRes);
           }
-          this.isSubmitting = false;
         },
       });
   }

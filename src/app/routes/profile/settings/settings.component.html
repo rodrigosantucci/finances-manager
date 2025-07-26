@@ -70,20 +70,30 @@
           </mat-form-field>
         </div>
 
+        <!-- Campo Estratégia como Dropdown -->
         <div class="col-sm-6 col-xl-4">
           <mat-form-field>
             <mat-label>Estratégia</mat-label>
-            <input matInput placeholder="Sua estratégia" formControlName="estrategia" required />
+            <mat-select formControlName="estrategia" required>
+              @for (option of estrategiaOptions; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
             @if (reactiveForm.get('estrategia')?.invalid && reactiveForm.get('estrategia')?.touched) {
               <mat-error>{{ getErrorMessage('estrategia') }}</mat-error>
             }
           </mat-form-field>
         </div>
 
+        <!-- Campo Perfil como Dropdown -->
         <div class="col-sm-6 col-xl-4">
           <mat-form-field>
             <mat-label>Perfil</mat-label>
-            <input matInput placeholder="Seu perfil" formControlName="perfil" required />
+            <mat-select formControlName="perfil" required>
+              @for (option of perfilOptions; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
             @if (reactiveForm.get('perfil')?.invalid && reactiveForm.get('perfil')?.touched) {
               <mat-error>{{ getErrorMessage('perfil') }}</mat-error>
             }

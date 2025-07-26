@@ -1,0 +1,245 @@
+/* src/app/routes/sessions/login/login.component.scss */
+
+/* Definição de Cores para Temas Light e Dark */
+:root {
+  [data-theme="light"] {
+    --background: #fefffe;
+    --text-primary: #11161d;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --primary: #d32f2f;
+    --primary-hover: #b71c1c;
+    --primary-text: #ffffff7b;
+    --disabled-bg: #e5e7eb;
+    --disabled-text: #9ca3af;
+    --error: #d32f2f;
+    --card-background: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.15);
+    --input-border-color: #e0e0e0; /* Nova variável para bordas de input */
+    --input-focus-color: #d32f2f; /* Cor da borda ao focar */
+  }
+
+  [data-theme="dark"] {
+    --background: #1f1f1f;
+    --text-primary: #f9fafba7;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --primary: #ef5350;
+    --primary-hover: #f97066;
+    --primary-text: #ffffff4d;
+    --disabled-bg: #374151;
+    --disabled-text: #6b7280;
+    --error: #ef5350;
+    --card-background: #2d2d2d;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --input-border-color: #424242; /* Nova variável para bordas de input no dark mode */
+    --input-focus-color: #ef5350; /* Cor da borda ao focar no dark mode */
+  }
+}
+
+/* Estilos Globais para o Contêiner do Formulário */
+.d-flex.w-full.h-full {
+  display: flex;
+  width: 100%;
+  min-height: 90vh; /* Garante que o contêiner ocupa a altura total da viewport */
+  align-items: center; /* Centraliza verticalmente */
+  justify-content: center; /* Centraliza horizontalmente */
+  background-color: var(--background); /* Aplica a cor de fundo do tema */
+  transition: background-color 0.3s ease; /* Transição suave para mudança de tema */
+}
+
+/* Estilos do Cartão do Formulário (mat-card) */
+mat-card {
+  background: var(--card-background);
+  box-shadow: 0 8px 25px var(--shadow); /* Sombra mais pronunciada e suave */
+  border-radius: 12px; /* Cantos mais arredondados */
+  padding: 30px; /* Mais preenchimento interno #/
+  margin: 20px; /* Margem para evitar que o cartão grude nas bordas da tela */
+  width: 100%; /* Ocupa 100% da largura disponível */
+  max-width: 420px; /* Aumenta um pouco a largura máxima para telas maiores */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transições para tema */
+}
+
+/* Cabeçalho do Cartão */
+mat-card-header.m-b-24 {
+  margin-bottom: 24px;
+  text-align: center; /* Centraliza o título */
+  display: block; /* Garante que o margin-bottom funcione corretamente */
+}
+
+mat-card-title {
+  font-size: 28px; /* Fonte maior para o título */
+  font-weight: 600; /* Mais negrito */
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+/* Conteúdo do Cartão */
+mat-card-content {
+  padding: 0; /* Remova o padding aqui, pois o mat-card já tem */
+}
+
+/* Formulário e Campos */
+.form-field-full {
+  display: flex;
+  flex-direction: column;
+  gap: 35px; /* Aumenta o espaçamento entre os campos */
+}
+
+mat-form-field {
+  width: 100%;
+
+  /* Customizando a borda dos inputs */
+  .mat-form-field-wrapper {
+    padding-bottom: 0; /* Remove padding desnecessário na parte inferior */
+  }
+
+  .mat-form-field-outline-start,
+  .mat-form-field-outline-gap,
+  .mat-form-field-outline-end {
+    border-color: var(--input-border-color) !important; /* Cor da borda padrão */
+    transition: border-color 0.3s ease;
+  }
+
+  &.mat-focused .mat-form-field-outline-start,
+  &.mat-focused .mat-form-field-outline-gap,
+  &.mat-focused .mat-form-field-outline-end {
+    border-color: var(--input-focus-color) !important; /* Cor da borda ao focar */
+  }
+
+  .mat-form-field-label {
+    color: var(--text-secondary); /* Cor do label */
+    transition: color 0.3s ease;
+  }
+
+  input.mat-input-element {
+    color: var(--text-primary); /* Cor do texto digitado */
+    background-color: transparent; /* Garante que o fundo do input seja transparente */
+    transition: color 0.3s ease;
+  }
+}
+
+/* Mensagens de Erro dos Campos */
+mat-error {
+  font-size: 13px; /* Levemente maior */
+  color: var(--error);
+  padding-left: 5px; /* Alinha com o texto do input */
+}
+
+/* Checkbox "Lembrar de mim" */
+mat-checkbox {
+  margin: 15px 0; /* Ajusta o espaçamento */
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+/* Botão de Login */
+button[mat-flat-button] {
+  height: 48px; /* Aumenta a altura do botão */
+  font-size: 16px; /* Aumenta o tamanho da fonte */
+  font-weight: 600; /* Mais negrito */
+  border-radius: 8px; /* Cantos mais arredondados para o botão */
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease; /* Transições para hover e tema */
+  &:hover:not(:disabled) {
+    transform: translateY(-2px); /* Efeito sutil ao passar o mouse */
+  }
+}
+
+/* Links (Criar conta) */
+a[routerLink] {
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* Container do link "Não tem conta?" */
+.form-field-full > div {
+  margin-top: 10px; /* Ajusta o espaçamento superior */
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+/* Mensagem de erro geral do formulário (Login ou senha inválidos) */
+.error-message {
+  color: var(--error);
+  font-size: 14px; /* Aumenta o tamanho da fonte para a mensagem geral */
+  margin-bottom: 20px; /* Mais espaçamento abaixo da mensagem */
+  padding: 12px 15px; /* Mais padding */
+  text-align: center;
+  border-radius: 8px; /* Cantos arredondados */
+  background-color: rgba(255, 0, 0, 0.1); /* Um fundo suave para destaque */
+  border: 1px solid var(--error); /* Borda para contraste */
+  opacity: 0; /* Esconde por padrão */
+  visibility: hidden; /* Esconde por padrão */
+  transform: translateY(-10px); /* Começa ligeiramente acima */
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.error-message.error-visible {
+  opacity: 1; /* Torna visível */
+  visibility: visible; /* Torna visível */
+  transform: translateY(0); /* Posição final */
+}
+
+/* --- Responsividade --- */
+
+/* Telas menores que 768px (tablets e smartphones maiores) */
+@media (max-width: 768px) {
+  mat-card {
+    max-width: 380px; /* Reduz um pouco o max-width */
+    padding: 25px;
+  }
+
+  mat-card-title {
+    font-size: 26px;
+  }
+
+  .form-field-full {
+    gap: 18px;
+  }
+
+  button[mat-flat-button] {
+    height: 45px;
+    font-size: 15px;
+  }
+
+  .error-message {
+    font-size: 13px;
+    margin-bottom: 18px;
+    padding: 10px 12px;
+  }
+}
+
+/* Telas menores que 576px (smartphones) */
+@media (max-width: 576px) {
+  mat-card {
+    max-width: 90%; /* Ocupa mais largura em telas pequenas */
+    margin: 20px; /* Adiciona margem para não colar nas bordas */
+    padding: 20px;
+  }
+
+  mat-card-title {
+    font-size: 24px;
+  }
+
+  .form-field-full {
+    gap: 15px;
+  }
+
+  button[mat-flat-button] {
+    height: 42px;
+    font-size: 14px;
+  }
+
+  .error-message {
+    font-size: 12px;
+    margin-bottom: 15px;
+    padding: 8px 10px;
+  }
+
+  .form-field-full > div {
+    flex-direction: column; /* Quebra em linha em telas muito pequenas */
+    align-items: center; /* Centraliza itens */
+    gap: 5px;
+  }
+}

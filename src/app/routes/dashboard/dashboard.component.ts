@@ -747,7 +747,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  private getChartOptions(
+private getChartOptions(
   series: number[],
   labels: string[],
   title: string,
@@ -758,11 +758,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   const chartSeries = hasData ? series : [1];
   const chartLabels = hasData ? labels.map(label => String(label)) : ['Sem dados'];
 
+  // Determine theme-aware colors based on the current theme
+  const isDarkTheme = this.tema === 'dark';
+  const textPrimary = isDarkTheme ? '#f9fafb' : '#11161d';
+  const textSecondary = isDarkTheme ? '#d1d5db' : '#4b5563';
+  const textMuted = isDarkTheme ? '#9ca3af' : '#6b7280';
+  const chartBackground = isDarkTheme ? '#2d2d2d' : '#ffffff';
+
+  // Define chart colors to match legend markers
+  const chartColors = [
+    '#d32f2f', // Red (primary, light theme)
+    '#10B981', // Green
+    '#F59E0B', // Yellow
+    '#3B82F6', // Blue
+    '#8B5CF6', // Purple
+    '#EC4899', // Pink
+    '#6EE7B7', // Light Green
+    '#FBBF24', // Amber
+    '#ef5350', // Red (primary, dark theme)
+    '#42a5f5', // Blue (primary, dark theme)
+    '#66bb6a', // Green (primary, dark theme)
+    '#ab47bc', // Purple (primary, dark theme)
+    '#ff7043', // Orange (primary, dark theme)
+    '#26c6da', // Cyan (primary, dark theme)
+  ];
+
   return {
     chart: {
       type: 'pie',
-      height: 450, // Fixed height
-      width: 300,  // Fixed width
+      height: 500, // Fixed height
+      width: 500,  // Fixed width
       animations: {
         enabled: true,
         speed: 600,
@@ -774,32 +799,40 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         top: 2,
         left: 2,
         blur: 4,
-        opacity: 0.2,
+        opacity: isDarkTheme ? 0.3 : 0.2,
       },
       toolbar: { show: false },
-      sparkline: { enabled: false }, // Ensure no sparkline mode
+      sparkline: { enabled: false },
     },
     series: chartSeries,
     labels: chartLabels,
-    colors: [
-      '#3B82F6',
-      '#10B981',
-      '#F59E0B',
-      '#EF4444',
-      '#8B5CF6',
-      '#EC4899',
-      '#6EE7B7',
-      '#FBBF24',
-      '#FCA5A5',
-    ],
+    colors: chartColors,
     legend: {
       show: true,
-      position: 'bottom',
-      horizontalAlign: 'center',
+      position: 'bottom', // Legend positioned below the chart
+      horizontalAlign: 'center', // Center-align legend items horizontally
       fontSize: '12px',
       fontFamily: 'Roboto, sans-serif',
+      fontWeight: 400,
       labels: {
-        colors: '#374151', // Gray-700
+        colors: textSecondary, // Use secondary text color for legend text
+        useSeriesColors: false, // Ensure text uses textSecondary, not series colors
+      },
+      markers: {
+        size: 10, // Marker size
+        shape: 'circle', // Circular markers
+        strokeWidth: 0, // No border for cleaner look
+        fillColors: chartColors, // Match marker colors to chart colors
+        offsetX: -2,
+        offsetY: 0,
+      },
+      itemMargin: {
+        horizontal: 8,
+        vertical: 4,
+      },
+      formatter: (seriesName: string, opts: any) => {
+        const value = opts.w.globals.series[opts.seriesIndex];
+        return `${seriesName}: ${isPercentage ? value.toFixed(1) + '%' : 'R$ ' + value.toFixed(2)}`;
       },
     },
     title: {
@@ -810,7 +843,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         fontSize: '16px',
         fontFamily: 'Roboto, sans-serif',
         fontWeight: '500',
-        color: '#374151', // Gray-700
+        color: textPrimary,
       },
     },
     noData: {
@@ -822,7 +855,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       style: {
         fontSize: '14px',
         fontFamily: 'Roboto, sans-serif',
-        color: '#6B7280',
+        color: textMuted,
       },
     },
     tooltip: {
@@ -837,8 +870,68 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     stroke: {
       width: 2,
-      colors: ['#FFFFFF'],
+      colors: [chartBackground], // Match stroke to chart background
     },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          chart: {
+            width: 250,
+            height: 400,
+          },
+          legend: {
+            fontSize: '10px',
+            itemMargin: {
+              horizontal: 6,
+              vertical: 3,
+            },
+            markers: {
+              size: 10, // Smaller markers on tablets
+              shape: 'circle',
+              strokeWidth: 0,
+              fillColors: chartColors,
+              offsetX: -2,
+              offsetY: 0,
+            },
+          },
+          title: {
+            style: {
+              fontSize: '14px',
+            },
+          },
+        },
+      },
+      {
+        breakpoint: 576,
+        options: {
+          chart: {
+            width: 200,
+            height: 350,
+          },
+          legend: {
+            fontSize: '10px',
+            itemMargin: {
+              horizontal: 4,
+              vertical: 2,
+            },
+            markers: {
+              size: 8, // Smaller markers on mobile
+              shape: 'circle',
+              strokeWidth: 0,
+              fillColors: chartColors,
+              offsetX: -2,
+              offsetY: 0,
+            },
+          },
+          title: {
+            style: {
+              fontSize: '10px',
+            },
+          },
+        },
+      },
+    ],
   };
 }
 

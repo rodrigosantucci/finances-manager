@@ -35,7 +35,6 @@ export interface AtivoVO {
   category?: string;
 }
 
-// Interface para o retorno do endpoint patrimonioCompleto
 export interface PatrimonioCompletoResponse {
   ticker: string;
   quantidade: number;
@@ -55,6 +54,9 @@ export interface PatrimonioCompletoResponse {
   quantidadeFormatada: string;
   moedaFormatada: string;
   tickerFormatado: string;
+  // --- Adição abaixo ---
+  id: number; // Adicionado para capturar o ID numérico do ativo do backend
+  // --------------------
 }
 
 @Injectable({
@@ -282,21 +284,7 @@ export class DashboardService {
     return this.patrimonioCompletoCache$;
   }
 
-  private mapTipoAtivoToCategory(tipoAtivoFormatado: string): string {
-    switch (tipoAtivoFormatado.toUpperCase()) {
-      case 'AÇÃO':
-        return 'acoes';
-      case 'FII': // Considerando FIIs como Fundos
-      case 'FUNDO':
-        return 'fundos';
-      case 'CAIXA':
-        return 'caixa';
-      case 'ASSET': // Ou o que for retornado da API
-        return 'assets';
-      default:
-        return 'outros';
-    }
-  }
+
 
 
 
@@ -417,8 +405,9 @@ export class DashboardService {
     );
   }
 
-  updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
-    if (!['fundos', 'acoes', 'caixa', 'assets'].includes(category)) {
+    updateAtivo(usuarioId: number | string, ativo: AtivoVO, category: string): Observable<void> {
+    // Adicionado 'outros' às categorias válidas, caso seu backend aceite.
+    if (!['fundos', 'acoes', 'caixa', 'assets', 'outros'].includes(category)) {
       console.error(`Categoria inválida para atualização: ${category}`);
       return throwError(() => new Error('Categoria inválida'));
     }
@@ -430,35 +419,50 @@ export class DashboardService {
 
     const encodedTicker = encodeURIComponent(ativo.tickerFormatado);
     const url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${encodedTicker}`;
-    console.log('URL gerada:', url);
+    console.log('URL de atualização gerada:', url);
 
+    // CORREÇÃO 2: Garantir que os dados enviados correspondem ao que o backend espera.
+    // Especialmente 'idPatrimonio', 'tipoAtivo' (numérico) e 'moeda'.
     const ativoParaEnviar = {
-      idPatrimonio: ativo.id || 0,
+      // idPatrimonio deve ser o ID numérico do ativo no banco de dados.
+      // É crucial que ativo.id venha do 'id' numérico da PatrimonioCompletoResponse.
+      idPatrimonio: typeof ativo.id === 'string' ? Number(ativo.id) : (ativo.id || 0),
       descricao: ativo.descricaoFormatada || '',
-      quantidade: Number(ativo.quantidadeFormatada) || 0,
-      precoMedio: Number(ativo.precoMedioFormatado) || 0,
-      valorInvestido: Number(ativo.valorInvestidoFormatado) || 0,
-      ticker: ativo.tickerFormatado,
+      quantidade: ativo.quantidadeFormatada, // Já é número
+      precoMedio: ativo.precoMedioFormatado, // Já é número
+      valorInvestido: ativo.valorInvestidoFormatado, // Já é número
+      ticker: ativo.tickerFormatado, // O ticker também é importante no corpo
       usuario: {
-        id: Number(usuarioId) || 0
+        id: Number(usuarioId) || 0 // Garante que o ID do usuário seja um número
       },
+      // CORREÇÃO 3: Adicionar tipoAtivo mapeado para número
+      tipoAtivo: this.mapCategoryToTipoAtivoNumber(category),
+      // CORREÇÃO 4: Adicionar a moeda original do ativo
+      moeda: ativo.moeda
     };
+
+    console.log('Objeto enviado para atualização:', ativoParaEnviar); // Log para verificar o payload
 
     return this.http.put<void>(url, ativoParaEnviar, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap(() => {
         console.log(`Ativo com ticker ${ativo.tickerFormatado} atualizado com sucesso na categoria ${category}.`);
-        // Invalida o cache para que a próxima chamada de getPatrimonioCompleto recarregue os dados
         this.patrimonioCompletoCache$ = null;
       }),
       catchError(error => {
         console.error(`Erro ao atualizar ativo com ticker ${ativo.tickerFormatado} na categoria ${category}:`, {
           status: error.status,
           statusText: error.statusText,
-          error: error.error
+          error: error.error, // Detalhes do erro do backend, se disponíveis
+          requestBody: ativoParaEnviar // Útil para depuração
         });
-        return throwError(() => new Error(`Erro ao atualizar ativo: ${error.error?.message || error.message || 'Erro desconhecido'}`));
+        // Tenta extrair uma mensagem de erro mais útil do backend
+        const backendErrorMessage = error.error?.attributeName && error.error?.objectName
+            ? `Erro de validação no campo '${error.error.attributeName}' para o objeto '${error.error.objectName}'. Valor inválido: '${error.error.value}'`
+            : error.error?.message || error.message || 'Erro desconhecido';
+
+        return throwError(() => new Error(`Erro ao atualizar ativo: ${backendErrorMessage}`));
       })
     );
   }
@@ -483,8 +487,36 @@ export class DashboardService {
   public clearPatrimonioCache(): void {
     this.patrimonioCompletoCache$ = null;
     this.cotacaoUSDCache$ = null; // Também limpa o cache da cotação USD
-    console.log('DashboardService: Cache de patrimônio limpo.');
+ //   console.log('DashboardService: Cache de patrimônio limpo.');
   }
 
+
+
+  private mapTipoAtivoToCategory(tipoAtivoFormatado: string): string {
+    switch (tipoAtivoFormatado.toUpperCase()) {
+      case 'AÇÃO':
+        return 'acoes';
+      case 'FII': // Considerando FIIs como Fundos
+      case 'FUNDO':
+        return 'fundos';
+      case 'CAIXA':
+        return 'caixa';
+      case 'ASSET': // Ou o que for retornado da API
+        return 'assets';
+      default:
+        return 'outros';
+    }
+  }
+
+  // --- Adição abaixo ---
+  private mapCategoryToTipoAtivoNumber(category: string): number {
+    switch (category.toLowerCase()) {
+      case 'acoes': return 1;
+      case 'fundos': return 2;
+      case 'caixa': return 3;
+      case 'assets': return 4;
+      default: return 0; // Valor padrão se a categoria não for mapeada
+    }
+  }
 
 }

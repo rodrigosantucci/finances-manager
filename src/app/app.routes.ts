@@ -42,8 +42,8 @@ export const routes: Routes = [
         loadChildren: () => import('./routes/profile/profile.routes').then(m => m.routes),
       },
       {
-        path: 'permissions',
-        loadChildren: () => import('./routes/permissions/permissions.routes').then(m => m.routes),
+        path: 'ia',
+        loadChildren: () => import('./routes/ia/ia.routes').then(m => m.routes),
       },
       {
         path: 'utilities',

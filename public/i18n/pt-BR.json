@@ -125,7 +125,7 @@
   "edit_profile": "Editar Perfil",
   "logout": "Sair",
   "login": "Login",
-  "login_title": "Bem-vindo(a) de volta",
+  "login_title": "Bem-vindo(a)",
   "have_no_account": "Não tem uma conta",
   "create_one_account": "Clique aqui para criar",
   "please_enter": "Por favor, preencha o campo destacado",
@@ -138,5 +138,6 @@
   "register_title": "Criar sua conta leva apenas alguns segundos",
   "read_and_agree": "Eu li e concordo com os termos de serviço",
   "have_an_account": "Já tem uma conta",
-  "restore_defaults": "Restaurar padrões"
+  "restore_defaults": "Restaurar padrões",
+  "invalid_credentials": "Usuário ou senha incorretos."
 }

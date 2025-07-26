@@ -1,0 +1,22 @@
+button,
+a {
+  margin: 8px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  align-self: center;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+
+mat-card-content button {
+ margin: 0 auto;
+ display: block;
+
+
+}

@@ -1,20 +1,25 @@
 <div class="d-flex w-full h-full">
   <mat-card class="m-auto" style="max-width: 380px">
     <mat-card-header class="m-b-24">
-      <mat-card-title>👋 {{ 'login_title' | translate }}!</mat-card-title>
+      <mat-card-title>{{ 'login_title' | translate }}!</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
       <form class="form-field-full" [formGroup]="loginForm">
+        @if (loginForm.errors?.invalidCredentials) {
+          <div class="mat-error m-b-16" style="text-align: center; color: #ff0000;">
+            {{ 'invalid_credentials' | translate }}
+          </div>
+        }
+
         <mat-form-field appearance="outline">
           <mat-label>{{ 'username' | translate }}:</mat-label>
-          <input matInput  formControlName="username" required />
+          <input matInput formControlName="username" required />
           @if (username.invalid) {
             <mat-error>
               @if (username.errors?.required) {
                 <span>
                   {{ 'please_enter' | translate }}
-
                 </span>
               }
               @if (username.errors?.remote) {
@@ -47,7 +52,9 @@
           }
         </mat-form-field>
 
-        <mat-checkbox formControlName="rememberMe">{{ 'remember_me' | translate }}</mat-checkbox>
+        <mat-checkbox formControlName="rememberMe">{{
+          'remember_me' | translate
+        }}</mat-checkbox>
 
         <button
           class="w-full m-y-16"
@@ -60,8 +67,10 @@
         </button>
 
         <div>
-          <span>{{ 'have_no_account' | translate }}?  </span>
-          <a routerLink="/auth/register">{{ 'create_one_account' | translate }}</a>
+          <span>{{ 'have_no_account' | translate }}? </span>
+          <a routerLink="/auth/register">{{
+            'create_one_account' | translate
+          }}</a>
         </div>
       </form>
     </mat-card-content>
