@@ -1,6 +1,6 @@
 {
   "name": "finances-manager",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "nx serve",
@@ -11,6 +11,7 @@
     "lint": "nx lint --fix && npm run lint:scss",
     "lint:ts": "eslint \"src/**/*.ts\" --fix",
     "lint:scss": "stylelint \"src/**/*.scss\" --fix",
+    "deploy:android": "ng build  && npx capacitor-assets generate --assetPath 'src/assets/' && npx cap sync android",
     "build:ghpages-win": "ng build --configuration production --output-path docs --base-href /finances-manager/ && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
     "build:ghpages-linux": "ng build --configuration production --output-path docs --base-href /finances-manager/ && cp -r docs/browser/* docs/ && rm -rf docs/browser"
   },
@@ -27,6 +28,11 @@
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/splash-screen": "^7.0.1",
     "@ng-matero/extensions": "^19.0.2",
     "@ng-matero/extensions-date-fns-adapter": "^19.0.0",
     "@ngx-formly/core": "^6.3.10",
@@ -74,6 +80,8 @@
     "stylelint-config-recommended-scss": "^14.1.0",
     "stylelint-config-standard": "^36.0.0",
     "typescript": "~5.6.2",
-    "typescript-eslint": "^8.19.0"
+    "typescript-eslint": "^8.19.0",
+
+    "@capacitor/assets": "^3.0.5"
   }
 }

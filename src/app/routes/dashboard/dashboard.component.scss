@@ -1,111 +1,221 @@
+/* Ajustes gerais para responsividade */
+:root {
+  /* Mantém as variáveis de tema existentes */
+}
+
+/* Garantir que o contêiner principal seja fluido */
+.dashboard-container {
+  padding: 16px;
+  background: var(--background);
+  min-height: 100dvh;
+  width: 100%;
+  box-sizing: border-box; /* Evita problemas com padding */
+}
+
+/* Ajustar o loading-indicator para telas menores */
 .loading-indicator {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin: 32px 0;
+  gap: 10px;
+  margin: 24px 0;
 
   .mat-mdc-progress-spinner {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 
   p {
-    font-size: 14px;
+    font-size: 13px;
     color: #6b7280;
     margin: 0;
   }
 }
 
-.form-control {
-  width: 75px;
-}
-
-
+/* Ajustar o error-container para telas menores */
 .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  gap: 12px;
+  padding: 12px;
+  background-color: #fee2e2;
+  border-radius: 4px;
+  margin: 12px 8px;
   text-align: center;
-  gap: 16px;
   color: #d32f2f;
 
   p {
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
   }
 
   button {
     margin-top: 8px;
+    font-size: 14px;
+    padding: 8px 16px;
   }
 }
 
-.dashboard-container {
-  padding: 16px;
+/* Ajustar campos de formulário */
+.form-control {
+  width: 100%;
+  max-width: 100px; /* Ajustado para ser mais fluido */
 }
 
+/* Ajustar botões para telas sensíveis ao toque */
+.button-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap; /* Permite que botões quebrem linha em telas pequenas */
+
+  button.mat-icon-button {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+
+    .mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+    }
+  }
+}
+
+/* Ajustar seção de resumo */
+.resumo-section {
+  padding: 1rem 0.5rem; /* Reduzir padding em telas menores */
+}
+
+/* Ajustar cartões de resumo */
+.summary-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 8px rgba(179, 174, 174, 0.1);
+  border-radius: 8px;
+
+  .mat-mdc-card-content {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .button-controls {
+    justify-content: center;
+    margin-bottom: 12px;
+
+    button.mat-icon-button {
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
+
+      .mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+      }
+    }
+  }
+
+  .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .metric {
+    .metric-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .metric-value {
+      .text-success {
+        color: #13d11c;
+      }
+
+      .text-danger {
+        color: #d32f2f;
+      }
+
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 4px 0 0;
+    }
+  }
+}
+
+/* Ajustar títulos das seções */
 .section-title {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 500;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--text-secondary);
 }
 
+/* Ajustar cartões de gráficos */
 .chart-card {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
-
-  @media (max-width: 768px) {
-    min-height: 250px;
-  }
-
-  @media (max-width: 576px) {
-    min-height: 200px;
-  }
+  min-height: 280px;
 
   .mat-mdc-card-content {
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: 16px;
+    padding: 12px;
   }
 
   #chart1,
-  #chart2 {
+  #chart2,
+  #chart3,
+  #chart4,
+  #chart5 {
     max-width: 100%;
+    height: auto;
     margin: 0 auto;
   }
 }
 
+/* Ajustar tabelas para responsividade */
 .table-card {
   height: 100%;
   overflow-x: auto;
 
   .mat-mdc-card-content {
-    padding: 16px;
+    padding: 12px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 300px; /* Garante um tamanho mínimo, mas permite rolagem */
 
     th {
       color: var(--text-secondary);
-      padding: 12px 8px;
+      padding: 10px 6px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
     }
 
     td {
       color: var(--table-cell-text);
       text-align: center;
+      padding: 8px 6px;
+      font-size: 12px;
     }
 
     .text-success {
@@ -118,159 +228,84 @@
   }
 }
 
+/* Ajustar texto de "sem dados" */
 .no-data-text {
   text-align: center;
   color: #6b7280;
-  font-size: 14px;
-  margin-top: 16px;
+  font-size: 13px;
+  margin-top: 12px;
 }
 
-.button-controls {
+/* Ajustar botões de ação */
+.action-buttons-group {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap; /* Permite que botões quebrem linha */
+}
 
-  button.mat-icon-button {
-    width: 36px;
-    height: 36px;
-    line-height: 36px;
+/* Ajustar campos de formulário do Angular Material */
+::ng-deep mat-form-field .mat-mdc-form-field-flex {
+  height: auto !important;
+  min-height: 48px;
+}
 
-    .mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-    }
+::ng-deep div .mat-mdc-form-field-infix {
+  width: 100% !important;
+  min-width: 80px; /* Garante um tamanho mínimo para inputs */
+}
+
+::ng-deep .mat-mdc-input-element {
+  font-size: 13px !important;
+  text-align: center !important;
+}
+
+/* Ajustar o TradingView widget */
+.tradingview-widget-container {
+  width: 100%;
+  overflow: hidden;
+
+  .tradingview-widget-container__widget {
+    width: 100%;
+    height: auto;
   }
 }
 
-
-
-.resumo-section {
-  padding: 1rem 0;
-}
-
-.summary-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 8px rgba(179, 174, 174, 0.1);
-  border-radius: 8px;
-
-  .mat-mdc-card-content {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .button-controls {
-    justify-content: center;
-    margin-bottom: 16px;
-
-    button.mat-icon-button {
-      width: 32px;
-      height: 32px;
-      line-height: 32px;
-
-      .mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        line-height: 18px;
-      }
-    }
-  }
-
-  .metrics {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .metric {
-    .metric-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-      margin: 0;
-    }
-
-    .metric-value {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin: 4px 0 0;
-    }
-
-    .text-primary {
-      color: var(--success-text);
-    }
-
-    .text-success {
-      color: #12c41b;
-    }
-
-    .text-danger {
-      color: #d32f2f;
-    }
-  }
-}
-
+/* Media Queries para telas menores */
 @media (max-width: 768px) {
+  .dashboard-container {
+    padding: 12px;
+  }
+
   .section-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
   }
 
-  .chart-card {
-    min-height: 250px;
-  }
-
-  .table-card {
-    table {
-      th,
-      td {
-        font-size: 12px;
-        padding: 8px 4px;
-      }
-    }
-  }
-
-  .button-controls {
-    justify-content: center;
-  }
-
-  .loading-indicator {
-    margin: 24px 0;
-
-    .mat-mdc-progress-spinner {
-      width: 32px;
-      height: 32px;
-    }
-
-    p {
-      font-size: 12px;
-    }
+  .resumo-section {
+    padding: 0.75rem 0.5rem;
   }
 
   .summary-card {
     .mat-mdc-card-content {
-      padding: 12px;
+      padding: 10px;
     }
 
     .button-controls {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      gap: 6px;
 
       button.mat-icon-button {
-        width: 50px;
-        height: 50px;
-        line-height: 50px;
+        width: 34px;
+        height: 34px;
+        line-height: 34px;
 
         .mat-icon {
-          font-size: 16px;
-          width: 26px;
-          height: 16px;
-          line-height: 16px;
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+          line-height: 18px;
         }
       }
     }
@@ -285,63 +320,180 @@
       }
     }
   }
+
+  .chart-card {
+    min-height: 220px;
+
+    .mat-mdc-card-content {
+      padding: 10px;
+    }
+  }
+
+  .table-card {
+    table {
+      min-width: 500px; /* Reduz o tamanho mínimo para telas menores */
+
+      th,
+      td {
+        font-size: 11px;
+        padding: 6px 4px;
+      }
+    }
+  }
+
+  .error-container {
+    margin: 10px 6px;
+    padding: 10px;
+
+    p {
+      font-size: 13px;
+    }
+
+    button {
+      font-size: 13px;
+      padding: 6px 12px;
+    }
+  }
+
+  .loading-indicator {
+    margin: 20px 0;
+
+    .mat-mdc-progress-spinner {
+      width: 30px;
+      height: 30px;
+    }
+
+    p {
+      font-size: 12px;
+    }
+  }
+
+  .form-control {
+    max-width: 80px;
+  }
+
+  .edit-input-field {
+    max-width: 120px;
+  }
 }
 
 @media (max-width: 576px) {
-  .resumo-section .col-6 {
+  .dashboard-container {
+    padding: 8px;
+  }
+
+  .resumo-section .col-4,
+  .resumo-section .col-md-3,
+  .resumo-section .col-md-4,
+  .acoes-section .col-12,
+  .acoes-section .col-md-8,
+  .acoes-section .col-md-4,
+  .fundos-section .col-12,
+  .fundos-section .col-md-8,
+  .fundos-section .col-md-4,
+  .caixa-section .col-12,
+  .caixa-section .col-md-8,
+  .caixa-section .col-md-4,
+  .assets-section .col-12,
+  .assets-section .col-md-8,
+  .assets-section .col-md-4 {
     flex: 0 0 100%;
     max-width: 100%;
   }
-}
 
-
-
-:root {
-  /* Light Mode */
-  [data-theme="light"] {
-    --background: #f8fafc; /* Background color for the light theme */
-    --background-card: #ffffff; /* Card background color for the light theme */
-    --primary: #3b82f6; /* Primary color for buttons and links */
-    --primary-hover: #2563eb; /* Hover state for primary color */
-    --primary-hover-bg: rgba(59, 130, 246, 0.1); /* Hover background color for light mode */
-    --text-primary: #11161d; /* Primary text color */
-    --text-secondary: #d4dbe6; /* Secondary text color */
-    --text-muted: #6b7280; /* Muted text color for less emphasis */
-    --table-cell-text: #bbbbbb; /* Text color for table cells */
-    --disabled-bg: #d1d5db; /* Background color for disabled elements */
-    --disabled-text: #9ca3af; /* Text color for disabled elements */
-    --success-bg: #22c55e; /* Background color for success messages */
-    --success-text: #ffffff; /* Text color for success messages */
-    --error-bg: #ef4444; /* Background color for error messages */
-    --error-text: #ffffff; /* Text color for error messages */
-  }
-  /* Dark Mode */
-  [data-theme="dark"] {
-    --background: #1e293b; /* Background color for the dark theme */
-    --background-card: #2d3748; /* Card background color for the dark theme */
-    --primary: #8b5cf6; /* Primary color for buttons and links */
-    --primary-hover: #7c3aed; /* Hover state for primary color */
-    --primary-hover-bg: rgba(139, 92, 246, 0.1); /* Hover background color for primary buttons */
-    --text-primary: #f1f5f9; /* Primary text color */
-    --text-secondary: #d1d5db; /* Secondary text color */
-    --text-muted: #9ca3af; /* Muted text color for less emphasis */
-    --table-cell-text: #bbbbbb; /* Text color for table cells */
-    --disabled-bg: #4b5563; /* Background color for disabled elements */
-    --disabled-text: #6b7280; /* Text color for disabled elements */
-    --success-bg: #16a34a; /* Background color for success messages */
-    --success-text: #ffffff; /* Text color for success messages */
-    --error-bg: #f87171; /* Background color for error messages */
-    --error-text: #ffffff; /* Text color for error messages */
+  .section-title {
+    font-size: 1.1rem;
   }
 
+  .chart-card {
+    min-height: 180px;
+  }
 
+  .table-card {
+    table {
+      min-width: 400px; /* Reduz ainda mais para telas muito pequenas */
 
-.dashboard-container {
-  padding: 16px;
-  background: var(--background);
-  min-height: 100dvh; /* Use dynamic viewport height for better mobile compatibility */
+      th,
+      td {
+        font-size: 10px;
+        padding: 5px 3px;
+      }
+    }
+  }
+
+  .button-controls {
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .summary-card {
+    .button-controls {
+      button.mat-icon-button {
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+
+        .mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          line-height: 16px;
+        }
+      }
+    }
+
+    .metric {
+      .metric-label {
+        font-size: 11px;
+      }
+
+      .metric-value {
+        font-size: 13px;
+      }
+    }
+  }
+
+  .error-container {
+    margin: 8px 4px;
+    padding: 8px;
+
+    p {
+      font-size: 12px;
+    }
+
+    button {
+      font-size: 12px;
+      padding: 6px 10px;
+    }
+  }
+
+  .loading-indicator {
+    margin: 16px 0;
+
+    .mat-mdc-progress-spinner {
+      width: 28px;
+      height: 28px;
+    }
+
+    p {
+      font-size: 11px;
+    }
+  }
+
+  .form-control {
+    max-width: 70px;
+  }
+
+  .edit-input-field {
+    max-width: 100px;
+  }
+
+  .tradingview-widget-container {
+    height: 80px; /* Ajustar altura do widget para telas pequenas */
+  }
 }
 
+/* Ajustar botões do Angular Material */
 button[mat-icon-button][color="primary"] {
   color: var(--primary);
   transition: color 0.2s ease, background-color 0.2s ease;
@@ -349,26 +501,26 @@ button[mat-icon-button][color="primary"] {
 
 button[mat-icon-button][color="primary"]:hover:enabled {
   color: var(--primary-hover);
-  background-color: var(--primary-hover-bg); /* Light mode hover */
+  background-color: var(--primary-hover-bg);
 }
 
 button[mat-icon-button][color="primary"]:disabled {
   color: var(--disabled-text);
   background-color: transparent;
 }
-[data-theme="dark"] button[mat-icon-button][color="primary"]:hover:enabled {
-  background-color: var(--primary-hover-bg); /* Dark mode hover */
-}
 
+[data-theme="dark"] button[mat-icon-button][color="primary"]:hover:enabled {
+  background-color: var(--primary-hover-bg);
+}
 
 mat-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
 }
 
-/* Reuse SnackBar styles from transaction-dialog */
+/* Estilos de SnackBar */
 .success-snackbar {
   background-color: var(--success-bg);
   color: var(--success-text);
@@ -378,77 +530,8 @@ mat-icon {
   background-color: var(--error-bg);
   color: var(--error-text);
 }
-.header-section {
-  top: 0;
-  padding-bottom: 10px; /* Adjusted to avoid negative margin issues */
-  /* If negative margin is necessary, uncomment the line below and document its purpose */
-  /* margin-bottom: -10px; */
-}
-}
 
-.action-buttons-group {
-  display: flex; /* Transforma o contêiner em um contêiner flex */
-  gap: 4px;      /* Adiciona um pequeno espaço entre os botões */
-  align-items: center; /* Opcional: Alinha os ícones verticalmente ao centro */
-  justify-content: flex-start; /* Opcional: Alinha os botões à esquerda */
-}
-
-/* Opcional: Ajusta a margem dos ícones dentro dos botões se necessário */
-.action-buttons-group button mat-icon {
-  vertical-align: middle; /* Ajuda a centralizar o ícone */
-}
-
-
-::ng-deep mat-form-field .mat-mdc-form-field-flex {
-  height: 50px !important; /* Garante que o campo de formulário tenha altura automática */
-
-}
-
-::ng-deep div .mat-mdc-form-field-infix {
-  width: 100px !important;
-
-}
-
-::ng-deep .mat-mdc-input-element {
-  font-size: 14px !important; /* Ajusta o tamanho da fonte do input */
-  text-align: center !important;
-}
-
-
-.gap-2 {
-  gap: 8px; /* Replaces non-standard gap-10 */
-}
-
-.no-data-text {
-  text-align: center;
-  color: #6B7280;
-  font-size: 14px;
-  font-family: 'Roboto', sans-serif;
-  margin-top: 10px;
-}
-
-.edit-input-field {
-  width: 100%;
-  max-width: 150px;
-}
-
-.error-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background-color: #fee2e2;
-  border-radius: 4px;
-  margin: 10px 0;
-}
-
-.loading-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.summary-card, .table-card, .chart-card {
-  height: 100%;
+mat-mdc-cell .mdc-data-table__cell cdk-cell cdk-column-tipoAtivo mat-column-tipoAtivo ng-star-inserted {
+  font-weight: 500;
+  color: var(--text-secondary);
 }

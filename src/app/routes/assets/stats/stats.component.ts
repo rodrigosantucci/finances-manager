@@ -72,7 +72,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
   private injectedScripts: HTMLScriptElement[] = [];
 
   titles = [
-    { id: 'symbol-info', text: 'Informações do Símbolo', cols: 1, rows: 1, type: 'symbol-info', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js', width: '800', height: '200' },
+    { id: 'symbol-info', text: 'Informações do Símbolo', cols: 1, rows: 1, type: 'symbol-info', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-info.js', width: '100%', height: '200' },
      {
       id: 'symbol-overview',
       text: 'Visão Geral do Símbolo',
@@ -80,12 +80,12 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
       rows: 1,
       type: 'symbol-overview',
       scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js',
-      width: '800',
+      width: '100%',
       height: '400',
     },
-    { id: 'technical-analysis', text: 'Análise Técnica', cols: 1, rows: 1, type: 'technical-analysis', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js', width: '800', height: '450' },
-    { id: 'financials', text: 'Dados Financeiros', cols: 1, rows: 1, type: 'financials', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js', width: '800', height: '1000' },
-    { id: 'symbol-profile', text: 'Perfil do Símbolo', cols: 1, rows: 1, type: 'symbol-profile', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js', width: '800', height: '500' }
+    { id: 'technical-analysis', text: 'Análise Técnica', cols: 1, rows: 1, type: 'technical-analysis', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js', width: '100%', height: '450' },
+    { id: 'financials', text: 'Dados Financeiros', cols: 1, rows: 1, type: 'financials', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-financials.js', width: '100%', height: '1000' },
+    { id: 'symbol-profile', text: 'Perfil do Símbolo', cols: 1, rows: 1, type: 'symbol-profile', scriptSrc: 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js', width: '100%', height: '500' }
 
   ];
 
