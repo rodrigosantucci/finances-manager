@@ -182,6 +182,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chart3') chartElement3!: ElementRef<HTMLDivElement>;
   @ViewChild('chart4') chartElement4!: ElementRef<HTMLDivElement>;
   @ViewChild('chart5') chartElement5!: ElementRef<HTMLDivElement>;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   isLoading = true;
   hasError = false;
@@ -238,7 +239,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.cotacaoService.atualizarDados(tickers).subscribe({
           next: (cotacoes) => {
-            this.snackBar.open('Cotações atualizadas com sucesso!', 'Fechar', {
+            this.snackBar.open('Dados atualizadas com sucesso!', 'Fechar', {
               duration: 3000,
               panelClass: ['success-snackbar'],
             });
@@ -271,7 +272,123 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
 
+async onUploadTransacoes(event: Event): Promise<void> {
+  if (this.isUpdating) return;
 
+  this.isUpdating = true;
+  const input = event.target as HTMLInputElement;
+
+  if (!input.files || input.files.length === 0) {
+    this.snackBar.open('Nenhum arquivo selecionado.', 'Fechar', {
+      duration: 3000,
+      panelClass: ['error-snackbar'],
+    });
+    this.isUpdating = false;
+    return;
+  }
+
+  const file = input.files[0];
+  if (!file.name.endsWith('.json')) {
+    this.snackBar.open('Por favor, selecione um arquivo JSON.', 'Fechar', {
+      duration: 3000,
+      panelClass: ['error-snackbar'],
+    });
+    this.isUpdating = false;
+    return;
+  }
+
+  try {
+    const fileReader = new FileReader();
+    fileReader.onload = () => {
+      try {
+        const jsonData = JSON.parse(fileReader.result as string);
+
+        // Validação básica do JSON
+        if (!this.validateTransactionJson(jsonData)) {
+          this.snackBar.open('Formato de arquivo JSON inválido.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          this.isUpdating = false;
+          return;
+        }
+
+        if (!this.currentUserId) {
+          console.error('ID do usuário não disponível para enviar transação.');
+          this.snackBar.open('ID do usuário não disponível.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          this.isUpdating = false;
+          return;
+        }
+
+        // Enviar a transação para o endpoint
+        this.dashboardSrv
+          .createTransaction(this.currentUserId, jsonData)
+          .pipe(
+            catchError((error) => {
+              console.error('Erro ao enviar transação:', error);
+              this.snackBar.open(error.message || 'Erro ao importar transação.', 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+              });
+              this.isUpdating = false;
+              return of(null);
+            }),
+            finalize(() => {
+              this.isUpdating = false;
+              this.cdr.markForCheck();
+            })
+          )
+          .subscribe((response) => {
+            if (response !== null) {
+              this.snackBar.open('Transação importada com sucesso!', 'Fechar', {
+                duration: 3000,
+                panelClass: ['success-snackbar'],
+              });
+              this.loadData(this.currentUserId!); // Recarrega os dados do componente
+            }
+          });
+      } catch (e) {
+        console.error('Erro ao parsear arquivo JSON:', e);
+        this.snackBar.open('Erro ao ler o arquivo JSON.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.isUpdating = false;
+      }
+    };
+
+    fileReader.onerror = () => {
+      this.snackBar.open('Erro ao ler o arquivo.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+    };
+
+    fileReader.readAsText(file);
+  } catch (error) {
+    console.error('Erro no processamento do arquivo:', error);
+    this.snackBar.open('Erro ao processar o arquivo.', 'Fechar', {
+      duration: 5000,
+      panelClass: ['error-snackbar'],
+    });
+    this.isUpdating = false;
+  }
+}
+
+// Método auxiliar para validar o JSON da transação
+private validateTransactionJson(jsonData: any): boolean {
+  const requiredFields = ['ticker', 'dataTransacao', 'tipoTransacao', 'tipoAtivo', 'quantidade', 'valorTransacao', 'moeda'];
+  return requiredFields.every((field) => jsonData[field] !== undefined && jsonData[field] !== null);
+}
+
+
+triggerFileInput(): void {
+  this.fileInput.nativeElement.click();
+}
 
   ngOnInit() {
     this.authService.user().pipe(filter((user) => !!user?.id), take(1)).subscribe((user) => {
@@ -786,8 +903,8 @@ private getChartOptions(
   return {
     chart: {
       type: 'pie',
-      height: 500, // Fixed height
-      width: 500,  // Fixed width
+      height: 400, // Fixed height
+      width: 400,  // Fixed width
       animations: {
         enabled: true,
         speed: 600,
@@ -801,14 +918,14 @@ private getChartOptions(
         blur: 4,
         opacity: isDarkTheme ? 0.3 : 0.2,
       },
-      toolbar: { show: false },
+      toolbar: { show: true },
       sparkline: { enabled: false },
     },
     series: chartSeries,
     labels: chartLabels,
     colors: chartColors,
     legend: {
-      show: true,
+      show: false,
       position: 'bottom', // Legend positioned below the chart
       horizontalAlign: 'center', // Center-align legend items horizontally
       fontSize: '12px',

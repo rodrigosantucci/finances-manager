@@ -81,6 +81,17 @@ export class DashboardService {
     );
   }
 
+
+  private apiUrl = '/api'; // Ajuste para o URL base da sua API
+
+
+
+  // Método para criar uma nova transação
+  createTransaction(usuarioId: number | string, transactionData: any): Observable<any> {
+    const url = `${this.apiUrl}/transacoes/${usuarioId}/criarTransacao`;
+    return this.http.post(url, transactionData);
+  }
+
   private getCotacaoUSD(): Observable<number> {
     if (!this.cotacaoUSDCache$) {
       const url = `${this.apiCotacoesPrefix}?tickers=USD/BRL`;
@@ -180,6 +191,8 @@ export class DashboardService {
       ativoModificado.quantidadeFormatada = this.parseFormattedString(ativoModificado.quantidadeFormatada?.toString());
       return ativoModificado;
     });
+
+
   }
 
 

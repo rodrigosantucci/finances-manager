@@ -1,72 +1,261 @@
-<page-header class="bg-dark text-light" title="Assistente IA" />
+<page-header class="bg-dark text-light"  title="Assistente IA" />
 
-<mat-card>
-  <mat-card-header>
-    <mat-card-title class="section-title">Relatórios do Assistente</mat-card-title>
-  </mat-card-header>
-
-  <mat-card-content>
-    <p class="metric-value">
-      <button
-        mat-icon-button
-        color="primary"
-        (click)="loadAssistantData()"
-        matTooltip="Recarregar dados"
-        aria-label="Recarregar dados"
-      >
-        <mat-icon>refresh</mat-icon>
-      </button>
-    </p>
-  </mat-card-content>
-</mat-card>
+<div class="container">
+  <mat-card class="control-card">
+    <mat-card-header>
+      <mat-card-title class="section-title">Relatórios do Assistente</mat-card-title>
+    </mat-card-header>
+    <mat-card-header>
+      <mat-card-subtitle style="color: rgb(151, 151, 16); align-items: center; display: flex; justify-content: center;">
+          <p>
+          Atenção! Esta seção está em desenvolvimento e será atualizada em breve com novos recursos e melhorias.
+          </p>
+           <mat-icon class="material-icons">warning</mat-icon>
+      </mat-card-subtitle>
 
 
-<mat-card>
-  <mat-card-content>
-    <mat-tab-group dynamicHeight>
-      @for (tab of tabs; track tab) {
-        <mat-tab [disabled]="tab.disabled">
-          <ng-template mat-tab-label>{{ tab.label }}</ng-template>
-          <div>
-            {{ tab.content }}
-            <br />
-            <br />
-            @if (tab.extraContent) {
-              <div>
-                The Labrador Retriever, also Labrador, is a type of retriever-gun dog. The Labrador
-                is one of the most popular breeds of dog in the United Kingdom and the United
-                States.
-                <br />
-                <br />
-                A favourite disability assistance breed in many countries, Labradors are frequently
-                trained to aid the blind, those who have autism, to act as a therapy dog and perform
-                screening and detection work for law enforcement and other official agencies. They
-                are prized as sporting and hunting dogs.
-                <br />
-                <br />
-                A few kennels breeding their ancestors, the St. John's water dog, were in England.
-                At the same time, a combination of the sheep protection policy in Newfoundland and
-                rabies quarantine in the United Kingdom, led to the gradual demise of the St. John's
-                water dog in Canada.
-                <br />
-                <br />
-                In the 1830s, the 10th Earl of Home and his nephews the 5th Duke of Buccleuch and
-                Lord John Scott, had imported progenitors of the breed from Newfoundland to Europe
-                for use as gundogs. Another early advocate of these Newfoundland dogs, or Labrador
-                Retrievers as they later became known, was the 2nd Earl of Malmesbury who bred them
-                for their expertise in waterfowling. During the 1880s, the 3rd Earl of Malmesbury,
-                the 6th Duke of Buccleuch and the 12th Earl of Home collaborated to develop and
-                establish the modern Labrador breed. The dogs Buccleuch Avon and Buccleuch Ned,
-                given by Malmesbury to Buccleuch, were mated with bitches carrying blood from those
-                originally imported by the 5th Duke and the 10th Earl of Home. The offspring are
-                considered to be the ancestors of modern Labradors.
-                <br />
-                <br />
-              </div>
-            }
+
+    </mat-card-header>
+
+
+
+
+
+
+    <mat-card class="report-card">
+    <mat-card-content>
+      <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
+        <!-- Aba: Análise de Fundamentos -->
+        <mat-tab label="Análise de Fundamentos">
+          <div class="tab-content" *ngIf="fundamentos; else noData">
+            <div class="report-header">
+              <h3>
+                Nota:
+                <span class="stars-container">
+                  <mat-icon *ngFor="let star of getStars(fundamentos.nota)" class="star-icon">{{ star }}</mat-icon>
+                </span>
+              </h3>
+              <p>Data: {{ fundamentos.data }}</p>
+            </div>
+            <div class="panel-grid">
+              <mat-expansion-panel
+                *ngFor="let ativo of fundamentos.analise.ativos"
+                class="futuristic-panel"
+              >
+                <mat-expansion-panel-header>
+                  <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
+                  <mat-panel-description>
+                    Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota:
+                    {{ ativo.nota | number: '1.1-1' }}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <mat-list dense>
+                  <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
+                    <div class="qa-item">
+                      <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                      <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                    </div>
+                  </mat-list-item>
+                </mat-list>
+              </mat-expansion-panel>
+            </div>
           </div>
+          <ng-template #noData>
+            <p class="no-data">Nenhum dado disponível para Análise de Fundamentos.</p>
+          </ng-template>
         </mat-tab>
-      }
-    </mat-tab-group>
-  </mat-card-content>
-</mat-card>
+
+        <!-- Aba: Análise Técnica -->
+        <mat-tab label="Análise Técnica">
+          <div class="tab-content" *ngIf="tecnica; else noData">
+            <div class="report-header">
+              <h3>
+                Nota:
+                <span class="stars-container">
+                  <mat-icon *ngFor="let star of getStars(tecnica.nota)" class="star-icon">{{ star }}</mat-icon>
+                </span>
+              </h3>
+              <p>Data: {{ tecnica.data }}</p>
+            </div>
+            <div class="panel-grid">
+              <mat-expansion-panel *ngFor="let ativo of tecnica.analise.ativos" class="futuristic-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
+                  <mat-panel-description>
+                    Indicadores: {{ ativo.indicadores.length }} | Recomendações:
+                    {{ ativo.recomendacoes.length }}
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                <mat-list dense>
+                  <mat-list-item>
+                    <div class="qa-item">
+                      <strong>Indicadores:</strong>
+                      <mat-list dense>
+                        <mat-list-item *ngFor="let indicador of ativo.indicadores">
+                          <p matLine>
+                            {{ indicador.indicador }}: {{ indicador.valor }} (Nota:
+                            {{ indicador.nota | number: '1.1-1' }})
+                          </p>
+                        </mat-list-item>
+                      </mat-list>
+                    </div>
+                  </mat-list-item>
+                  <mat-list-item>
+                    <div class="qa-item">
+                      <strong>Recomendações:</strong>
+                      <mat-list dense>
+                        <mat-list-item *ngFor="let rec of ativo.recomendacoes">
+                          <p matLine>{{ rec.recomendacao }}: {{ rec.texto }}</p>
+                        </mat-list-item>
+                      </mat-list>
+                    </div>
+                  </mat-list-item>
+                  <mat-list-item>
+                    <div class="qa-item">
+                      <strong>Perguntas e Respostas:</strong>
+                      <mat-list dense>
+                        <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
+                          <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                          <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                        </mat-list-item>
+                      </mat-list>
+                    </div>
+                  </mat-list-item>
+                </mat-list>
+              </mat-expansion-panel>
+            </div>
+          </div>
+          <ng-template #noData>
+            <p class="no-data">Nenhum dado disponível para Análise Técnica.</p>
+          </ng-template>
+        </mat-tab>
+
+        <!-- Aba: Objetivos Pessoais -->
+        <mat-tab label="Objetivos Pessoais">
+          <div class="tab-content" *ngIf="pessoais; else noData">
+            <div class="report-header">
+              <h3>
+                Nota:
+                <span class="stars-container">
+                  <mat-icon *ngFor="let star of getStars(pessoais.nota)" class="star-icon">{{ star }}</mat-icon>
+                </span>
+              </h3>
+              <p>Data: {{ pessoais.data }}</p>
+            </div>
+            <div class="card-grid">
+              <mat-card class="info-card futuristic-card">
+                <mat-card-header>
+                  <mat-card-title>Estratégia Sugerida</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <p>{{ pessoais.analise.estrategia_sugerida }}</p>
+                </mat-card-content>
+              </mat-card>
+              <mat-card class="info-card futuristic-card">
+                <mat-card-header>
+                  <mat-card-title>Alocação Sugerida</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div #chartElement id="assistant-chart" class="chart">
+                    <apx-chart
+                      [series]="chartOptions.series"
+                      [chart]="chartOptions.chart"
+                      [labels]="chartOptions.labels"
+                      [colors]="chartOptions.colors"
+                      [dataLabels]="chartOptions.dataLabels"
+                      [legend]="chartOptions.legend"
+                      [responsive]="chartOptions.responsive"
+                      [theme]="chartOptions.theme"
+                      [plotOptions]="chartOptions.plotOptions"
+                      [tooltip]="chartOptions.tooltip"
+                      [grid]="chartOptions.grid"
+                    ></apx-chart>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+              <mat-card class="info-card futuristic-card">
+                <mat-card-header>
+                  <mat-card-title>Desempenho e Estimativas</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <mat-list dense>
+                    <mat-list-item>
+                      <p matLine>
+                        Retorno Anual Esperado:
+                        {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%
+                      </p>
+                    </mat-list-item>
+                    <mat-list-item>
+                      <p matLine>
+                        Volatilidade Esperada:
+                        {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%
+                      </p>
+                    </mat-list-item>
+                    <mat-list-item>
+                      <p matLine>
+                        Período de Análise:
+                        {{ pessoais.analise.desempenho_estimativas.periodo_analise }}
+                      </p>
+                    </mat-list-item>
+                  </mat-list>
+                </mat-card-content>
+              </mat-card>
+              <mat-expansion-panel class="futuristic-panel">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>Perguntas e Respostas</mat-panel-title>
+                </mat-expansion-panel-header>
+                <mat-list dense>
+                  <mat-list-item *ngFor="let pr of pessoais.analise.perguntas_respostas">
+                    <div class="qa-item">
+                      <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                      <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                    </div>
+                  </mat-list-item>
+                </mat-list>
+              </mat-expansion-panel>
+            </div>
+          </div>
+          <ng-template #noData>
+            <p class="no-data">Nenhum dado disponível para Objetivos Pessoais.</p>
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+
+
+
+
+
+
+
+
+
+
+
+
+    <mat-card-content>
+      <div class="action-bar">
+        <button
+          mat-icon-button
+          color="primary"
+          (click)="loadAssistantData()"
+          matTooltip="Recarregar dados"
+          aria-label="Recarregar dados"
+          [disabled]="isLoading"
+          class="action-button"
+        >
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+      <mat-progress-spinner
+        *ngIf="isLoading"
+        mode="indeterminate"
+        diameter="40"
+        class="spinner"
+      ></mat-progress-spinner>
+    </mat-card-content>
+  </mat-card>
+
+
+</div>

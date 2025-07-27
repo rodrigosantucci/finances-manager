@@ -201,7 +201,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 250px; /* Garante um tamanho mínimo, mas permite rolagem */
+    min-width: 200px; /* Garante um tamanho mínimo, mas permite rolagem */
 
     th {
       color: var(--text-secondary);

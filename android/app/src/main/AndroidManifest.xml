@@ -6,6 +6,7 @@
         android:label="Finances Manager"
         android:theme="@style/AppTheme"
         android:roundIcon="@mipmap/ic_launcher_round">
+
         <activity
             android:name="com.getcapacitor.BridgeActivity"
             android:exported="true"
