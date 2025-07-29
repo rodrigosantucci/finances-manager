@@ -1,28 +1,15 @@
-<page-header class="bg-dark text-light"  title="Assistente IA" />
+<page-header class="bg-dark text-light" title="Assistente IA" />
 
 <div class="container">
   <mat-card class="control-card">
     <mat-card-header>
       <mat-card-title class="section-title">Relatórios do Assistente</mat-card-title>
-    </mat-card-header>
-    <mat-card-header>
-      <mat-card-subtitle style="color: rgb(151, 151, 16); align-items: center; display: flex; justify-content: center;">
-          <p>
-          Atenção! Esta seção está em desenvolvimento e será atualizada em breve com novos recursos e melhorias.
-          </p>
-           <mat-icon class="material-icons">warning</mat-icon>
+      <mat-card-subtitle   style="margin: 0 auto; color: yellow;" class="warning-subtitle ">
+        <p>Atenção! Esta seção está em desenvolvimento e será atualizada em breve com novos recursos e melhorias.</p>
+        <mat-icon class="material-icons">warning</mat-icon>
       </mat-card-subtitle>
-
-
-
     </mat-card-header>
 
-
-
-
-
-
-    <mat-card class="report-card">
     <mat-card-content>
       <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
         <!-- Aba: Análise de Fundamentos -->
@@ -38,15 +25,11 @@
               <p>Data: {{ fundamentos.data }}</p>
             </div>
             <div class="panel-grid">
-              <mat-expansion-panel
-                *ngFor="let ativo of fundamentos.analise.ativos"
-                class="futuristic-panel"
-              >
+              <mat-expansion-panel *ngFor="let ativo of fundamentos.analise.ativos" class="futuristic-panel">
                 <mat-expansion-panel-header>
                   <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
                   <mat-panel-description>
-                    Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota:
-                    {{ ativo.nota | number: '1.1-1' }}
+                    Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota: {{ ativo.nota | number: '1.1-1' }}
                   </mat-panel-description>
                 </mat-expansion-panel-header>
                 <mat-list dense>
@@ -82,8 +65,7 @@
                 <mat-expansion-panel-header>
                   <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
                   <mat-panel-description>
-                    Indicadores: {{ ativo.indicadores.length }} | Recomendações:
-                    {{ ativo.recomendacoes.length }}
+                    Indicadores: {{ ativo.indicadores.length }} | Recomendações: {{ ativo.recomendacoes.length }}
                   </mat-panel-description>
                 </mat-expansion-panel-header>
                 <mat-list dense>
@@ -93,8 +75,7 @@
                       <mat-list dense>
                         <mat-list-item *ngFor="let indicador of ativo.indicadores">
                           <p matLine>
-                            {{ indicador.indicador }}: {{ indicador.valor }} (Nota:
-                            {{ indicador.nota | number: '1.1-1' }})
+                            {{ indicador.indicador }}: {{ indicador.valor }} (Nota: {{ indicador.nota | number: '1.1-1' }})
                           </p>
                         </mat-list-item>
                       </mat-list>
@@ -131,7 +112,7 @@
         </mat-tab>
 
         <!-- Aba: Objetivos Pessoais -->
-        <mat-tab label="Objetivos Pessoais">
+        <mat-tab label="Análise de Objetivos Pessoais">
           <div class="tab-content" *ngIf="pessoais; else noData">
             <div class="report-header">
               <h3>
@@ -180,22 +161,13 @@
                 <mat-card-content>
                   <mat-list dense>
                     <mat-list-item>
-                      <p matLine>
-                        Retorno Anual Esperado:
-                        {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%
-                      </p>
+                      <p matLine>Retorno Anual Esperado: {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%</p>
                     </mat-list-item>
                     <mat-list-item>
-                      <p matLine>
-                        Volatilidade Esperada:
-                        {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%
-                      </p>
+                      <p matLine>Volatilidade Esperada: {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%</p>
                     </mat-list-item>
                     <mat-list-item>
-                      <p matLine>
-                        Período de Análise:
-                        {{ pessoais.analise.desempenho_estimativas.periodo_analise }}
-                      </p>
+                      <p matLine>Período de Análise: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
                     </mat-list-item>
                   </mat-list>
                 </mat-card-content>
@@ -220,21 +192,7 @@
           </ng-template>
         </mat-tab>
       </mat-tab-group>
-    </mat-card-content>
-  </mat-card>
 
-
-
-
-
-
-
-
-
-
-
-
-    <mat-card-content>
       <div class="action-bar">
         <button
           mat-icon-button
@@ -256,6 +214,4 @@
       ></mat-progress-spinner>
     </mat-card-content>
   </mat-card>
-
-
 </div>

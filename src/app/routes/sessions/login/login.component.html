@@ -1,13 +1,23 @@
-<div class="d-flex w-full h-full">
+<div class="d-flex w-full h-full justify-center align-items-center">
   <mat-card class="m-auto" style="max-width: 380px">
     <mat-card-header class="m-b-24">
-      <mat-card-title>{{ 'login_title' | translate }}!</mat-card-title>
+      <mat-card-title class="text-center">
+        <div>
+          <img
+            src="images/logo-header.png"
+            class="branding-logo"
+            alt="Logo"
+          />
+        </div>
+        <p></p>
+      </mat-card-title>
+      <mat-card-title>{{ 'login_title' | translate }}</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
       <form class="form-field-full" [formGroup]="loginForm">
         @if (loginForm.errors?.invalidCredentials) {
-          <div class="mat-error m-b-16" style="text-align: center; color: #ff0000;">
+          <div class="mat-error m-b-16 error-message" [class.error-visible]="loginForm.errors?.invalidCredentials">
             {{ 'invalid_credentials' | translate }}
           </div>
         }

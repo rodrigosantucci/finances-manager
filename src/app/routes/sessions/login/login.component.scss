@@ -50,7 +50,6 @@
 
 /* Estilos do Cartão do Formulário (mat-card) */
 mat-card {
-  background: var(--card-background);
   box-shadow: 0 8px 25px var(--shadow); /* Sombra mais pronunciada e suave */
   border-radius: 12px; /* Cantos mais arredondados */
   padding: 30px; /* Mais preenchimento interno #/
@@ -62,7 +61,7 @@ mat-card {
 
 /* Cabeçalho do Cartão */
 mat-card-header.m-b-24 {
-  margin-bottom: 24px;
+  margin-bottom: 15px;
   text-align: center; /* Centraliza o título */
   display: block; /* Garante que o margin-bottom funcione corretamente */
 }
@@ -83,7 +82,7 @@ mat-card-content {
 .form-field-full {
   display: flex;
   flex-direction: column;
-  gap: 35px; /* Aumenta o espaçamento entre os campos */
+  gap: 10px; /* Aumenta o espaçamento entre os campos */
 }
 
 mat-form-field {
@@ -128,7 +127,7 @@ mat-error {
 
 /* Checkbox "Lembrar de mim" */
 mat-checkbox {
-  margin: 15px 0; /* Ajusta o espaçamento */
+  margin: 5px 0; /* Ajusta o espaçamento */
   color: var(--text-secondary);
   transition: color 0.3s ease;
 }
@@ -153,7 +152,7 @@ a[routerLink] {
 
 /* Container do link "Não tem conta?" */
 .form-field-full > div {
-  margin-top: 10px; /* Ajusta o espaçamento superior */
+  margin-top: 5px; /* Ajusta o espaçamento superior */
   font-size: 14px;
   color: var(--text-secondary);
   transition: color 0.3s ease;
@@ -163,7 +162,7 @@ a[routerLink] {
 .error-message {
   color: var(--error);
   font-size: 14px; /* Aumenta o tamanho da fonte para a mensagem geral */
-  margin-bottom: 20px; /* Mais espaçamento abaixo da mensagem */
+  margin-bottom: 10px; /* Mais espaçamento abaixo da mensagem */
   padding: 12px 15px; /* Mais padding */
   text-align: center;
   border-radius: 8px; /* Cantos arredondados */
@@ -233,7 +232,7 @@ a[routerLink] {
 
   .error-message {
     font-size: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     padding: 8px 10px;
   }
 
@@ -243,3 +242,6 @@ a[routerLink] {
     gap: 5px;
   }
 }
+
+
+
