@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "target": "es2015", // <-- Altere de uma versão mais nova (ex: "es2020", "es2022") para "es2015"
     "module": "es2020", // Mantenha ou ajuste conforme necessário, mas o target é o mais importante aqui
     "lib": [
       "es2020",

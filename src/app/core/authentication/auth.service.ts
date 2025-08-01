@@ -152,6 +152,14 @@ export class AuthService {
         icon: 'adb',
         permissions: {}, // Importante manter
       },
+      {
+        route: 'utilities/ferramentas',
+        name: 'Ferramentas',
+        translationKey: 'menu.Utilidades',
+        type: 'link',
+        icon: 'build',
+        permissions: {}, // Importante manter
+      },
     ];
 
 //    console.log('AuthService.menu() está a retornar:', fullMenu); // Log para depuração

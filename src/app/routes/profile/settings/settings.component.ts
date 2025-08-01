@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -22,7 +22,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
-import { MatSelectModule } from '@angular/material/select'; // <-- Adicione esta importação
+import { MatSelectModule } from '@angular/material/select';
 
 export function confirmPasswordValidator(control: AbstractControl): { [key: string]: boolean } | null {
   const password = control.get('password');
@@ -63,7 +63,7 @@ export function confirmPasswordValidator(control: AbstractControl): { [key: stri
     MatInputModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSelectModule, // <-- Adicione MatSelectModule aqui
+    MatSelectModule,
   ],
   providers: [provideNativeDateAdapter(), SettingsService],
 })
@@ -73,6 +73,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   private readonly settingsService = inject(SettingsService);
   private readonly http = inject(HttpClient);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   reactiveForm!: FormGroup<ControlsOf<IProfileReduced>>;
   selectedFile: File | null = null;
@@ -84,7 +85,6 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
   user!: User;
 
-  // Adicione as opções fixas para os dropdowns
   perfilOptions: string[] = ['Conservador', 'Intermediário', 'Agressivo'];
   estrategiaOptions: string[] = ['Defensiva', 'Equilibrado', 'Ofensiva'];
 
@@ -134,12 +134,14 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
           console.warn('ProfileSettingsComponent: No profile data loaded, using placeholder');
           this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
           this.isLoadingAvatar = false;
+          this.cdr.detectChanges();
         }
       },
       error: (err) => {
         console.error('ProfileSettingsComponent: Error loading profile data:', err);
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -149,31 +151,36 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       console.warn('ProfileSettingsComponent: No user ID provided for avatar loading');
       this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
       this.isLoadingAvatar = false;
+      this.cdr.detectChanges();
       return;
     }
 
     console.log('ProfileSettingsComponent: Fetching avatar for ID:', userId);
-    this.http.get(`${environment.baseUrl}/api/avatars/${userId}`, { responseType: 'blob' }).subscribe({
+    // Add cache-busting query parameter
+    const cacheBuster = `t=${Date.now()}`;
+    this.http.get(`${environment.baseUrl}/api/avatars/${userId}?${cacheBuster}`, { responseType: 'blob' }).subscribe({
       next: (blob) => {
         console.log('ProfileSettingsComponent: Avatar loaded for ID:', userId);
+        // Revoke previous object URL if it exists
+        if (this.avatarObjectUrl) {
+          URL.revokeObjectURL(this.avatarObjectUrl);
+        }
         this.avatarObjectUrl = URL.createObjectURL(blob);
         this.avatarPreviewUrl = this.sanitizer.bypassSecurityTrustUrl(this.avatarObjectUrl);
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges(); // Trigger change detection
       },
-      error: (error: HttpErrorResponse) => { // Tipagem para HttpErrorResponse
+      error: (error: HttpErrorResponse) => {
         console.warn('ProfileSettingsComponent: Failed to load avatar:', error);
-
-        // Verifica se o erro é 404 (Not Found)
         if (error.status === 404) {
-          console.log('ProfileSettingsComponent: Avatar not found (404), showing placeholder.');
+          console.log('ProfileSettingsComponent: Avatar not found (404), showing placeholder');
           this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         } else {
-          // Para outros tipos de erro, você pode optar por exibir um erro genérico
-          // ou também o placeholder, dependendo da sua lógica de negócio.
-          console.error('ProfileSettingsComponent: An unexpected error occurred while loading avatar.', error);
-          this.avatarPreviewUrl = this.defaultAvatarPlaceholder; // Ou um placeholder de erro diferente
+          console.error('ProfileSettingsComponent: Unexpected error loading avatar:', error);
+          this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         }
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges(); // Trigger change detection
       }
     });
   }
@@ -192,6 +199,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         input.value = '';
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges();
         return;
       }
 
@@ -202,6 +210,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
         input.value = '';
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges();
         return;
       }
 
@@ -211,6 +220,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       reader.onload = () => {
         this.avatarPreviewUrl = reader.result;
         this.isLoadingAvatar = false;
+        this.cdr.detectChanges(); // Trigger change detection
       };
       reader.readAsDataURL(file);
     } else {
@@ -292,18 +302,20 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     }
 
     this.isLoadingAvatar = true;
+    this.cdr.detectChanges(); // Ensure spinner shows
     this.settingsService.updateProfile(formData).subscribe({
       next: (response: IProfileReduced | null) => {
         if (response) {
           console.log('ProfileSettingsComponent: Perfil atualizado com sucesso', response);
           alert('Perfil atualizado com sucesso!');
-          if (response.id) {
-            this.loadAvatar(response.id);
-          }
+          // Update user data and reload avatar
           this.reactiveForm.patchValue({
             id: response.id,
             avatarIdentifier: response.avatarIdentifier,
           });
+          if (response.id) {
+            this.loadAvatar(response.id); // Reload avatar with cache buster
+          }
         } else {
           console.error('ProfileSettingsComponent: Erro ao atualizar perfil: Resposta nula');
           alert('Erro ao atualizar perfil');
@@ -315,11 +327,14 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
         this.reactiveForm.get('confirmPassword')?.reset('');
         this.reactiveForm.markAsPristine();
         this.reactiveForm.markAsUntouched();
+        this.cdr.detectChanges(); // Trigger change detection
       },
       error: (err) => {
         console.error('ProfileSettingsComponent: Erro ao atualizar perfil:', err);
         alert('Erro ao atualizar perfil');
         this.loadAvatar(this.user.id);
+        this.isLoadingAvatar = false;
+        this.cdr.detectChanges(); // Trigger change detection
       }
     });
   }
@@ -329,6 +344,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     (event.target as HTMLImageElement).src = this.defaultAvatarPlaceholder;
     this.avatarPreviewUrl = this.defaultAvatarPlaceholder;
     this.isLoadingAvatar = false;
+    this.cdr.detectChanges(); // Trigger change detection
   }
 
   ngOnDestroy(): void {

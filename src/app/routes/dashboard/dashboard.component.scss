@@ -553,6 +553,12 @@
     }
   }
 
+  .row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+
   .button-controls {
     justify-content: center;
     gap: 6px;
