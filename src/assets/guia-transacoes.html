@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importação de Transações em Lote</title>
+    <!-- Inclui o Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .accordion-content.show {
+            max-height: 1000px; /* Valor grande para animar a altura */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8 flex justify-center">
+
+    <div class="max-w-3xl w-full bg-white rounded-xl shadow-lg p-6 sm:p-8 space-y-6">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-800">Guia de Upload de Transações em Lote</h1>
+        <p class="text-gray-600 text-center">Siga os passos abaixo para montar seu arquivo JSON de transações em lote e enviá-lo para o sistema.</p>
+
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg" role="alert">
+            <p class="font-bold">Atenção!</p>
+            <p>O endpoint de upload em lote aceita **apenas** transações dos tipos <span class="font-bold">COMPRA</span> e <span class="font-bold">VENDA</span>.</p>
+        </div>
+
+        <!-- Passo 1 -->
+        <div class="border-b pb-4">
+            <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
+                <span>1. Entenda a Estrutura do Arquivo</span>
+                <span class="transform transition-transform duration-300 rotate-0">&#9660;</span>
+            </button>
+            <div class="accordion-content">
+                <div class="p-4 bg-gray-50 rounded-b-lg">
+                    <p class="text-gray-700 leading-relaxed">
+                        O arquivo JSON que a aplicação espera é uma <strong>lista de objetos</strong>. Cada objeto dentro da lista representa uma única transação que será salva.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passo 2 -->
+        <div class="border-b pb-4">
+            <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
+                <span>2. Conheça os Campos da Transação</span>
+                <span class="transform transition-transform duration-300 rotate-0">&#9660;</span>
+            </button>
+            <div class="accordion-content">
+                <div class="p-4 bg-gray-50 rounded-b-lg">
+                    <p class="text-gray-700 leading-relaxed">Cada objeto de transação deve conter os seguintes campos:</p>
+                    <ul class="list-disc list-inside mt-4 space-y-2 text-gray-700">
+                        <li><strong>`dataTransacao`*:</strong> Data da transação no formato `YYYY-MM-DD`.</li>
+                        <li><strong>`tipoTransacao`*:</strong> Tipo da operação, deve ser `"COMPRA"` ou `"VENDA"`.</li>
+                        <li><strong>`quantidade`*:</strong> Quantidade de ativos. Use um valor decimal.</li>
+                        <li><strong>`valorTransacao`*:</strong> Valor total da transação. Use um valor decimal.</li>
+                        <li><strong>`moeda`:</strong> (Opcional) Código de 3 letras da moeda (ex: "BRL", "USD").</li>
+                        <li><strong>`observacao`:</strong> (Opcional) Uma breve descrição.</li>
+                        <li><strong>`corretora`:</strong> (Opcional) Nome da corretora.</li>
+                        <li><strong>`ticker`*:</strong> O código de negociação do ativo (ex: "PETR4").</li>
+                        <li><strong>`tipoAtivo`*:</strong> Código numérico do tipo de ativo. Veja o catálogo abaixo.</li>
+                    </ul>
+
+                    <h3 class="font-bold text-lg mt-6 mb-2 text-gray-800">Catálogo de `tipoAtivo`</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-md">
+                            <thead>
+                                <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-6 text-left">Código</th>
+                                    <th class="py-3 px-6 text-left">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-600 text-sm font-light">
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">1</td>
+                                    <td class="py-3 px-6">Ação</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">2</td>
+                                    <td class="py-3 px-6">Fundo Imobiliário</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">3</td>
+                                    <td class="py-3 px-6">Renda Fixa</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">4</td>
+                                    <td class="py-3 px-6">Criptoativo</td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="py-3 px-6">5</td>
+                                    <td class="py-3 px-6">Fundo de Investimento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passo 3 -->
+        <div class="border-b pb-4">
+            <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
+                <span>3. Crie o seu Arquivo JSON</span>
+                <span class="transform transition-transform duration-300 rotate-0">&#9660;</span>
+            </button>
+            <div class="accordion-content">
+                <div class="p-4 bg-gray-50 rounded-b-lg">
+                    <p class="text-gray-700 leading-relaxed">
+                        Abaixo está um modelo de arquivo JSON. Você pode copiar este código, substituir pelos seus dados e salvar em um arquivo com extensão `.json`.
+                    </p>
+                    <div class="relative mt-4">
+                        <pre class="bg-gray-800 text-green-400 p-4 rounded-md overflow-x-auto text-sm" id="json-code">
+[
+  {
+    "dataTransacao": "2025-08-01",
+    "tipoTransacao": "COMPRA",
+    "quantidade": 100.0,
+    "valorTransacao": 2500.50,
+    "moeda": "BRL",
+    "observacao": "Compra de ações PETR4",
+    "corretora": "XP Investimentos",
+    "ticker": "PETR4",
+    "tipoAtivo": 1
+  },
+  {
+    "dataTransacao": "2025-08-05",
+    "tipoTransacao": "VENDA",
+    "quantidade": 50.0,
+    "valorTransacao": 5200.00,
+    "moeda": "BRL",
+    "observacao": "Venda de cotas XPLG11",
+    "corretora": "Nu Invest",
+    "ticker": "XPLG11",
+    "tipoAtivo": 2
+  }
+]
+                        </pre>
+                        <button onclick="copyCode()" class="absolute top-2 right-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md text-xs transition-colors">
+                            Copiar
+                        </button>
+                        <div id="copy-message" class="absolute bottom-2 left-1/2 -translate-x-1/2 p-2 bg-green-500 text-white text-xs font-semibold rounded-md hidden opacity-0 transition-opacity duration-300">
+                            Copiado!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passo 4 -->
+        <div class="border-b pb-4">
+            <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
+                <span>4. Envie o Arquivo pela Aplicação</span>
+                <span class="transform transition-transform duration-300 rotate-0">&#9660;</span>
+            </button>
+            <div class="accordion-content">
+                <div class="p-4 bg-gray-50 rounded-b-lg">
+                    <p class="text-gray-700 mt-2 leading-relaxed">
+                        Procure pela funcionalidade de "Upload de Arquivo" ou um botão similar. Ao clicar, a aplicação solicitará que você selecione o arquivo JSON que acabou de criar.
+                    </p>
+                    <ul class="list-disc list-inside mt-4 space-y-2 text-gray-700">
+                        <li><strong>Na tela de upload:</strong> selecione seu arquivo `.json`.</li>
+                        <li>A aplicação carregará diretamente as transações incluídas no arquivo em seu patrimônio dentro do sistema.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Adiciona funcionalidade de acordeão (expandir/colapsar)
+        document.addEventListener('DOMContentLoaded', function() {
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const arrow = button.querySelector('span:last-child');
+
+                    const isExpanded = button.classList.toggle('active');
+                    content.classList.toggle('show');
+
+                    // Rotaciona a seta
+                    if (isExpanded) {
+                        arrow.classList.add('rotate-180');
+                    } else {
+                        arrow.classList.remove('rotate-180');
+                    }
+                });
+            });
+        });
+
+        // Adiciona funcionalidade de copiar código
+        function copyCode() {
+            const codeBlock = document.getElementById('json-code');
+            const textToCopy = codeBlock.innerText;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                const msg = document.getElementById('copy-message');
+                msg.classList.remove('hidden');
+                msg.classList.add('flex');
+                setTimeout(() => {
+                    msg.classList.remove('flex');
+                    msg.classList.add('hidden');
+                }, 2000);
+            } catch (err) {
+                console.error('Falha ao copiar texto: ', err);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+    </script>
+</body>
+</html>

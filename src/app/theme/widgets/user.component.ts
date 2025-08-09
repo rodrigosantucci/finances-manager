@@ -29,10 +29,17 @@ import { DashboardService } from 'app/routes/dashboard/dashboard.service';
         <mat-icon>account_circle</mat-icon>
         <span>{{ 'profile' | translate }}</span>
       </button>
+
       <button routerLink="/profile/settings" mat-menu-item>
         <mat-icon>edit</mat-icon>
         <span>{{ 'edit_profile' | translate }}</span>
       </button>
+
+      <button mat-menu-item (click)="openGuide()">
+        <mat-icon>help</mat-icon>
+        <span>Ajuda Importação</span>
+      </button>
+
       <button mat-menu-item (click)="logout()">
         <mat-icon>exit_to_app</mat-icon>
         <span>{{ 'logout' | translate }}</span>
@@ -121,6 +128,10 @@ export class UserComponent implements OnInit, OnDestroy {
     this.settings.reset();
     window.location.reload();
   }
+
+   openGuide() {
+     window.open('/assets/guia-transacoes.html', '_blank');
+   }
 
   ngOnDestroy(): void {
     console.log('UserComponent: Destroying');

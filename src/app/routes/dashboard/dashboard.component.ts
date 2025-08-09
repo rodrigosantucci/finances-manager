@@ -47,6 +47,7 @@ import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PageHeaderComponent } from '@shared';
+import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -203,176 +204,174 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  async onUpdateDados(): Promise<void> {
-    if (this.isUpdating) return;
-    this.isUpdating = true;
 
-    const user = this.authService.user().getValue();
-    const usuarioId = user?.id;
 
-    if (usuarioId === undefined || usuarioId === null) {
-      console.error('ID do usuário não disponível para atualizar cotações.');
-      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
-        duration: 5000,
-        panelClass: ['error-snackbar'],
-      });
-      this.isUpdating = false;
-      return;
-    }
+async onUpdateDados(): Promise<void> {
+  // Evita múltiplas chamadas simultâneas
+  if (this.isUpdating) return;
+  this.isUpdating = true;
+  this.isLoading = true; // Inicia o estado de carregamento
 
-    this.patrimonioService.getUserTickers(usuarioId).subscribe({
-      next: (tickers) => {
-        if (tickers.length === 0) {
-          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.isUpdating = false;
-          return;
-        }
+  const user = this.authService.user().getValue();
+  const usuarioId = user?.id;
 
-        this.cotacaoService.atualizarDados(tickers).subscribe({
-          next: (cotacoes) => {
-            this.snackBar.open('Dados atualizadas com sucesso!', 'Fechar', {
-              duration: 3000,
-              panelClass: ['success-snackbar'],
-            });
-            if (this.currentUserId) {
-              this.loadData(this.currentUserId);
-            } else {
-              console.error('ID do usuário não disponível para recarregar dados após atualização de cotações.');
-            }
-            this.isUpdating = false;
-          },
-          error: (error) => {
-            console.error('Erro ao atualizar cotações:', error);
-            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-            this.isUpdating = false;
-          },
-        });
-      },
-      error: (error) => {
-        console.error('Erro ao buscar tickers:', error);
-        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+  if (usuarioId === undefined || usuarioId === null) {
+    console.error('ID do usuário não disponível para atualizar cotações.');
+    this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
+      duration: 5000,
+      panelClass: ['error-snackbar'],
+    });
+    this.isUpdating = false;
+    this.isLoading = false;
+    return;
+  }
+
+  // Faz a requisição para obter os tickers do usuário
+  this.patrimonioService.getUserTickers(usuarioId).subscribe({
+    next: (tickers) => {
+      if (tickers.length === 0) {
+        this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
         this.isUpdating = false;
+        this.isLoading = false;
+        return;
+      }
+
+      // Faz a requisição para atualizar as cotações com base nos tickers
+      this.cotacaoService.atualizarDados(tickers).subscribe({
+        next: (cotacoes) => {
+          this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', {
+            duration: 3000,
+            panelClass: ['success-snackbar'],
+          });
+          if (this.currentUserId) {
+            // Recarrega todos os dados e componentes da tela.
+            // Esta é a parte que recarrega os dados do patrimônio do usuário.
+            this.loadData(this.currentUserId);
+            this.setupCharts(this.currentUserId);
+            this.fetchAndCacheData();
+            this.loadTradingViewWidget();
+            this.cdr.markForCheck(); // Força a detecção de mudanças
+
+            // Chama o novo método para inicializar todos os gráficos
+            this.initAllCharts();
+          } else {
+            console.error('ID do usuário não disponível para recarregar dados após atualização de cotações.');
+          }
+          this.isUpdating = false;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Erro ao atualizar cotações:', error);
+          this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          this.isUpdating = false;
+          this.isLoading = false;
+        },
+      });
+    },
+    error: (error) => {
+      console.error('Erro ao buscar tickers:', error);
+      this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+      this.isLoading = false;
+    },
+  });
+}
+
+
+
+
+
+
+// Novo método para inicializar todos os gráficos
+private initAllCharts(): void {
+  setTimeout(() => {
+    this.patrimoniochart$?.subscribe({
+      next: (options) => {
+        if (this.chartElement1 && this.chartElement1.nativeElement) {
+          this.initChart(this.chartElement1, options, 'chart1');
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao inicializar gráfico de patrimônio:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
       },
     });
-  }
 
-  async onUploadTransacoes(event: Event): Promise<void> {
-    if (this.isUpdating) return;
-
-    this.isUpdating = true;
-    const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) {
-      this.snackBar.open('Nenhum arquivo selecionado.', 'Fechar', {
-        duration: 3000,
-        panelClass: ['error-snackbar'],
-      });
-      this.isUpdating = false;
-      return;
-    }
-
-    const file = input.files[0];
-    if (!file.name.endsWith('.json')) {
-      this.snackBar.open('Por favor, selecione um arquivo JSON.', 'Fechar', {
-        duration: 3000,
-        panelClass: ['error-snackbar'],
-      });
-      this.isUpdating = false;
-      return;
-    }
-
-    try {
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        try {
-          const jsonData = JSON.parse(fileReader.result as string);
-
-          if (!this.validateTransactionJson(jsonData)) {
-            this.snackBar.open('Formato de arquivo JSON inválido.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-            this.isUpdating = false;
-            return;
-          }
-
-          if (!this.currentUserId) {
-            console.error('ID do usuário não disponível para enviar transação.');
-            this.snackBar.open('ID do usuário não disponível.', 'Fechar', {
-              duration: 5000,
-              panelClass: ['error-snackbar'],
-            });
-            this.isUpdating = false;
-            return;
-          }
-
-          this.dashboardSrv
-            .createTransaction(this.currentUserId, jsonData)
-            .pipe(
-              catchError((error) => {
-                console.error('Erro ao enviar transação:', error);
-                this.snackBar.open(error.message || 'Erro ao importar transação.', 'Fechar', {
-                  duration: 5000,
-                  panelClass: ['error-snackbar'],
-                });
-                this.isUpdating = false;
-                return of(null);
-              }),
-              finalize(() => {
-                this.isUpdating = false;
-                this.cdr.markForCheck();
-              })
-            )
-            .subscribe((response) => {
-              if (response !== null) {
-                this.snackBar.open('Transação importada com sucesso!', 'Fechar', {
-                  duration: 3000,
-                  panelClass: ['success-snackbar'],
-                });
-                this.loadData(this.currentUserId!);
-              }
-            });
-        } catch (e) {
-          console.error('Erro ao parsear arquivo JSON:', e);
-          this.snackBar.open('Erro ao ler o arquivo JSON.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.isUpdating = false;
+    this.acoesChart$?.subscribe({
+      next: (options) => {
+        if (this.chartElement2 && this.chartElement2.nativeElement) {
+          this.initChart(this.chartElement2, options, 'chart2');
         }
-      };
+      },
+      error: (err) => {
+        console.error('Erro ao inicializar gráfico de ações:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      fileReader.onerror = () => {
-        this.snackBar.open('Erro ao ler o arquivo.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.isUpdating = false;
-      };
+    this.fundosChart$?.subscribe({
+      next: (options) => {
+        if (this.chartElement3 && this.chartElement3.nativeElement) {
+          this.initChart(this.chartElement3, options, 'chart3');
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao inicializar gráfico de fundos:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      fileReader.readAsText(file);
-    } catch (error) {
-      console.error('Erro no processamento do arquivo:', error);
-      this.snackBar.open('Erro ao processar o arquivo.', 'Fechar', {
-        duration: 5000,
-        panelClass: ['error-snackbar'],
-      });
-      this.isUpdating = false;
-    }
-  }
+    this.caixaChart$?.subscribe({
+      next: (options) => {
+        if (this.chartElement4 && this.chartElement4.nativeElement) {
+          this.initChart(this.chartElement4, options, 'chart4');
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao inicializar gráfico de caixa:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-  triggerFileInput(): void {
-    this.fileInput.nativeElement.click();
-  }
+    this.assetsChart$?.subscribe({
+      next: (options) => {
+        if (this.chartElement5 && this.chartElement5.nativeElement) {
+          this.initChart(this.chartElement5, options, 'chart5');
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao inicializar gráfico de assets:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
+
+    this.isLoading = false;
+    this.cdr.markForCheck();
+  }, 100);
+}
+
+
+
+
+
+
+
+
+
 
   ngOnInit() {
     this.authService.user().pipe(filter((user) => !!user?.id), take(1)).subscribe((user) => {
@@ -1377,8 +1376,236 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private validateTransactionJson(jsonData: any): boolean {
-    const requiredFields = ['ticker', 'dataTransacao', 'tipoTransacao', 'tipoAtivo', 'quantidade', 'valorTransacao', 'moeda'];
-    return requiredFields.every((field) => jsonData[field] !== undefined && jsonData[field] !== null);
+
+
+
+    // Método para acionar o upload de transações
+public triggerFileInput(): void {
+  console.log('Botão de upload clicado. Procurando o input de arquivo...');
+  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+  if (fileInput) {
+    console.log('Input de arquivo encontrado. Acionando clique.');
+    fileInput.click();
+  } else {
+    console.error('Erro: O elemento input de arquivo não foi encontrado no DOM.');
   }
+}
+
+
+
+async onUploadTransacoes(event: Event): Promise<void> {
+    console.log('onUploadTransacoes chamado.');
+    if (this.isUpdating) {
+      console.warn('Processo de upload já em andamento. Ignorando nova chamada.');
+      return;
+    }
+
+    this.isUpdating = true;
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      console.error('Nenhum arquivo selecionado.');
+      this.snackBar.open('Nenhum arquivo selecionado.', 'Fechar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+      return;
+    }
+
+    const file = input.files[0];
+    console.log(`Arquivo selecionado: ${file.name}, Tamanho: ${file.size} bytes`);
+
+    if (!file.name.endsWith('.json')) {
+      console.error('Arquivo com extensão inválida. Esperado: .json');
+      this.snackBar.open('Por favor, selecione um arquivo JSON.', 'Fechar', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+      });
+      this.isUpdating = false;
+      return;
+    }
+
+    try {
+      const fileReader = new FileReader();
+
+      fileReader.onload = () => {
+        let jsonData;
+        try {
+          console.log('Iniciando leitura do arquivo...');
+          jsonData = JSON.parse(fileReader.result as string);
+          console.log('Arquivo JSON lido e parseado com sucesso.', jsonData);
+        } catch (e: any) {
+          console.error('Erro ao parsear arquivo JSON:', e);
+          this.snackBar.open(`Erro ao ler o arquivo JSON: ${e.message}`, 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          return;
+        }
+
+        console.log('Iniciando validação do formato JSON...');
+        console.log('Dados JSON para validação:', jsonData);
+        if (!this.validateTransactionJson(jsonData)) {
+          console.error('Validação do formato JSON falhou.');
+          this.snackBar.open('Formato de arquivo JSON inválido.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          return;
+        }
+        console.log('Validação do formato JSON concluída com sucesso.');
+
+        console.log('Verificando ID do usuário:', this.currentUserId);
+        if (!this.currentUserId) {
+          console.error('ID do usuário não disponível para enviar transação.');
+          this.snackBar.open('ID do usuário não disponível.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          return;
+        }
+
+        console.log('Iniciando requisição para o serviço de transações.');
+        this.dashboardSrv
+          .createTransactionLote(this.currentUserId as number, jsonData)
+          .pipe(
+            catchError((error) => {
+              console.error('Erro ao enviar transação:', error);
+              const errorMessage = error.error?.message || 'Erro desconhecido ao importar transação.';
+              this.snackBar.open(`Erro no upload: ${errorMessage}`, 'Fechar', {
+                duration: 5000,
+                panelClass: ['error-snackbar'],
+              });
+              return of(null);
+            }),
+          )
+          .subscribe((response) => {
+            if (response !== null) {
+              console.log('Upload de transações bem-sucedido. Resposta da API:', response);
+
+              let transactions = [];
+              let balance = 0;
+              let totalVendas = 0;
+              let totalCompras = 0;
+
+
+              // Tenta extrair dados do formato { "compras": [...], "vendas": [...] }
+              if (response && Array.isArray(response.compras) && Array.isArray(response.vendas)) {
+                transactions = [...response.compras, ...response.vendas];
+                totalVendas = response.totalVendas;
+                totalCompras = response.totalCompras;
+                balance = response.balancoTransacao || 0; // Utiliza o balanço da API
+                console.log('Resposta em formato de compras/vendas detectada.');
+              } else if (response && Array.isArray(response.transactions)) {
+                // Tenta extrair dados do formato { transactions: [...], balance: number }
+                transactions = response.transactions;
+                balance = response.balance || 0; // Se 'balance' não existir, assume 0
+                totalCompras = response.totalCompras || 0;
+                totalVendas = response.totalVendas || 0;
+                console.log('Resposta em formato de transações/balanço detectada.');
+              } else if (response && Array.isArray(response)) {
+                // Assume que a resposta é diretamente o array de transações
+                transactions = response;
+                // Calcula o balanço localmente
+                balance = transactions.reduce((sum, t) => sum + t.valorTransacao, 0);
+
+
+                console.log('Resposta em formato de array de transações detectada.');
+              } else {
+                console.warn('Resposta da API não contém transações válidas para exibir no resumo.');
+              }
+
+              // Se houver transações para exibir, abre o dialog
+              if (transactions.length > 0) {
+                this.dialog.open(TransactionSummaryDialogComponent, {
+                  width: '600px',
+                  data: { transactions, balance, totalVendas, totalCompras },
+                });
+
+                // Recarrega os dados do dashboard em segundo plano
+                // this.onUpdateDados();
+              } else {
+                this.snackBar.open('Transação importada com sucesso, mas o resumo não pôde ser exibido. Verifique o console para mais detalhes.', 'Fechar', {
+                  duration: 5000,
+                  panelClass: ['warning-snackbar'],
+                });
+              }
+            }
+          });
+      };
+
+      fileReader.onerror = (e) => {
+        console.error('Erro ao ler o arquivo:', e);
+        this.snackBar.open('Erro ao ler o arquivo.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+      };
+
+      fileReader.readAsText(file);
+
+    } catch (error) {
+      console.error('Erro no processamento do arquivo:', error);
+      this.snackBar.open('Erro ao processar o arquivo.', 'Fechar', {
+        duration: 5000,
+        panelClass: ['error-snackbar'],
+      });
+    } finally {
+      this.isUpdating = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+
+
+  /**
+   * Valida a estrutura de um array de transações.
+   * @param jsonData O array de objetos de transação.
+   * @returns true se a estrutura for válida, caso contrário, false.
+   */
+  private validateTransactionJson(jsonData: any): boolean {
+    if (!Array.isArray(jsonData)) {
+      console.error('Erro de validação: O JSON não é um array.');
+      return false;
+    }
+
+    for (const item of jsonData) {
+      if (typeof item !== 'object' || item === null) {
+        console.error('Erro de validação: Um item do array não é um objeto.');
+        return false;
+      }
+
+      const requiredKeys = [
+        { key: 'dataTransacao', type: 'string' },
+        { key: 'tipoTransacao', type: 'string' },
+        { key: 'quantidade', type: 'number' },
+        { key: 'valorTransacao', type: 'number' },
+        { key: 'moeda', type: 'string' },
+        { key: 'ticker', type: 'string' },
+        // Ajustado para aceitar tanto string quanto number
+        { key: 'tipoAtivo', type: ['string', 'number'] },
+      ];
+
+      for (const { key, type } of requiredKeys) {
+        if (!(key in item)) {
+          console.error(`Erro de validação: Chave obrigatória "${key}" está faltando em um objeto.`);
+          return false;
+        }
+
+        const currentType = typeof item[key];
+        // Verifica se o tipo atual está contido na lista de tipos esperados
+        if (Array.isArray(type) ? !type.includes(currentType) : currentType !== type) {
+          console.error(`Erro de validação: A chave "${key}" tem o tipo incorreto. Esperado: ${Array.isArray(type) ? type.join(' ou ') : type}, Recebido: ${currentType}.`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+
+
+
 }

@@ -69,6 +69,9 @@ export class DashboardService {
   private readonly apiUserPatrimonioPrefix = '/api/patrimonios/usuario/';
   private readonly apiCotacoesPrefix = '/api/cotacoes/tickers/';
 
+  private readonly apiTransacoesPrefix = '/api/transacoes/lote/';
+
+
   // Cache para o patrimônio completo
   private patrimonioCompletoCache$: Observable<AtivoVO[]> | null = null;
   // Cache para a cotação USD
@@ -84,6 +87,13 @@ export class DashboardService {
 
   private apiUrl = '/api'; // Ajuste para o URL base da sua API
 
+
+
+  createTransactionLote(usuarioId: number, jsonData: any): Observable<any> {
+    // A URL é construída dinamicamente com o ID do usuário.
+    const url = `${this.apiTransacoesPrefix}${usuarioId}`;
+    return this.http.post(url, jsonData);
+  }
 
 
   // Método para criar uma nova transação

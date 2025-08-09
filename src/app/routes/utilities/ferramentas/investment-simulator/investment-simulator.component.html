@@ -70,7 +70,7 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="timeRV">Tempo de Investimento: <span id="timeValueRV">{{ timeRV }}</span> <span id="timeUnitRV">{{ timeUnitRV === 'years' ? (timeRV === 1 ? 'ano' : 'anos') : (timeRV === 1 ? 'mês' : 'meses') }}</span></label>
+              <label for="timeRV">Tempo de Investimento: <span id="timeValueRV">{{ timeRV }}</span> &nbsp; <span id="timeUnitRV">{{ timeUnitRV === 'years' ? (timeRV === 1 ? 'ano' : 'anos') : (timeRV === 1 ? 'mês' : 'meses') }}</span></label>
               <input type="range" id="timeRV" [(ngModel)]="timeRV" name="timeRV" min="1" [max]="timeUnitRV === 'years' ? 50 : 600" (input)="updateTimeRV()">
             </div>
             <div class="form-group full-width-select">
