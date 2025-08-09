@@ -138,7 +138,7 @@ export class AuthService {
       },
       {
         route: 'assets/stats',
-        name: 'Estatísticas',
+        name: 'Dados de Ativos',
         translationKey: 'menu.Estatisticas',
         type: 'link',
         icon: 'assessment',

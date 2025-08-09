@@ -1,0 +1,69 @@
+<div class="container">
+  <header class="header">
+  </header>
+  <form id="allocatorForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="totalAmount">Valor Total a Aportar (R$)</label>
+      <input id="totalAmount" [(ngModel)]="totalAmount" name="totalAmount" placeholder="Ex: 10.000,00" data-type="currency" required>
+    </div>
+    <div class="form-group">
+      <label>Distribuição das Categorias (%):</label>
+      <div class="chart-container">
+        <canvas #allocationChartCanvas id="allocationChart"></canvas>
+        <div class="chart-instructions">Arraste o gráfico ou use os sliders para ajustar a porcentagem</div>
+      </div>
+      <div class="slider-container">
+        <div class="slider-group">
+          <label for="sliderStocks">Ações:</label>
+          <input type="range" id="sliderStocks" [(ngModel)]="sliders.stocks" name="sliderStocks" min="0" max="100" step="0.1" (input)="onSliderInput('stocks', 0)">
+          <span class="slider-value" id="sliderStocksValue">{{ formatPercentage(sliders.stocks) }}</span>
+        </div>
+        <div class="slider-group">
+          <label for="sliderFunds">Fundos:</label>
+          <input type="range" id="sliderFunds" [(ngModel)]="sliders.funds" name="sliderFunds" min="0" max="100" step="0.1" (input)="onSliderInput('funds', 1)">
+          <span class="slider-value" id="sliderFundsValue">{{ formatPercentage(sliders.funds) }}</span>
+        </div>
+        <div class="slider-group">
+          <label for="sliderTreasury">Títulos Públicos:</label>
+          <input type="range" id="sliderTreasury" [(ngModel)]="sliders.treasury" name="sliderTreasury" min="0" max="100" step="0.1" (input)="onSliderInput('treasury', 2)">
+          <span class="slider-value" id="sliderTreasuryValue">{{ formatPercentage(sliders.treasury) }}</span>
+        </div>
+        <div class="slider-group">
+          <label for="sliderIntl">Assets Internacionais:</label>
+          <input type="range" id="sliderIntl" [(ngModel)]="sliders.intl" name="sliderIntl" min="0" max="100" step="0.1" (input)="onSliderInput('intl', 3)">
+          <span class="slider-value" id="sliderIntlValue">{{ formatPercentage(sliders.intl) }}</span>
+        </div>
+      </div>
+      <div id="mainCategoryError" class="error-message">A soma das categorias deve ser exatamente 100%.</div>
+    </div>
+    <div class="button-container">
+      <button type="submit" class="calculate-button" [disabled]="!totalAmount || !updateMainCategoryTotals()">Calcular</button>
+    </div>
+  </form>
+  <section id="results" class="results-section" [ngClass]="{'hidden': !showResults}">
+    <h2>Distribuição do Aporte</h2>
+    <div class="result-item">
+      <p>Ações:</p>
+      <span>{{ results?.stocks | currency:'BRL' }}</span>
+    </div>
+    <div class="result-item">
+      <p>Fundos:</p>
+      <span>{{ results?.funds | currency:'BRL' }}</span>
+    </div>
+    <div class="result-item">
+      <p>Títulos Públicos:</p>
+      <span>{{ results?.treasury | currency:'BRL' }}</span>
+    </div>
+    <div class="result-item">
+      <p>Assets Internacionais:</p>
+      <span>{{ results?.intl | currency:'BRL' }}</span>
+    </div>
+    <div class="chart-container">
+      <canvas #resultsChartCanvas id="resultsChart" [ngClass]="{'hidden': !showResults}"></canvas>
+    </div>
+    <div class="download-buttons">
+      <button class="download-button" (click)="downloadPng()">Baixar PNG</button>
+      <button class="download-button" (click)="downloadPdf()">Baixar PDF</button>
+    </div>
+  </section>
+</div>

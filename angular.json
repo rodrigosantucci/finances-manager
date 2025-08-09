@@ -114,7 +114,11 @@
               "src/styles.scss"
             ],
             "scripts": [
-              "node_modules/apexcharts/dist/apexcharts.min.js"
+              "node_modules/apexcharts/dist/apexcharts.min.js",
+              "node_modules/chart.js/dist/chart.umd.js",
+              "node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js",
+              "node_modules/html2canvas/dist/html2canvas.min.js",
+              "node_modules/jspdf/dist/jspdf.umd.min.js"
             ],
             "assets": [
               {

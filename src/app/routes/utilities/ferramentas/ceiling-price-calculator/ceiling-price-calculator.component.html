@@ -1,0 +1,57 @@
+<div class="container">
+  <header class="header">
+  </header>
+  <form id="ceilingPriceForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="ticker">Código da Ação (Ticker)</label>
+        <input id="ticker" [(ngModel)]="ticker" name="ticker" placeholder="Ex: BBAS3" required>
+      </div>
+      <div class="form-group">
+        <label for="dividends">Dividendos Médios Anuais (R$)</label>
+        <input id="dividends" [(ngModel)]="dividends" name="dividends" placeholder="Ex: 2,50" data-type="currency" required>
+      </div>
+      <div class="form-group">
+        <label for="eps">Lucro por Ação (R$)</label>
+        <input id="eps" [(ngModel)]="eps" name="eps" placeholder="Ex: 5,00" data-type="currency" required>
+      </div>
+      <div class="form-group">
+        <label for="growthRate">Taxa de Crescimento (%)</label>
+        <input id="growthRate" [(ngModel)]="growthRate" name="growthRate" placeholder="Ex: 5" data-type="percentage" required>
+      </div>
+      <div class="form-group">
+        <label for="payout">Payout Ratio (%)</label>
+        <input id="payout" [(ngModel)]="payout" name="payout" placeholder="Ex: 50" data-type="percentage" required>
+      </div>
+      <div class="form-group">
+        <label for="marketPrice">Preço Atual de Mercado (R$)</label>
+        <input id="marketPrice" [(ngModel)]="marketPrice" name="marketPrice" placeholder="Ex: 50,00" data-type="currency" required>
+      </div>
+    </div>
+    <div class="button-container">
+      <button type="submit" class="calculate-button">Calcular</button>
+    </div>
+  </form>
+  <section id="results" class="results-section" [ngClass]="{'hidden': !showResults}">
+    <h2>Resultados</h2>
+    <div class="result-item">
+      <p>Preço Teto:</p>
+      <span>{{ results?.ceilingPrice }}</span>
+    </div>
+    <div class="result-item">
+      <p>Margem de Segurança:</p>
+      <span>{{ results?.marginSafety }}</span>
+    </div>
+    <div class="result-item">
+      <p>Status:</p>
+      <span>{{ results?.status }}</span>
+    </div>
+    <div class="chart-container">
+      <canvas id="priceChart" [ngClass]="{'hidden': !showResults}"></canvas>
+    </div>
+    <div class="download-buttons">
+      <button class="download-button" (click)="downloadPng()">Baixar PNG</button>
+      <button class="download-button" (click)="downloadPdf()">Baixar PDF</button>
+    </div>
+  </section>
+</div>

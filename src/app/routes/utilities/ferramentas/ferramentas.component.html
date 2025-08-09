@@ -1,29 +1,16 @@
-
-
 <page-header class="bg-dark text-light" title="Ferramentas" />
-
-
 <mat-card class="mt-4">
   <mat-card-content>
-
     <mat-tab-group>
       <mat-tab label="Calculadora de Preço Teto">
-        <div class="iframe-wrapper">
-          <iframe *ngIf="iframeSrc1" [src]="iframeSrc1" frameborder="0" width="100%" height="500px"></iframe>
-        </div>
+        <app-ceiling-price-calculator></app-ceiling-price-calculator>
       </mat-tab>
       <mat-tab label="Distribuidor de Aportes">
-        <div class="iframe-wrapper">
-          <iframe *ngIf="iframeSrc2" [src]="iframeSrc2" frameborder="0" width="100%" height="500px"></iframe>
-        </div>
+        <app-contribution-allocator></app-contribution-allocator>
       </mat-tab>
       <mat-tab label="Simulador de Investimentos">
-        <div class="iframe-wrapper">
-          <iframe *ngIf="iframeSrc3" [src]="iframeSrc3" frameborder="0" width="100%" height="500px"></iframe>
-        </div>
+        <app-investment-simulator></app-investment-simulator>
       </mat-tab>
     </mat-tab-group>
-
   </mat-card-content>
 </mat-card>
-

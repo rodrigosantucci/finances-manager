@@ -42,20 +42,20 @@
                 </p>
               </div>
               <div class="metric mb-2 text-center">
-                <p class="metric-label">Recarregar Dados</p>
-                <p class="metric-value">
-                  <button mat-icon-button color="primary" (click)="onUpdateDados()" [disabled]="isUpdating" matTooltip="Recarregar dados" aria-label="Recarregar dados">
-                    <mat-icon>refresh</mat-icon>
-                  </button>
-                </p>
-              </div>
-              <div class="metric mb-2 text-center">
                 <p class="metric-label">Importar Transações</p>
                 <p class="metric-value">
                   <button mat-icon-button color="primary" (click)="triggerFileInput()" [disabled]="isUpdating" matTooltip="Importar transações" aria-label="Importar transações dados" aria-label="Recarregar dados">
                     <mat-icon>arrow_upward</mat-icon>
                   </button>
                   <input #fileInput type="file" accept=".json" (change)="onUploadTransacoes($event)" style="display: none;" />
+                </p>
+              </div>
+              <div class="metric mb-2 text-center">
+                <p class="metric-label">Recarregar</p>
+                <p class="metric-value">
+                  <button mat-icon-button color="primary" (click)="onUpdateDados()" [disabled]="isUpdating" matTooltip="Recarregar dados" aria-label="Recarregar dados">
+                    <mat-icon>refresh</mat-icon>
+                  </button>
                 </p>
               </div>
             </div>

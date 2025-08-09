@@ -2,13 +2,6 @@
 
 <div class="container">
   <mat-card class="control-card">
-    <mat-card-header>
-      <mat-card-subtitle   style="margin: 0 auto; color: yellow;" class="warning-subtitle ">
-        <p>Atenção! Esta seção está em desenvolvimento e será atualizada em breve.</p>
-        <mat-icon class="material-icons">warning</mat-icon>
-      </mat-card-subtitle>
-    </mat-card-header>
-
     <mat-card-content>
       <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
         <!-- Aba: Análise de Fundamentos -->
@@ -16,7 +9,7 @@
           <div class="tab-content" *ngIf="fundamentos; else noData">
             <div class="report-header">
               <h3>
-                Nota:
+                Nota Geral:
                 <span class="stars-container">
                   <mat-icon *ngFor="let star of getStars(fundamentos.nota)" class="star-icon">{{ star }}</mat-icon>
                 </span>
@@ -52,7 +45,7 @@
           <div class="tab-content" *ngIf="tecnica; else noData">
             <div class="report-header">
               <h3>
-                Nota:
+                Nota Geral:
                 <span class="stars-container">
                   <mat-icon *ngFor="let star of getStars(tecnica.nota)" class="star-icon">{{ star }}</mat-icon>
                 </span>
@@ -115,7 +108,7 @@
           <div class="tab-content" *ngIf="pessoais; else noData">
             <div class="report-header">
               <h3>
-                Nota:
+                Nota Geral:
                 <span class="stars-container">
                   <mat-icon *ngFor="let star of getStars(pessoais.nota)" class="star-icon">{{ star }}</mat-icon>
                 </span>

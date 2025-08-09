@@ -1,0 +1,208 @@
+:host {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  padding: clamp(0.4rem, 2vw, 0.5rem);
+  color: var(--text-color);
+  line-height: 1.4;
+  background-color: var(--bg-light);
+}
+
+.container {
+  background-color: var(--bg-dark);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-light);
+  padding: clamp(0.4rem, 2vw, 0.5rem);
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.4rem;
+}
+
+h1 {
+  color: var(--primary-color);
+  font-size: clamp(1.8rem, 5vw, 2.0rem);
+  margin: 0;
+  font-weight: 700;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-size: clamp(0.6rem, 2.5vw, 0.9rem);
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.form-group input {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  background-color: var(--bg-light);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.2);
+  outline: none;
+}
+
+
+
+.error-message {
+  color: #dc3545;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  display: none;
+  margin-top: 0.5rem;
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  margin: 1rem 0;
+  visibility: visible;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 200px !important;
+  display: block !important;
+  visibility: visible !important;
+}
+
+.chart-instructions {
+  text-align: center;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  color: var(--secondary-color);
+  margin-top: 0.5rem;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+
+.calculate-button {
+  background-color: rgb(91, 133, 247);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  animation: slideIn 0.5s ease-in;
+  align-self: center;
+  width: 100%;
+}
+
+.calculate-button:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.calculate-button:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+.results-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: var(--bg-dark);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-light);
+  animation: fadeIn 0.5s ease-in;
+}
+
+.results-section.hidden {
+  display: none;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  color: var(--text-color);
+}
+
+.download-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+
+}
+
+
+.download-button {
+  background-color: rgb(92, 104, 135);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  animation: slideIn 0.5s ease-in;
+}
+
+.download-button:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .slider-group label {
+    flex: 0 0 100px;
+  }
+}

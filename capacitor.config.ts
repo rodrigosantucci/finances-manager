@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
     appId: 'com.dpt.financesmanager',
-    appName: 'Finances Manager',
+    appName: 'Gestor de Finanças',
     webDir: 'dist/finances-manager/browser',
     server: {
         androidScheme: 'file',
