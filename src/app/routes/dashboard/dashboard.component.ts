@@ -373,12 +373,16 @@ private initAllCharts(): void {
 
 
 
+
   ngOnInit() {
     this.authService.user().pipe(filter((user) => !!user?.id), take(1)).subscribe((user) => {
       if (user?.id) {
         this.currentUserId = user.id;
+        this.isLoading = true;
         this.loadData(user.id);
         this.setupCharts(user.id);
+        this.fetchAndCacheData();
+        this.loadTradingViewWidget();
       } else {
         console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
         this.hasError = true;
@@ -390,8 +394,6 @@ private initAllCharts(): void {
       }
       this.cdr.markForCheck();
     });
-    this.fetchAndCacheData();
-    this.loadTradingViewWidget();
   }
 
   private loadTradingViewWidget(): void {

@@ -4,18 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Importação de Transações em Lote</title>
-    <!-- Inclui o Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
             },
-          }
-        }
-      }
+        };
     </script>
     <style>
         body {
@@ -42,7 +41,6 @@
             <p>O endpoint de upload em lote aceita **apenas** transações dos tipos <span class="font-bold">COMPRA</span> e <span class="font-bold">VENDA</span>.</p>
         </div>
 
-        <!-- Passo 1 -->
         <div class="border-b pb-4">
             <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
                 <span>1. Entenda a Estrutura do Arquivo</span>
@@ -57,7 +55,6 @@
             </div>
         </div>
 
-        <!-- Passo 2 -->
         <div class="border-b pb-4">
             <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
                 <span>2. Conheça os Campos da Transação</span>
@@ -70,12 +67,12 @@
                         <li><strong>`dataTransacao`*:</strong> Data da transação no formato `YYYY-MM-DD`.</li>
                         <li><strong>`tipoTransacao`*:</strong> Tipo da operação, deve ser `"COMPRA"` ou `"VENDA"`.</li>
                         <li><strong>`quantidade`*:</strong> Quantidade de ativos. Use um valor decimal.</li>
-                        <li><strong>`valorTransacao`*:</strong> Valor total da transação. Use um valor decimal.</li>
-                        <li><strong>`moeda`:</strong> (Opcional) Código de 3 letras da moeda (ex: "BRL", "USD").</li>
-                        <li><strong>`observacao`:</strong> (Opcional) Uma breve descrição.</li>
-                        <li><strong>`corretora`:</strong> (Opcional) Nome da corretora.</li>
-                        <li><strong>`ticker`*:</strong> O código de negociação do ativo (ex: "PETR4").</li>
-                        <li><strong>`tipoAtivo`*:</strong> Código numérico do tipo de ativo. Veja o catálogo abaixo.</li>
+                        <li><strong><strong>`valorTransacao`*</strong>:</strong> Valor total da transação. Use um valor decimal.</li>
+                        <li><strong>`moeda`</strong>: (Opcional) Código de 3 letras da moeda (ex: "BRL", "USD").</li>
+                        <li><strong>`observacao`</strong>: (Opcional) Uma breve descrição.</li>
+                        <li><strong>`corretora`</strong>: (Opcional) Nome da corretora.</li>
+                        <li><strong>`ticker`*</strong>: O código de negociação do ativo (ex: "PETR4").</li>
+                        <li><strong>`tipoAtivo`*</strong>: Código numérico do tipo de ativo. Veja o catálogo abaixo.</li>
                     </ul>
 
                     <h3 class="font-bold text-lg mt-6 mb-2 text-gray-800">Catálogo de `tipoAtivo`</h3>
@@ -115,7 +112,6 @@
             </div>
         </div>
 
-        <!-- Passo 3 -->
         <div class="border-b pb-4">
             <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
                 <span>3. Crie o seu Arquivo JSON</span>
@@ -164,7 +160,6 @@
             </div>
         </div>
 
-        <!-- Passo 4 -->
         <div class="border-b pb-4">
             <button class="accordion-button flex items-center justify-between w-full p-4 text-left font-semibold text-lg text-gray-800 bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg">
                 <span>4. Envie o Arquivo pela Aplicação</span>
@@ -183,6 +178,14 @@
             </div>
         </div>
 
+        <div class="mt-8 flex justify-center">
+            <a href="/" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full inline-flex items-center transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                <span>Voltar</span>
+            </a>
+        </div>
     </div>
 
     <script>
