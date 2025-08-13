@@ -130,10 +130,6 @@ export class AuthService {
         translationKey: 'menu.Dashboard',
         type: 'link',
         icon: 'dashboard',
-        badge: {
-          color: 'red-50',
-          value: '1',
-        },
         permissions: {}, // Mantenha para consistência com MenuService
       },
       {
@@ -158,6 +154,14 @@ export class AuthService {
         translationKey: 'menu.Utilidades',
         type: 'link',
         icon: 'build',
+        permissions: {}, // Importante manter
+      },
+      {
+        route: 'historico/dados',
+        name: 'Histórico',
+        translationKey: 'menu.Historico',
+        type: 'link',
+        icon: 'calendar_today',
         permissions: {}, // Importante manter
       },
     ];
