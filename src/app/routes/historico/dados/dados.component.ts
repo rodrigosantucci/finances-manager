@@ -34,7 +34,6 @@ import { AuthService } from '@core/authentication';
     MatButtonModule,
     NgIf,
     CurrencyPipe,
-    DecimalPipe,
   ],
 })
 export class HistoricoDadosComponent implements OnInit, AfterViewInit {
@@ -153,45 +152,75 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
   }
 
   loadData(dataInicio?: string, dataFim?: string) {
-    this.isLoading = true;
-    this.hasError = false;
+  this.isLoading = true;
+  this.hasError = false;
 
-    forkJoin([
-      this.dadosService.getHistoricoTransacoes(dataInicio, dataFim).pipe(
-        catchError(error => {
-          console.error('Erro ao carregar histórico de transações:', error);
-          this.snackBar.open('Erro ao carregar histórico de transações.', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.hasError = true;
-          return of([]);
-        })
-      ),
-    ])
-      .pipe(
-        finalize(() => {
-          this.isLoading = false;
-        })
-      )
-      .subscribe(([transacoes]) => {
-        console.log('Dados recebidos do serviço:', transacoes);
-        this.dataSource.data = transacoes;
-        setTimeout(() => {
-          if (this.paginator && this.sort) {
-            this.dataSource.paginator = this.paginator;
-            this.dataSource.sort = this.sort;
-            console.log('MatSort e MatPaginator reatribuídos após carregamento');
-            this.cdr.detectChanges();
-          } else {
-            console.error('Erro: MatSort ou MatPaginator não disponíveis após carregamento', {
-              paginator: !!this.paginator,
-              sort: !!this.sort,
-            });
-          }
-        }, 0);
-      });
+  forkJoin([
+    this.dadosService.getHistoricoTransacoes(dataInicio, dataFim).pipe(
+      catchError(error => {
+        console.error('Erro ao carregar histórico de transações:', error);
+        this.snackBar.open('Erro ao carregar histórico de transações.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['error-snackbar'],
+        });
+        this.hasError = true;
+        return of([]);
+      })
+    ),
+  ])
+    .pipe(finalize(() => {
+      this.isLoading = false;
+    }))
+    .subscribe(([transacoes]) => {
+      console.log('Dados recebidos do serviço:', transacoes);
+
+    const transacoesFormatadas = transacoes.map(t => {
+  if (t.dataRegistro) {
+    let dateObj: Date | null = null;
+
+    // Se vier no formato yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}/.test(t.dataRegistro)) {
+      const [ano, mes, dia] = t.dataRegistro.split('-').map(Number);
+      dateObj = new Date(ano, mes - 1, dia);
+    }
+    // Se vier no formato dd/MM/yyyy
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(t.dataRegistro)) {
+      const [dia, mes, ano] = t.dataRegistro.split('/').map(Number);
+      dateObj = new Date(ano, mes - 1, dia);
+    }
+
+    // Formata se data for válida
+    if (dateObj && !isNaN(dateObj.getTime())) {
+      const dia = String(dateObj.getDate()).padStart(2, '0');
+      const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const ano = dateObj.getFullYear();
+      t.dataRegistro = `${dia}/${mes}/${ano}`;
+    } else {
+      t.dataRegistro = 'N/A';
+    }
+  } else {
+    t.dataRegistro = 'N/A';
   }
+  return t;
+});
+
+      this.dataSource.data = transacoesFormatadas;
+
+      setTimeout(() => {
+        if (this.paginator && this.sort) {
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+          console.log('MatSort e MatPaginator reatribuídos após carregamento');
+          this.cdr.detectChanges();
+        } else {
+          console.error('Erro: MatSort ou MatPaginator não disponíveis após carregamento', {
+            paginator: !!this.paginator,
+            sort: !!this.sort,
+          });
+        }
+      }, 0);
+    });
+}
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
