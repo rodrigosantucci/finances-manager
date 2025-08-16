@@ -444,27 +444,35 @@ export class DashboardService {
     const url = `${this.apiUserPatrimonioPrefix}${usuarioId}/${encodedTicker}`;
     console.log('URL de atualização gerada:', url);
 
-    // CORREÇÃO 2: Garantir que os dados enviados correspondem ao que o backend espera.
-    // Especialmente 'idPatrimonio', 'tipoAtivo' (numérico) e 'moeda'.
-    const ativoParaEnviar = {
-      // idPatrimonio deve ser o ID numérico do ativo no banco de dados.
-      // É crucial que ativo.id venha do 'id' numérico da PatrimonioCompletoResponse.
+    const ativoParaEnviar: any = {
       idPatrimonio: typeof ativo.id === 'string' ? Number(ativo.id) : (ativo.id || 0),
       descricao: ativo.descricaoFormatada || '',
-      quantidade: ativo.quantidadeFormatada, // Já é número
-      precoMedio: ativo.precoMedioFormatado, // Já é número
-      valorInvestido: ativo.valorInvestidoFormatado, // Já é número
-      ticker: ativo.tickerFormatado, // O ticker também é importante no corpo
+      quantidade: ativo.quantidadeFormatada || 0,
+      precoMedio: ativo.precoMedioFormatado || 0,
+      valorInvestido: ativo.valorInvestidoFormatado || 0,
+      ticker: ativo.tickerFormatado,
       usuario: {
         id: Number(usuarioId) || 0 // Garante que o ID do usuário seja um número
       },
-      // CORREÇÃO 3: Adicionar tipoAtivo mapeado para número
       tipoAtivo: this.mapCategoryToTipoAtivoNumber(category),
-      // CORREÇÃO 4: Adicionar a moeda original do ativo
-      moeda: ativo.moeda
+      moeda: ativo.moeda || 'BRL'
     };
 
-    console.log('Objeto enviado para atualização:', ativoParaEnviar); // Log para verificar o payload
+    // Para tipoAtivo = 3 (Caixa), inclui valorAtual com base em valorAtualFormatado
+    // NOTA: Usando tipoAtivo = 3 para Caixa. Ajustar para tipoAtivo = 4 se for a intenção.
+    if (ativoParaEnviar.tipoAtivo === 3) {
+      const valorAtual = typeof ativo.valorAtualFormatado === 'string'
+        ? parseFloat((ativo.valorAtualFormatado as string).replace(',', '.')) || 0
+        : (typeof ativo.valorAtualFormatado === 'number' ? ativo.valorAtualFormatado : 0);
+      if (valorAtual > 0) {
+        ativoParaEnviar.valorAtual = valorAtual;
+        console.log(`Incluindo valorAtual=${valorAtual} para ticker ${ativo.tickerFormatado} (Caixa)`);
+      } else {
+        console.warn(`valorAtualFormatado inválido (${ativo.valorAtualFormatado}) para ticker ${ativo.tickerFormatado} (Caixa). Não incluído.`);
+      }
+    }
+
+    console.log('Objeto enviado para atualização:', ativoParaEnviar);
 
     return this.http.put<void>(url, ativoParaEnviar, {
       headers: { 'Content-Type': 'application/json' }
@@ -477,14 +485,12 @@ export class DashboardService {
         console.error(`Erro ao atualizar ativo com ticker ${ativo.tickerFormatado} na categoria ${category}:`, {
           status: error.status,
           statusText: error.statusText,
-          error: error.error, // Detalhes do erro do backend, se disponíveis
-          requestBody: ativoParaEnviar // Útil para depuração
+          error: error.error,
+          requestBody: ativoParaEnviar
         });
-        // Tenta extrair uma mensagem de erro mais útil do backend
         const backendErrorMessage = error.error?.attributeName && error.error?.objectName
-            ? `Erro de validação no campo '${error.error.attributeName}' para o objeto '${error.error.objectName}'. Valor inválido: '${error.error.value}'`
-            : error.error?.message || error.message || 'Erro desconhecido';
-
+          ? `Erro de validação no campo '${error.error.attributeName}' para o objeto '${error.error.objectName}'. Valor inválido: '${error.error.value}'`
+          : error.error?.message || error.message || 'Erro desconhecido';
         return throwError(() => new Error(`Erro ao atualizar ativo: ${backendErrorMessage}`));
       })
     );

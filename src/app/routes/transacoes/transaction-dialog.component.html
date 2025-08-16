@@ -2,7 +2,6 @@
   <h2 mat-dialog-title class="dialog-title">Nova Transação</h2>
   <mat-dialog-content class="dialog-content">
     <mat-horizontal-stepper [linear]="true" #stepper class="transaction-stepper">
-
       <mat-step [stepControl]="formGroupDadosIniciais">
         <form [formGroup]="formGroupDadosIniciais" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field transaction-type-field">
@@ -41,7 +40,8 @@
 
       <mat-step [stepControl]="formGroupDetalhesAtivo">
         <form [formGroup]="formGroupDetalhesAtivo" class="form-step-content">
-          <mat-form-field appearance="outline" class="form-field ticker-field">
+          <!-- Campo Ticker (exibir apenas se assetType não for TÍTULO) -->
+          <mat-form-field appearance="outline" class="form-field ticker-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
             <mat-label>Ticker</mat-label>
             <input matInput formControlName="ticker" placeholder="Ex: PETR4" aria-required="true">
             <mat-hint class="form-hint">Ex: PETR4, ITUB3</mat-hint>
@@ -56,18 +56,19 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Campo Descrição -->
           <mat-form-field appearance="outline" class="form-field description-field">
             <mat-label>
-              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Rentabilidade (%)' :
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Nome do Título' :
                  formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Cotação' : 'Descrição' }}
             </mat-label>
             <input matInput
                    formControlName="description"
-                   [placeholder]="formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5' :
+                   [placeholder]="formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: Titulo IPCA+7%' :
                                   formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ex: Nome da Empresa'"
                    aria-required="true">
             <mat-hint class="form-hint">
-              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: 5.5 para 5.5%' :
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Título IPCA+7%' :
                  formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30 para R$5,30' : 'Nome completo do ativo' }}
             </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('required') && formGroupDetalhesAtivo.get('description')?.touched">
@@ -81,7 +82,8 @@
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="form-field quantity-field">
+          <!-- Campo Quantidade (exibir apenas se assetType não for TÍTULO) -->
+          <mat-form-field appearance="outline" class="form-field quantity-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
             <mat-label>Quantidade</mat-label>
             <input matInput type="number" formControlName="quantity" min="1" aria-required="true">
             <mat-hint class="form-hint">Ex: 100</mat-hint>
@@ -93,6 +95,7 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Campo Corretora -->
           <mat-form-field appearance="outline" class="form-field corretora-field">
             <mat-label>Corretora</mat-label>
             <mat-select formControlName="corretora" aria-required="true">
@@ -116,6 +119,7 @@
 
       <mat-step [stepControl]="formGroupValoresData">
         <form [formGroup]="formGroupValoresData" class="form-step-content">
+          <!-- Campo Data da Transação -->
           <mat-form-field appearance="outline" class="form-field date-field">
             <mat-label>Data da Transação</mat-label>
             <input matInput [matDatepicker]="picker" formControlName="date" aria-required="true">
@@ -129,7 +133,8 @@
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="form-field price-field">
+          <!-- Campo Preço Médio (exibir apenas se assetType não for TÍTULO) -->
+          <mat-form-field appearance="outline" class="form-field price-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
             <mat-label>
               Preço Médio ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
                               formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
@@ -151,6 +156,7 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Campo Valor da Transação -->
           <mat-form-field appearance="outline" class="form-field value-field">
             <mat-label>
               Valor da Transação ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||

@@ -97,15 +97,15 @@ export class TransactionDialogComponent implements OnInit {
     });
 
     this.formGroupDetalhesAtivo = this.fb.group({
-      ticker: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(10)]],
+      ticker: ['', [Validators.minLength(1), Validators.maxLength(10)]],
       description: ['', this.descriptionValidator.bind(this)],
-      quantity: ['', [Validators.required, Validators.min(1)]],
+      quantity: ['', [Validators.min(1)]],
       corretora: ['', Validators.required],
     });
 
     this.formGroupValoresData = this.fb.group({
       date: ['', Validators.required],
-      averagePrice: ['', [Validators.required, Validators.min(0.01)]],
+      averagePrice: ['', [Validators.min(0.01)]],
       transactionValue: ['', [Validators.required, Validators.min(0.01)]],
     });
 
@@ -118,12 +118,35 @@ export class TransactionDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.formGroupDadosIniciais.get('assetType')?.valueChanges.subscribe((value: string) => {
-      console.log('Selected assetType:', value); // Debug to confirm assetType value
+      console.log('Selected assetType:', value);
+      this.updateFormValidations(value);
       this.formGroupDetalhesAtivo.get('description')?.updateValueAndValidity();
     });
   }
 
-  // Validador customizado para descrição baseado no assetType
+  private updateFormValidations(assetType: string): void {
+    const tickerControl = this.formGroupDetalhesAtivo.get('ticker');
+    const quantityControl = this.formGroupDetalhesAtivo.get('quantity');
+    const averagePriceControl = this.formGroupValoresData.get('averagePrice');
+
+    if (assetType === 'TÍTULO') {
+      tickerControl?.setValidators([Validators.minLength(1), Validators.maxLength(10)]);
+      quantityControl?.setValidators([Validators.min(1)]);
+      averagePriceControl?.setValidators([Validators.min(0.01)]);
+      tickerControl?.setValue('');
+      quantityControl?.setValue('');
+      averagePriceControl?.setValue('');
+    } else {
+      tickerControl?.setValidators([Validators.required, Validators.minLength(1), Validators.maxLength(10)]);
+      quantityControl?.setValidators([Validators.required, Validators.min(1)]);
+      averagePriceControl?.setValidators([Validators.required, Validators.min(0.01)]);
+    }
+
+    tickerControl?.updateValueAndValidity();
+    quantityControl?.updateValueAndValidity();
+    averagePriceControl?.updateValueAndValidity();
+  }
+
   descriptionValidator(control: AbstractControl): ValidationErrors | null {
     const assetType = this.formGroupDadosIniciais.get('assetType')?.value;
     const value = control.value?.toString().trim();
@@ -132,13 +155,7 @@ export class TransactionDialogComponent implements OnInit {
       return { required: true };
     }
 
-    if (assetType === 'TÍTULO') {
-      const cleanedValue = value.replace(/\./g, '').replace(',', '.').replace('%', '');
-      const numValue = parseFloat(cleanedValue);
-      if (isNaN(numValue) || numValue <= 0) {
-        return { invalidPercentage: true };
-      }
-    } else if (assetType === 'MOEDA') {
+    if (assetType === 'MOEDA') {
       const cleanedValue = value.replace(/\./g, '').replace(',', '.');
       const numValue = parseFloat(cleanedValue);
       if (isNaN(numValue) || numValue <= 0) {
@@ -162,7 +179,7 @@ export class TransactionDialogComponent implements OnInit {
         ...this.formGroupValoresData.value,
       };
 
-      console.log('Form Value:', formValue); // Debug to inspect form values
+      console.log('Form Value:', formValue);
 
       if (!formValue.assetType) {
         this.snackBar.open('Tipo de ativo não selecionado.', 'Fechar', {
@@ -200,30 +217,30 @@ export class TransactionDialogComponent implements OnInit {
         return;
       }
       const tipoAtivo = selectedAssetType.tipoAtivo;
-      const category = selectedAssetType.category; // Map assetType to category
+      const category = selectedAssetType.category;
 
-      // Limpeza dos valores monetários para garantir que sejam numbers com ponto decimal para o backend
-      const averagePriceParsed = typeof formValue.averagePrice === 'string' ? parseFloat(formValue.averagePrice.replace(/\./g, '').replace(',', '.')) : formValue.averagePrice;
-      const transactionValueParsed = typeof formValue.transactionValue === 'string' ? parseFloat(formValue.transactionValue.replace(/\./g, '').replace(',', '.')) : formValue.transactionValue;
+      const averagePriceParsed = formValue.averagePrice ?
+        (typeof formValue.averagePrice === 'string' ? parseFloat(formValue.averagePrice.replace(/\./g, '').replace(',', '.')) : formValue.averagePrice) : 0;
+      const transactionValueParsed = typeof formValue.transactionValue === 'string' ?
+        parseFloat(formValue.transactionValue.replace(/\./g, '').replace(',', '.')) : formValue.transactionValue;
 
-      // Definir a moeda com base no tipo de ativo
       const moeda = ['AÇÃO_EXTERIOR', 'FUNDO_EXTERIOR', 'MOEDA'].includes(formValue.assetType) ? 'USD' : 'BRL';
 
       const transacao: Transacao = {
-        ticker: formValue.ticker,
+        ticker: formValue.assetType === 'TÍTULO' ? '' : formValue.ticker,
         dataTransacao,
         tipoTransacao: formValue.transactionType,
         tipoAtivo,
-        quantidade: parseFloat(formValue.quantity),
+        quantidade: formValue.assetType === 'TÍTULO' ? 0 : parseFloat(formValue.quantity),
         valorTransacao: transactionValueParsed,
         moeda,
         observacao: formValue.description,
         corretora: formValue.corretora,
         usuario: this.data.usuarioId ? { id: this.data.usuarioId } : undefined,
-        category, // Add category to transacao
+        category,
       };
 
-      console.log('Transacao Object:', transacao); // Debug to inspect transacao object
+      console.log('Transacao Object:', transacao);
 
       this.transactionService.createTransacao(transacao).subscribe({
         next: (createTransacao: Transacao) => {
@@ -231,7 +248,7 @@ export class TransactionDialogComponent implements OnInit {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
-          this.dialogRef.close(createTransacao); // Return transacao with category
+          this.dialogRef.close(createTransacao);
           this.isSubmitting = false;
         },
         error: (error: any) => {

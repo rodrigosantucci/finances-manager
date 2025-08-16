@@ -149,10 +149,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     'actions',
   ];
   caixaColumns: string[] = [
-    'tickerFormatado',
     'descricaoFormatada',
-    'quantidadeFormatada',
-    'precoMedioFormatado',
     'valorInvestidoFormatado',
     'valorAtualFormatado',
     'lucroPrejuizoFormatado',
@@ -1285,7 +1282,8 @@ private initAllCharts(): void {
       descricaoFormatada: element.descricaoFormatada,
       quantidadeFormatada: element.quantidadeFormatada,
       precoMedioFormatado: element.precoMedioFormatado,
-      precoAtualFormatado: element.precoAtualFormatado
+      precoAtualFormatado: element.precoAtualFormatado,
+      valorAtualFormatado: element.valorAtualFormatado
     };
 
     this.dashboardSrv

@@ -1,6 +1,14 @@
 <page-header class="bg-dark text-light" title="Assistente IA" />
 
-<div class="container">
+<div class="maintenance-overlay">
+  <div class="maintenance-message">
+    <mat-icon class="maintenance-icon">build</mat-icon>
+    <h2>Página em Manutenção</h2>
+    <p>Estamos trabalhando para melhorar esta funcionalidade. Por favor, volte mais tarde.</p>
+  </div>
+</div>
+
+<div class="container blur-content">
   <mat-card class="control-card">
     <mat-card-content>
       <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
