@@ -42,13 +42,22 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     // Carrega o widget inicialmente após a view estar pronta e apenas no navegador
     if (isPlatformBrowser(this.platformId)) {
     //  console.log('Initial TradingView Widget Load starting...');
-      this.loadTradingViewWidget()
-        .then(() => {
-      //    console.log('Initial TradingView Widget script loaded successfully.');
-        })
-        .catch(error => {
-          console.error('Error loading initial TradingView widget:', error);
-        });
+      // Adiciona um pequeno delay para garantir que o DOM esteja completamente renderizado
+      setTimeout(() => {
+        this.loadTradingViewWidget()
+          .then(() => {
+        //    console.log('Initial TradingView Widget script loaded successfully.');
+          })
+          .catch(error => {
+            console.error('Error loading initial TradingView widget:', error);
+            // Tenta novamente após um delay em caso de erro
+            setTimeout(() => {
+              this.loadTradingViewWidget().catch(retryError => {
+                console.error('Retry failed for TradingView widget:', retryError);
+              });
+            }, 1000);
+          });
+      }, 100);
     }
   }
 
@@ -96,54 +105,64 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
    */
   private loadTradingViewWidget(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const container = document.querySelector('.tradingview-widget-container');
-
-      if (!container) {
-        const errorMsg = 'TradingView widget container not found. Make sure the div with class .tradingview-widget-container exists in your overview.component.html.';
-        console.warn(errorMsg);
-        return reject(new Error(errorMsg));
-      }
-
-      // Remove qualquer instância anterior do widget
-      this.destroyTradingViewWidget();
-
-      const currentTheme = this.settings.getThemeColor();
-  //    console.log('Tema detectado para o TradingView:', currentTheme);
-
-      const widgetConfig = {
-        feedMode: 'all_symbols',
-        isTransparent: false,
-        displayMode: 'adaptive',
-        width: '100%',
-        height: '450', // Ajuste a altura conforme necessário
-        colorTheme: currentTheme,
-        locale: 'br'
+      // Aguarda até que o container esteja disponível no DOM
+      const waitForContainer = () => {
+        const container = document.querySelector('.tradingview-widget-container');
+        
+        if (!container) {
+          // Se o container não estiver disponível, aguarda um pouco e tenta novamente
+          setTimeout(waitForContainer, 50);
+          return;
+        }
+        
+        // Container encontrado, procede com o carregamento do widget
+        this.initializeWidget(container, resolve, reject);
       };
-
-      this.tradingViewScript = this.renderer.createElement('script');
-      this.renderer.setAttribute(this.tradingViewScript, 'type', 'text/javascript');
-      this.renderer.setAttribute(this.tradingViewScript, 'src', 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
-      this.renderer.setAttribute(this.tradingViewScript, 'async', 'true');
-
-      if (this.tradingViewScript) {
-        this.tradingViewScript.innerHTML = JSON.stringify(widgetConfig);
-
-        this.tradingViewScript.onload = () => {
-     //     console.log('TradingView script loaded successfully.');
-          resolve();
-        };
-        this.tradingViewScript.onerror = (errorEvent) => {
-          console.error('TradingView script failed to load.', errorEvent);
-          reject(errorEvent); // Rejeita a Promise com o evento de erro
-        };
-
-        this.renderer.appendChild(container, this.tradingViewScript);
-      } else {
-        // Este caso é improvável se createElement funcionar, mas é uma salvaguarda.
-        reject(new Error('Failed to create TradingView script element.'));
-      }
+      
+      waitForContainer();
     });
   }
+  
+  private initializeWidget(container: Element, resolve: () => void, reject: (error: any) => void): void {
+     // Remove qualquer instância anterior do widget
+     this.destroyTradingViewWidget();
+
+     const currentTheme = this.settings.getThemeColor();
+ //    console.log('Tema detectado para o TradingView:', currentTheme);
+
+     const widgetConfig = {
+       feedMode: 'all_symbols',
+       isTransparent: false,
+       displayMode: 'adaptive',
+       width: '100%',
+       height: '450', // Ajuste a altura conforme necessário
+       colorTheme: currentTheme,
+       locale: 'br'
+     };
+
+     this.tradingViewScript = this.renderer.createElement('script');
+     this.renderer.setAttribute(this.tradingViewScript, 'type', 'text/javascript');
+     this.renderer.setAttribute(this.tradingViewScript, 'src', 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
+     this.renderer.setAttribute(this.tradingViewScript, 'async', 'true');
+
+     if (this.tradingViewScript) {
+       this.tradingViewScript.innerHTML = JSON.stringify(widgetConfig);
+
+       this.tradingViewScript.onload = () => {
+    //     console.log('TradingView script loaded successfully.');
+         resolve();
+       };
+       this.tradingViewScript.onerror = (errorEvent) => {
+         console.error('TradingView script failed to load.', errorEvent);
+         reject(errorEvent); // Rejeita a Promise com o evento de erro
+       };
+
+       this.renderer.appendChild(container, this.tradingViewScript);
+     } else {
+       // Este caso é improvável se createElement funcionar, mas é uma salvaguarda.
+       reject(new Error('Failed to create TradingView script element.'));
+     }
+   }
 
   private destroyTradingViewWidget(): void {
     // Remove o elemento script

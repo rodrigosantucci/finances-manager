@@ -73,7 +73,9 @@
           [loading]="isSubmitting"
           (click)="login()"
         >
-          {{ 'login' | translate }}
+          @if (!isSubmitting) {
+            {{ 'login' | translate }}
+          }
         </button>
 
         <div>
