@@ -19,6 +19,13 @@ interface CotacaoUSD {
   cambio: string;
 }
 
+export interface PatrimonioHistoricoVO {
+  id: number;
+  usuarioId: number;
+  data: string;
+  valorTotal: number;
+}
+
 export interface AtivoVO {
   moeda: string;
   id?: number | string; // 'id' pode ser opcional ou vir no patrimonio completo
@@ -59,6 +66,9 @@ export interface PatrimonioCompletoResponse {
   // --------------------
 }
 
+
+
+
 @Injectable({
   providedIn: 'root',
 })
@@ -68,7 +78,6 @@ export class DashboardService {
 
   private readonly apiUserPatrimonioPrefix = '/api/patrimonios/usuario/';
   private readonly apiCotacoesPrefix = '/api/cotacoes/tickers/';
-
   private readonly apiTransacoesPrefix = '/api/transacoes/lote/';
 
 
@@ -308,9 +317,15 @@ export class DashboardService {
   }
 
 
-
-
-
+  getPatrimonioHistorico(usuarioId: number): Observable<PatrimonioHistoricoVO[]> {
+    const url = `${this.apiUserPatrimonioPrefix}/${usuarioId}/historico`;
+    return this.http.get<PatrimonioHistoricoVO[]>(url).pipe(
+      catchError(error => {
+        console.error(`DashboardService: Erro ao buscar patrimônio histórico para usuário ${usuarioId}:`, error);
+        return of([]);
+      })
+    );
+  }
 
   getDistribuicaoPatrimonio(): Observable<PatrimonioDistribuicaoVO[]> {
     return this.getPatrimonioCompleto().pipe(

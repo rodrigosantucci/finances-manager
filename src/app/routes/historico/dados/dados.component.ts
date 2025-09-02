@@ -8,7 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { NgIf, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { NgIf, CurrencyPipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, take } from 'rxjs/operators';
@@ -50,7 +50,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
     'valorCaixa',
     'valorAssetsInternacionais',
     'valorTotal',
-    'ativos', // Nova coluna para os ativos
+    'ativos',
   ];
 
   @ViewChild(MatPaginator, { static: false }) paginator!: MatPaginator;
@@ -90,12 +90,6 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
         });
       }
 
-      // Listener para eventos de ordenação
-      this.sort.sortChange.subscribe((sort: Sort) => {
-        console.log('Evento matSortChange disparado:', { active: sort.active, direction: sort.direction });
-      });
-
-      // Configurar ordenação personalizada
       this.dataSource.sortData = (data: HistoricoTransacaoVO[], sort: MatSort): HistoricoTransacaoVO[] => {
         const active = sort.active;
         const direction = sort.direction;
@@ -138,12 +132,11 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
       const [dayB, monthB, yearB] = b.split('/').map(Number);
       const dateA = new Date(yearA, monthA - 1, dayA);
       const dateB = new Date(yearB, monthB - 1, dayB);
-      console.log('Comparando datas:', { dateA, dateB, result: dateA.getTime() - dateB.getTime() });
       return (dateA.getTime() - dateB.getTime()) * (isAsc ? 1 : -1);
     }
 
-    const valueA = a ?? 0;
-    const valueB = b ?? 0;
+    const valueA = Number(a) || 0;
+    const valueB = Number(b) || 0;
     return (valueA - valueB) * (isAsc ? 1 : -1);
   }
 
@@ -152,75 +145,44 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
   }
 
   loadData(dataInicio?: string, dataFim?: string) {
-  this.isLoading = true;
-  this.hasError = false;
+    this.isLoading = true;
+    this.hasError = false;
 
-  forkJoin([
-    this.dadosService.getHistoricoTransacoes(dataInicio, dataFim).pipe(
-      catchError(error => {
-        console.error('Erro ao carregar histórico de transações:', error);
-        this.snackBar.open('Erro ao carregar histórico de transações.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.hasError = true;
-        return of([]);
-      })
-    ),
-  ])
-    .pipe(finalize(() => {
-      this.isLoading = false;
-    }))
-    .subscribe(([transacoes]) => {
-      console.log('Dados recebidos do serviço:', transacoes);
-
-    const transacoesFormatadas = transacoes.map(t => {
-  if (t.dataRegistro) {
-    let dateObj: Date | null = null;
-
-    // Se vier no formato yyyy-MM-dd
-    if (/^\d{4}-\d{2}-\d{2}/.test(t.dataRegistro)) {
-      const [ano, mes, dia] = t.dataRegistro.split('-').map(Number);
-      dateObj = new Date(ano, mes - 1, dia);
-    }
-    // Se vier no formato dd/MM/yyyy
-    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(t.dataRegistro)) {
-      const [dia, mes, ano] = t.dataRegistro.split('/').map(Number);
-      dateObj = new Date(ano, mes - 1, dia);
-    }
-
-    // Formata se data for válida
-    if (dateObj && !isNaN(dateObj.getTime())) {
-      const dia = String(dateObj.getDate()).padStart(2, '0');
-      const mes = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const ano = dateObj.getFullYear();
-      t.dataRegistro = `${dia}/${mes}/${ano}`;
-    } else {
-      t.dataRegistro = 'N/A';
-    }
-  } else {
-    t.dataRegistro = 'N/A';
-  }
-  return t;
-});
-
-      this.dataSource.data = transacoesFormatadas;
-
-      setTimeout(() => {
-        if (this.paginator && this.sort) {
-          this.dataSource.paginator = this.paginator;
-          this.dataSource.sort = this.sort;
-          console.log('MatSort e MatPaginator reatribuídos após carregamento');
-          this.cdr.detectChanges();
-        } else {
-          console.error('Erro: MatSort ou MatPaginator não disponíveis após carregamento', {
-            paginator: !!this.paginator,
-            sort: !!this.sort,
+    forkJoin([
+      this.dadosService.getHistoricoTransacoes(dataInicio, dataFim).pipe(
+        catchError(error => {
+          console.error('Erro ao carregar histórico de transações:', error);
+          this.snackBar.open('Erro ao carregar histórico de transações.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
           });
-        }
-      }, 0);
-    });
-}
+          this.hasError = true;
+          return of([]);
+        })
+      ),
+    ])
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe(([transacoes]) => {
+        console.log('Dados recebidos do serviço:', transacoes);
+        this.dataSource.data = transacoes;
+
+        setTimeout(() => {
+          if (this.paginator && this.sort) {
+            this.dataSource.paginator = this.paginator;
+            this.dataSource.sort = this.sort;
+            console.log('MatSort e MatPaginator reatribuídos após carregamento');
+            this.cdr.detectChanges();
+          } else {
+            console.error('Erro: MatSort ou MatPaginator não disponíveis após carregamento', {
+              paginator: !!this.paginator,
+              sort: !!this.sort,
+            });
+          }
+        }, 0);
+      });
+  }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;

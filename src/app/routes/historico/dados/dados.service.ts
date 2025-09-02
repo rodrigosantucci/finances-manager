@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '@core/authentication';
+import { format, parse } from 'date-fns';
 
 export interface AtivoCotacao {
   cambio: number;
@@ -18,7 +19,7 @@ export interface HistoricoTransacaoVO {
   valorCaixa: number;
   valorAssetsInternacionais: number;
   valorTotal: number;
-  ativosCotacoes: AtivoCotacao[]; // Campo de ativos adicionado aqui
+  ativosCotacoes: AtivoCotacao[];
 }
 
 @Injectable({
@@ -42,20 +43,18 @@ export class DadosService {
       return 'N/A';
     }
 
-    const date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-      console.log('Data válida:', dateString, '->', date.toLocaleDateString('pt-BR'));
-      return date.toLocaleDateString('pt-BR');
+    let parsedDate: Date | null = null;
+    // Tenta interpretar como yyyy-MM-dd
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateString)) {
+      parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
+    }
+    // Tenta interpretar como dd/MM/yyyy
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+      parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
     }
 
-    const match = dateString.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    if (match) {
-      const normalized = `${match[3]}-${match[2]}-${match[1]}`;
-      const parsedDate = new Date(normalized);
-      if (!isNaN(parsedDate.getTime())) {
-        console.log('Data normalizada:', dateString, '->', parsedDate.toLocaleDateString('pt-BR'));
-        return parsedDate.toLocaleDateString('pt-BR');
-      }
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+      return format(parsedDate, 'dd/MM/yyyy');
     }
 
     console.warn('Data inválida:', dateString);
@@ -89,7 +88,7 @@ export class DadosService {
               valorCaixa: t.valorCaixa ?? 0,
               valorAssetsInternacionais: t.valorAssetsInternacionais ?? 0,
               valorTotal: t.valorTotal ?? 0,
-              ativosCotacoes: t.ativosCotacoes ?? [], // Mapeia o array de ativos
+              ativosCotacoes: t.ativosCotacoes ?? [],
             }));
           }),
           catchError(error => {

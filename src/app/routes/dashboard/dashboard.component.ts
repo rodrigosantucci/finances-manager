@@ -17,21 +17,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import {
-  Observable,
-  take,
-  catchError,
-  of,
-  map,
-  filter,
-  finalize,
-  forkJoin,
-} from 'rxjs';
-import {
-  DashboardService,
-  PatrimonioDistribuicaoVO,
-  AtivoVO,
-} from './dashboard.service';
+import { Observable, take, catchError, of, map, filter, finalize, forkJoin, Subject, debounceTime } from 'rxjs';
+import { DashboardService, PatrimonioDistribuicaoVO, AtivoVO, PatrimonioHistoricoVO } from './dashboard.service';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MtxAlertModule } from '@ng-matero/extensions/alert';
@@ -48,6 +35,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PageHeaderComponent } from '@shared';
 import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.component';
+import { MatOption, MatSelect } from '@angular/material/select';
 
 @Component({
   selector: 'app-dashboard',
@@ -65,6 +53,8 @@ import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.
     MatIconModule,
     MatDialogModule,
     MatButtonModule,
+    MatSelect,
+    MatOption,
     MtxAlertModule,
     QuantidadeFormatPipe,
     CurrencyPipe,
@@ -119,6 +109,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   caixaDataSource = new MatTableDataSource<AtivoVO>([]);
   assetsDataSource = new MatTableDataSource<AtivoVO>([]);
 
+  headerChart$!: Observable<ApexOptions>;
   patrimoniochart$!: Observable<ApexOptions>;
   acoesChart$!: Observable<ApexOptions>;
   fundosChart$!: Observable<ApexOptions>;
@@ -167,12 +158,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     'actions',
   ];
 
+  chartInstance0: ApexCharts | undefined;
   chartInstance1: ApexCharts | undefined;
   chartInstance2: ApexCharts | undefined;
   chartInstance3: ApexCharts | undefined;
   chartInstance4: ApexCharts | undefined;
   chartInstance5: ApexCharts | undefined;
 
+  @ViewChild('headerChart') chartElement0!: ElementRef<HTMLDivElement>;
   @ViewChild('chart1') chartElement1!: ElementRef<HTMLDivElement>;
   @ViewChild('chart2') chartElement2!: ElementRef<HTMLDivElement>;
   @ViewChild('chart3') chartElement3!: ElementRef<HTMLDivElement>;
@@ -188,6 +181,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   editingRowTicker: string | null = null;
   currentEditedAtivo: AtivoVO | null = null;
   originalAtivoBeforeEdit: AtivoVO | null = null;
+  selectedPeriod: string = '1Y'; // Default period
+  private periodChangeSubject = new Subject<string>();
 
   protected currentUserId: number | string | null = null;
   tema = this.settings.getThemeColor() as string;
@@ -201,196 +196,205 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return isNaN(parsed) ? 0 : parsed;
   };
 
+  async onUpdateDados(): Promise<void> {
+    // Evita múltiplas chamadas simultâneas
+    if (this.isUpdating) return;
+    this.isUpdating = true;
+    this.isLoading = true; // Inicia o estado de carregamento
 
+    const user = this.authService.user().getValue();
+    const usuarioId = user?.id;
 
-async onUpdateDados(): Promise<void> {
-  // Evita múltiplas chamadas simultâneas
-  if (this.isUpdating) return;
-  this.isUpdating = true;
-  this.isLoading = true; // Inicia o estado de carregamento
-
-  const user = this.authService.user().getValue();
-  const usuarioId = user?.id;
-
-  if (usuarioId === undefined || usuarioId === null) {
-    console.error('ID do usuário não disponível para atualizar cotações.');
-    this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
-      duration: 5000,
-      panelClass: ['error-snackbar'],
-    });
-    this.isUpdating = false;
-    this.isLoading = false;
-    return;
-  }
-
-  // Faz a requisição para obter os tickers do usuário
-  this.patrimonioService.getUserTickers(usuarioId).subscribe({
-    next: (tickers) => {
-      if (tickers.length === 0) {
-        this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
-          duration: 5000,
-          panelClass: ['error-snackbar'],
-        });
-        this.isUpdating = false;
-        this.isLoading = false;
-        return;
-      }
-
-      // Faz a requisição para atualizar as cotações com base nos tickers
-      this.cotacaoService.atualizarDados(tickers).subscribe({
-        next: (cotacoes) => {
-          this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', {
-            duration: 3000,
-            panelClass: ['success-snackbar'],
-          });
-          if (this.currentUserId) {
-            // Recarrega todos os dados e componentes da tela.
-            // Esta é a parte que recarrega os dados do patrimônio do usuário.
-            this.loadData(this.currentUserId);
-            this.setupCharts(this.currentUserId);
-            this.fetchAndCacheData();
-            this.loadTradingViewWidget();
-            this.cdr.markForCheck(); // Força a detecção de mudanças
-
-            // Chama o novo método para inicializar todos os gráficos
-            this.initAllCharts();
-          } else {
-            console.error('ID do usuário não disponível para recarregar dados após atualização de cotações.');
-          }
-          this.isUpdating = false;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Erro ao atualizar cotações:', error);
-          this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
-            duration: 5000,
-            panelClass: ['error-snackbar'],
-          });
-          this.isUpdating = false;
-          this.isLoading = false;
-        },
-      });
-    },
-    error: (error) => {
-      console.error('Erro ao buscar tickers:', error);
-      this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+    if (usuarioId === undefined || usuarioId === null) {
+      console.error('ID do usuário não disponível para atualizar cotações.');
+      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });
       this.isUpdating = false;
       this.isLoading = false;
-    },
-  });
-}
+      return;
+    }
 
-
-
-
-
-
-// Novo método para inicializar todos os gráficos
-private initAllCharts(): void {
-  setTimeout(() => {
-    this.patrimoniochart$?.subscribe({
-      next: (options) => {
-        if (this.chartElement1 && this.chartElement1.nativeElement) {
-          this.initChart(this.chartElement1, options, 'chart1');
+    // Faz a requisição para obter os tickers do usuário
+    this.patrimonioService.getUserTickers(usuarioId).subscribe({
+      next: tickers => {
+        if (tickers.length === 0) {
+          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+          this.isUpdating = false;
+          this.isLoading = false;
+          return;
         }
+
+        // Faz a requisição para atualizar as cotações com base nos tickers
+        this.cotacaoService.atualizarDados(tickers).subscribe({
+          next: cotacoes => {
+            this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', {
+              duration: 3000,
+              panelClass: ['success-snackbar'],
+            });
+            if (this.currentUserId) {
+              // Recarrega todos os dados e componentes da tela.
+              // Esta é a parte que recarrega os dados do patrimônio do usuário.
+              this.loadData(this.currentUserId);
+              this.setupCharts(this.currentUserId);
+              this.fetchAndCacheData();
+              this.loadTradingViewWidget();
+              this.cdr.markForCheck(); // Força a detecção de mudanças
+
+              // Chama o novo método para inicializar todos os gráficos
+              this.initAllCharts();
+            } else {
+              console.error(
+                'ID do usuário não disponível para recarregar dados após atualização de cotações.'
+              );
+            }
+            this.isUpdating = false;
+            this.isLoading = false;
+          },
+          error: error => {
+            console.error('Erro ao atualizar cotações:', error);
+            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+              duration: 5000,
+              panelClass: ['error-snackbar'],
+            });
+            this.isUpdating = false;
+            this.isLoading = false;
+          },
+        });
       },
-      error: (err) => {
-        console.error('Erro ao inicializar gráfico de patrimônio:', err);
-        this.hasError = true;
-        this.cdr.markForCheck();
-      },
-    });
-
-    this.acoesChart$?.subscribe({
-      next: (options) => {
-        if (this.chartElement2 && this.chartElement2.nativeElement) {
-          this.initChart(this.chartElement2, options, 'chart2');
-        }
-      },
-      error: (err) => {
-        console.error('Erro ao inicializar gráfico de ações:', err);
-        this.hasError = true;
-        this.cdr.markForCheck();
-      },
-    });
-
-    this.fundosChart$?.subscribe({
-      next: (options) => {
-        if (this.chartElement3 && this.chartElement3.nativeElement) {
-          this.initChart(this.chartElement3, options, 'chart3');
-        }
-      },
-      error: (err) => {
-        console.error('Erro ao inicializar gráfico de fundos:', err);
-        this.hasError = true;
-        this.cdr.markForCheck();
-      },
-    });
-
-    this.caixaChart$?.subscribe({
-      next: (options) => {
-        if (this.chartElement4 && this.chartElement4.nativeElement) {
-          this.initChart(this.chartElement4, options, 'chart4');
-        }
-      },
-      error: (err) => {
-        console.error('Erro ao inicializar gráfico de caixa:', err);
-        this.hasError = true;
-        this.cdr.markForCheck();
-      },
-    });
-
-    this.assetsChart$?.subscribe({
-      next: (options) => {
-        if (this.chartElement5 && this.chartElement5.nativeElement) {
-          this.initChart(this.chartElement5, options, 'chart5');
-        }
-      },
-      error: (err) => {
-        console.error('Erro ao inicializar gráfico de assets:', err);
-        this.hasError = true;
-        this.cdr.markForCheck();
-      },
-    });
-
-    this.isLoading = false;
-    this.cdr.markForCheck();
-  }, 100);
-}
-
-
-
-
-
-
-
-
-
-
-
-  ngOnInit() {
-    this.authService.user().pipe(filter((user) => !!user?.id), take(1)).subscribe((user) => {
-      if (user?.id) {
-        this.currentUserId = user.id;
-        this.isLoading = true;
-        this.loadData(user.id);
-        this.setupCharts(user.id);
-        this.fetchAndCacheData();
-        this.loadTradingViewWidget();
-      } else {
-        console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
-        this.hasError = true;
-        this.isLoading = false;
-        this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+      error: error => {
+        console.error('Erro ao buscar tickers:', error);
+        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
-      }
-      this.cdr.markForCheck();
+        this.isUpdating = false;
+        this.isLoading = false;
+      },
     });
+  }
+
+  // Novo método para inicializar todos os gráficos
+  private initAllCharts(): void {
+    setTimeout(() => {
+      this.headerChart$?.subscribe({
+        next: options => {
+          if (this.chartElement0 && this.chartElement0.nativeElement) {
+            this.initChart(this.chartElement0, options, 'headerChart');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de cabeçalho:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.patrimoniochart$?.subscribe({
+        next: options => {
+          if (this.chartElement1 && this.chartElement1.nativeElement) {
+            this.initChart(this.chartElement1, options, 'chart1');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de patrimônio:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.acoesChart$?.subscribe({
+        next: options => {
+          if (this.chartElement2 && this.chartElement2.nativeElement) {
+            this.initChart(this.chartElement2, options, 'chart2');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de ações:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.fundosChart$?.subscribe({
+        next: options => {
+          if (this.chartElement3 && this.chartElement3.nativeElement) {
+            this.initChart(this.chartElement3, options, 'chart3');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de fundos:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.caixaChart$?.subscribe({
+        next: options => {
+          if (this.chartElement4 && this.chartElement4.nativeElement) {
+            this.initChart(this.chartElement4, options, 'chart4');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de caixa:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.assetsChart$?.subscribe({
+        next: options => {
+          if (this.chartElement5 && this.chartElement5.nativeElement) {
+            this.initChart(this.chartElement5, options, 'chart5');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de assets:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
+      this.isLoading = false;
+      this.cdr.markForCheck();
+    }, 100);
+  }
+
+  ngOnInit() {
+    this.authService
+      .user()
+      .pipe(
+        filter(user => !!user?.id),
+        take(1)
+      )
+      .subscribe(user => {
+        if (user?.id) {
+          this.currentUserId = user.id;
+          this.isLoading = true;
+          this.loadData(user.id);
+          this.setupCharts(user.id);
+          this.fetchAndCacheData();
+          this.loadTradingViewWidget();
+        } else {
+          console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
+          this.hasError = true;
+          this.isLoading = false;
+          this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+            duration: 5000,
+            panelClass: ['error-snackbar'],
+          });
+        }
+        this.periodChangeSubject.pipe(debounceTime(300)).subscribe(() => this.updateChartData());
+        this.cdr.markForCheck();
+      });
+  }
+
+  updateChartData(): void {
+  this.periodChangeSubject.next(this.selectedPeriod);
   }
 
   private loadTradingViewWidget(): void {
@@ -403,7 +407,11 @@ private initAllCharts(): void {
 
     const script = this.renderer.createElement('script');
     this.renderer.setAttribute(script, 'type', 'text/javascript');
-    this.renderer.setAttribute(script, 'src', 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js');
+    this.renderer.setAttribute(
+      script,
+      'src',
+      'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js'
+    );
     this.renderer.setAttribute(script, 'async', 'true');
     script.innerHTML = JSON.stringify({
       symbols: [
@@ -426,13 +434,26 @@ private initAllCharts(): void {
 
   ngAfterViewInit() {
     setTimeout(() => {
+      this.headerChart$?.subscribe({
+        next: options => {
+          if (this.chartElement0 && this.chartElement0.nativeElement) {
+            this.initChart(this.chartElement0, options, 'headerChart');
+          }
+        },
+        error: err => {
+          console.error('Erro ao inicializar gráfico de cabeçalho:', err);
+          this.hasError = true;
+          this.cdr.markForCheck();
+        },
+      });
+
       this.patrimoniochart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement1 && this.chartElement1.nativeElement) {
             this.initChart(this.chartElement1, options, 'chart1');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de patrimônio:', err);
           this.hasError = true;
           this.cdr.markForCheck();
@@ -440,12 +461,12 @@ private initAllCharts(): void {
       });
 
       this.acoesChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement2 && this.chartElement2.nativeElement) {
             this.initChart(this.chartElement2, options, 'chart2');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de ações:', err);
           this.hasError = true;
           this.cdr.markForCheck();
@@ -453,12 +474,12 @@ private initAllCharts(): void {
       });
 
       this.fundosChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement3 && this.chartElement3.nativeElement) {
             this.initChart(this.chartElement3, options, 'chart3');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de fundos:', err);
           this.hasError = true;
           this.cdr.markForCheck();
@@ -466,12 +487,12 @@ private initAllCharts(): void {
       });
 
       this.caixaChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement4 && this.chartElement4.nativeElement) {
             this.initChart(this.chartElement4, options, 'chart4');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de caixa:', err);
           this.hasError = true;
           this.cdr.markForCheck();
@@ -479,12 +500,12 @@ private initAllCharts(): void {
       });
 
       this.assetsChart$?.subscribe({
-        next: (options) => {
+        next: options => {
           if (this.chartElement5 && this.chartElement5.nativeElement) {
             this.initChart(this.chartElement5, options, 'chart5');
           }
         },
-        error: (err) => {
+        error: err => {
           console.error('Erro ao inicializar gráfico de assets:', err);
           this.hasError = true;
           this.cdr.markForCheck();
@@ -502,6 +523,7 @@ private initAllCharts(): void {
     this.destroyChart(this.chartInstance3, 'chart3');
     this.destroyChart(this.chartInstance4, 'chart4');
     this.destroyChart(this.chartInstance5, 'chart5');
+    this.destroyChart(this.chartInstance0, 'headerChart');
   }
 
   private destroyChart(chartInstance: ApexCharts | undefined, chartId: string): void {
@@ -532,13 +554,26 @@ private initAllCharts(): void {
     };
 
     forkJoin([
-      this.dashboardSrv
-        .getDistribuicaoPatrimonio()
-        .pipe(take(1), catchError((error) => handleError(error, 'distribuição de patrimônio'))),
-      this.dashboardSrv.getPatrimonioAcoes().pipe(take(1), catchError((error) => handleError(error, 'ações'))),
-      this.dashboardSrv.getPatrimonioFundos().pipe(take(1), catchError((error) => handleError(error, 'fundos'))),
-      this.dashboardSrv.getPatrimonioCaixa().pipe(take(1), catchError((error) => handleError(error, 'caixa'))),
-      this.dashboardSrv.getPatrimonioAssets().pipe(take(1), catchError((error) => handleError(error, 'assets'))),
+      this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
+        take(1),
+        catchError(error => handleError(error, 'distribuição de patrimônio'))
+      ),
+      this.dashboardSrv.getPatrimonioAcoes().pipe(
+        take(1),
+        catchError(error => handleError(error, 'ações'))
+      ),
+      this.dashboardSrv.getPatrimonioFundos().pipe(
+        take(1),
+        catchError(error => handleError(error, 'fundos'))
+      ),
+      this.dashboardSrv.getPatrimonioCaixa().pipe(
+        take(1),
+        catchError(error => handleError(error, 'caixa'))
+      ),
+      this.dashboardSrv.getPatrimonioAssets().pipe(
+        take(1),
+        catchError(error => handleError(error, 'assets'))
+      ),
     ])
       .pipe(
         finalize(() => {
@@ -562,9 +597,64 @@ private initAllCharts(): void {
       });
   }
 
+  private filterDataByPeriod(
+    data: PatrimonioHistoricoVO[],
+    period: string
+  ): PatrimonioHistoricoVO[] {
+    if (!data || data.length === 0) return [];
+
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+      case '1M':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case '3M':
+        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        break;
+      case '6M':
+        startDate = new Date(now.setMonth(now.getMonth() - 6));
+        break;
+      case '1Y':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      case '5Y':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 5));
+        break;
+      case '10Y':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 10));
+        break;
+      case '20Y':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 20));
+        break;
+      default:
+        return data; // Return all data if period is invalid
+    }
+
+    return data.filter(item => new Date(item.data) >= startDate);
+  }
+
   setupCharts(userId: number | string): void {
+    this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
+      catchError(error => {
+        console.error('Erro ao buscar dados para #headerChart:', error);
+        this.hasError = true;
+        this.isLoading = false;
+        this.cdr.markForCheck();
+        return of([]);
+      }),
+      map((data: PatrimonioHistoricoVO[]) => {
+        // Filter data based on selectedPeriod
+        const filteredData = this.filterDataByPeriod(data, this.selectedPeriod);
+        const series = filteredData.map(item => this.parseAndValidateNumber(item.valorTotal));
+        const labels = filteredData.map(item => item.data);
+        return this.getChartOptions(series, labels, 'Patrimônio Histórico', false);
+      })
+    );
+
     this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
-      catchError((error) => {
+      catchError(error => {
         console.error('Erro ao buscar dados para #chart1:', error);
         this.hasError = true;
         this.isLoading = false;
@@ -573,18 +663,21 @@ private initAllCharts(): void {
       }),
       map((distribuicao: PatrimonioDistribuicaoVO[]) => {
         const validDistribuicao = distribuicao.filter(
-          (d) =>
+          d =>
             typeof d.valorTotal === 'number' &&
             d.valorTotal >= 0 &&
             typeof d.tipoAtivo === 'string' &&
             d.tipoAtivo.trim() !== ''
         );
 
-        const series = validDistribuicao.map((d) => d.percentual);
-        const labels = validDistribuicao.map((d) => d.tipoAtivo);
+        const series = validDistribuicao.map(d => d.percentual);
+        const labels = validDistribuicao.map(d => d.tipoAtivo);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart1', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart1', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Distribuição de Patrimônio', true);
         }
 
@@ -595,13 +688,19 @@ private initAllCharts(): void {
     this.acoesChart$ = this.acoesDataSource.connect().pipe(
       map((acoes: AtivoVO[]) => {
         const validAcoes = acoes.filter(
-          (a) => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado && a.tickerFormatado.trim() !== ''
+          a =>
+            this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 &&
+            a.tickerFormatado &&
+            a.tickerFormatado.trim() !== ''
         );
-        const series = validAcoes.map((a) => this.parseAndValidateNumber(a.valorAtualFormatado));
-        const labels = validAcoes.map((a) => a.tickerFormatado);
+        const series = validAcoes.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+        const labels = validAcoes.map(a => a.tickerFormatado);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart2', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart2', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Patrimônio em Ações', false);
         }
         return this.getChartOptions(series, labels, 'Patrimônio em Ações', false);
@@ -611,13 +710,19 @@ private initAllCharts(): void {
     this.fundosChart$ = this.fundosDataSource.connect().pipe(
       map((fundos: AtivoVO[]) => {
         const validFundos = fundos.filter(
-          (f) => this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 && f.tickerFormatado && f.tickerFormatado.trim() !== ''
+          f =>
+            this.parseAndValidateNumber(f.valorAtualFormatado) >= 0 &&
+            f.tickerFormatado &&
+            f.tickerFormatado.trim() !== ''
         );
-        const series = validFundos.map((f) => this.parseAndValidateNumber(f.valorAtualFormatado));
-        const labels = validFundos.map((f) => f.tickerFormatado);
+        const series = validFundos.map(f => this.parseAndValidateNumber(f.valorAtualFormatado));
+        const labels = validFundos.map(f => f.tickerFormatado);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart3', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart3', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Patrimônio em Fundos', false);
         }
         return this.getChartOptions(series, labels, 'Patrimônio em Fundos', false);
@@ -627,13 +732,19 @@ private initAllCharts(): void {
     this.caixaChart$ = this.caixaDataSource.connect().pipe(
       map((caixa: AtivoVO[]) => {
         const validCaixa = caixa.filter(
-          (c) => this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 && c.tickerFormatado && c.tickerFormatado.trim() !== ''
+          c =>
+            this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 &&
+            c.tickerFormatado &&
+            c.tickerFormatado.trim() !== ''
         );
-        const series = validCaixa.map((c) => this.parseAndValidateNumber(c.valorAtualFormatado));
-        const labels = validCaixa.map((c) => c.tickerFormatado);
+        const series = validCaixa.map(c => this.parseAndValidateNumber(c.valorAtualFormatado));
+        const labels = validCaixa.map(c => c.tickerFormatado);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart4', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart4', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Patrimônio em Caixa', false);
         }
         return this.getChartOptions(series, labels, 'Patrimônio em Caixa', false);
@@ -643,13 +754,19 @@ private initAllCharts(): void {
     this.assetsChart$ = this.assetsDataSource.connect().pipe(
       map((assets: AtivoVO[]) => {
         const validAssets = assets.filter(
-          (a) => this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 && a.tickerFormatado && a.tickerFormatado.trim() !== ''
+          a =>
+            this.parseAndValidateNumber(a.valorAtualFormatado) >= 0 &&
+            a.tickerFormatado &&
+            a.tickerFormatado.trim() !== ''
         );
-        const series = validAssets.map((a) => this.parseAndValidateNumber(a.valorAtualFormatado));
-        const labels = validAssets.map((a) => a.tickerFormatado);
+        const series = validAssets.map(a => this.parseAndValidateNumber(a.valorAtualFormatado));
+        const labels = validAssets.map(a => a.tickerFormatado);
 
         if (series.length !== labels.length) {
-          console.error('Erro: series e labels têm tamanhos diferentes para #chart5', { series, labels });
+          console.error('Erro: series e labels têm tamanhos diferentes para #chart5', {
+            series,
+            labels,
+          });
           return this.getChartOptions([], [], 'Outros Ativos', false);
         }
         return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
@@ -663,55 +780,94 @@ private initAllCharts(): void {
   }
 
   getTotalInvestido(): number {
-    return this.distribuicaoDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorTotal), 0);
+    return this.distribuicaoDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorTotal),
+      0
+    );
   }
 
   getTotalValorInvestidoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorInvestidoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorInvestidoFormatado),
+      0
+    );
   }
 
   getTotalValorAtualAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalValorAtualAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.valorAtualFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.valorAtualFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoAcoes(): number {
-    return this.acoesDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.acoesDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoFundos(): number {
-    return this.fundosDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.fundosDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoCaixa(): number {
-    return this.caixaDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.caixaDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoAssets(): number {
-    return this.assetsDataSource.data.reduce((sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado), 0);
+    return this.assetsDataSource.data.reduce(
+      (sum, item) => sum + this.getNumericValue(item.lucroPrejuizoFormatado),
+      0
+    );
   }
 
   getTotalLucroPrejuizoGeral(): number {
@@ -740,7 +896,10 @@ private initAllCharts(): void {
       this.getTotalValorAtualFundos() +
       this.getTotalValorAtualCaixa() +
       this.getTotalValorAtualAssets();
-    const rv = this.getTotalValorAtualAcoes() + this.getTotalValorAtualFundos() + this.getTotalValorAtualAssets();
+    const rv =
+      this.getTotalValorAtualAcoes() +
+      this.getTotalValorAtualFundos() +
+      this.getTotalValorAtualAssets();
     const percentual = totalValorAtualGeral > 0 ? (rv / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
   }
@@ -753,7 +912,7 @@ private initAllCharts(): void {
       this.getTotalValorAtualAssets();
 
     const btc = this.assetsDataSource.data
-      .filter((asset) => asset.tickerFormatado?.toUpperCase() === 'BTC/USD')
+      .filter(asset => asset.tickerFormatado?.toUpperCase() === 'BTC/USD')
       .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
     const percentual = totalValorAtualGeral > 0 ? (btc / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
@@ -767,7 +926,7 @@ private initAllCharts(): void {
   private sumUSD(): number {
     const allAssets = [...this.acoes, ...this.fundos, ...this.caixa, ...this.assets];
     const totalUSD = allAssets
-      .filter((ativo) => {
+      .filter(ativo => {
         const moeda = ativo.moeda ? ativo.moeda.toUpperCase().trim() : '';
         return moeda === 'USD';
       })
@@ -793,24 +952,34 @@ private initAllCharts(): void {
 
   private fetchAndCacheData(): void {
     forkJoin([
-      this.dashboardSrv.getPatrimonioAcoes().pipe(take(1), catchError(() => of([]))),
-      this.dashboardSrv.getPatrimonioFundos().pipe(take(1), catchError(() => of([]))),
-      this.dashboardSrv.getPatrimonioCaixa().pipe(take(1), catchError(() => of([]))),
-      this.dashboardSrv.getPatrimonioAssets().pipe(take(1), catchError(() => of([]))),
-    ]).subscribe(
-      ([acoes, fundos, caixa, assets]: [AtivoVO[], AtivoVO[], AtivoVO[], AtivoVO[]]) => {
-        this.acoes = acoes;
-        this.fundos = fundos;
-        this.caixa = caixa;
-        this.assets = assets;
+      this.dashboardSrv.getPatrimonioAcoes().pipe(
+        take(1),
+        catchError(() => of([]))
+      ),
+      this.dashboardSrv.getPatrimonioFundos().pipe(
+        take(1),
+        catchError(() => of([]))
+      ),
+      this.dashboardSrv.getPatrimonioCaixa().pipe(
+        take(1),
+        catchError(() => of([]))
+      ),
+      this.dashboardSrv.getPatrimonioAssets().pipe(
+        take(1),
+        catchError(() => of([]))
+      ),
+    ]).subscribe(([acoes, fundos, caixa, assets]: [AtivoVO[], AtivoVO[], AtivoVO[], AtivoVO[]]) => {
+      this.acoes = acoes;
+      this.fundos = fundos;
+      this.caixa = caixa;
+      this.assets = assets;
 
-        this.acoesDataSource.data = acoes;
-        this.fundosDataSource.data = fundos;
-        this.caixaDataSource.data = caixa;
-        this.assetsDataSource.data = assets;
-        this.cdr.markForCheck();
-      }
-    );
+      this.acoesDataSource.data = acoes;
+      this.fundosDataSource.data = fundos;
+      this.caixaDataSource.data = caixa;
+      this.assetsDataSource.data = assets;
+      this.cdr.markForCheck();
+    });
   }
 
   private getChartOptions(
@@ -1018,6 +1187,9 @@ private initAllCharts(): void {
 
     let instance: ApexCharts | undefined;
     switch (chartId) {
+      case 'headerChart':
+        instance = this.chartInstance0;
+        break;
       case 'chart1':
         instance = this.chartInstance1;
         break;
@@ -1043,6 +1215,9 @@ private initAllCharts(): void {
       const newInstance = new ApexCharts(chartElement.nativeElement, options);
       newInstance.render();
       switch (chartId) {
+        case 'headerChart':
+          this.chartInstance0 = newInstance;
+          break;
         case 'chart1':
           this.chartInstance1 = newInstance;
           break;
@@ -1111,17 +1286,17 @@ private initAllCharts(): void {
         this.dashboardSrv
           .addTransaction(this.currentUserId, transactionWithCategory)
           .pipe(
-            catchError((error) => {
+            catchError(error => {
               console.error('Erro ao adicionar transação:', error);
               this.snackBar.open(error.message || 'Erro ao registrar transação.', 'Fechar', {
                 duration: 5000,
 
- panelClass: ['error-snackbar'],
+                panelClass: ['error-snackbar'],
               });
               return of(null);
             })
           )
-          .subscribe((response) => {
+          .subscribe(response => {
             if (response !== null) {
               this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
                 duration: 3000,
@@ -1195,10 +1370,14 @@ private initAllCharts(): void {
         ticker: element.tickerFormatado,
         count: duplicateTickers.length,
       });
-      this.snackBar.open(`Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`, 'Fechar', {
-        duration: 6000,
-        panelClass: ['warning-snackbar'],
-      });
+      this.snackBar.open(
+        `Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`,
+        'Fechar',
+        {
+          duration: 6000,
+          panelClass: ['warning-snackbar'],
+        }
+      );
     }
 
     this.editingRowTicker = element.tickerFormatado;
@@ -1208,7 +1387,8 @@ private initAllCharts(): void {
   }
 
   isEditing(element: AtivoVO, category: string): boolean {
-    const isEditing = this.editingRowTicker === element.tickerFormatado &&
+    const isEditing =
+      this.editingRowTicker === element.tickerFormatado &&
       this.currentEditedAtivo &&
       this.currentEditedAtivo.category === category;
     return !!isEditing;
@@ -1254,11 +1434,15 @@ private initAllCharts(): void {
   }
 
   saveEdit(element: AtivoVO, category: string): void {
-    if (!this.currentEditedAtivo || !this.currentUserId || !['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
+    if (
+      !this.currentEditedAtivo ||
+      !this.currentUserId ||
+      !['fundos', 'acoes', 'assets', 'caixa'].includes(category)
+    ) {
       console.error('saveEdit: Missing currentEditedAtivo, currentUserId, or invalid category.', {
         currentEditedAtivo: this.currentEditedAtivo,
         currentUserId: this.currentUserId,
-        category
+        category,
       });
       this.snackBar.open('Erro ao salvar: dados ou categoria inválidos.', 'Fechar', {
         duration: 6000,
@@ -1267,8 +1451,13 @@ private initAllCharts(): void {
       return;
     }
 
-    if (!this.currentEditedAtivo.tickerFormatado || this.currentEditedAtivo.tickerFormatado.trim() === '') {
-      console.error('saveEdit: Ticker do ativo não definido.', { currentEditedAtivo: this.currentEditedAtivo });
+    if (
+      !this.currentEditedAtivo.tickerFormatado ||
+      this.currentEditedAtivo.tickerFormatado.trim() === ''
+    ) {
+      console.error('saveEdit: Ticker do ativo não definido.', {
+        currentEditedAtivo: this.currentEditedAtivo,
+      });
       this.snackBar.open('Erro ao salvar: Ticker do ativo não definido.', 'Fechar', {
         duration: 6000,
         panelClass: ['error-snackbar'],
@@ -1283,18 +1472,18 @@ private initAllCharts(): void {
       quantidadeFormatada: element.quantidadeFormatada,
       precoMedioFormatado: element.precoMedioFormatado,
       precoAtualFormatado: element.precoAtualFormatado,
-      valorAtualFormatado: element.valorAtualFormatado
+      valorAtualFormatado: element.valorAtualFormatado,
     };
 
     this.dashboardSrv
       .updateAtivo(this.currentUserId, updatedAtivo, category)
       .pipe(
-        catchError((error) => {
+        catchError(error => {
           console.error(`saveEdit: Error updating ativo in ${category}:`, {
             error,
             status: error.status,
             statusText: error.statusText,
-            errorDetails: error.error
+            errorDetails: error.error,
           });
           this.snackBar.open(error.message || 'Erro ao salvar ativo.', 'Fechar', {
             duration: 6000,
@@ -1306,7 +1495,7 @@ private initAllCharts(): void {
           this.cdr.markForCheck();
         })
       )
-      .subscribe((result) => {
+      .subscribe(result => {
         if (result !== null) {
           this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
             duration: 3000,
@@ -1345,8 +1534,11 @@ private initAllCharts(): void {
         this.dashboardSrv
           .deleteAtivo(this.currentUserId, element.tickerFormatado, category)
           .pipe(
-            catchError((error) => {
-              console.error(`Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`, error);
+            catchError(error => {
+              console.error(
+                `Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`,
+                error
+              );
               this.snackBar.open(error.message || 'Erro ao excluir ativo.', 'Fechar', {
                 duration: 5000,
                 panelClass: ['error-snackbar'],
@@ -1376,24 +1568,19 @@ private initAllCharts(): void {
     });
   }
 
-
-
-
-    // Método para acionar o upload de transações
-public triggerFileInput(): void {
-  console.log('Botão de upload clicado. Procurando o input de arquivo...');
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-  if (fileInput) {
-    console.log('Input de arquivo encontrado. Acionando clique.');
-    fileInput.click();
-  } else {
-    console.error('Erro: O elemento input de arquivo não foi encontrado no DOM.');
+  // Método para acionar o upload de transações
+  public triggerFileInput(): void {
+    console.log('Botão de upload clicado. Procurando o input de arquivo...');
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      console.log('Input de arquivo encontrado. Acionando clique.');
+      fileInput.click();
+    } else {
+      console.error('Erro: O elemento input de arquivo não foi encontrado no DOM.');
+    }
   }
-}
 
-
-
-async onUploadTransacoes(event: Event): Promise<void> {
+  async onUploadTransacoes(event: Event): Promise<void> {
     console.log('onUploadTransacoes chamado.');
     if (this.isUpdating) {
       console.warn('Processo de upload já em andamento. Ignorando nova chamada.');
@@ -1470,17 +1657,18 @@ async onUploadTransacoes(event: Event): Promise<void> {
         this.dashboardSrv
           .createTransactionLote(this.currentUserId as number, jsonData)
           .pipe(
-            catchError((error) => {
+            catchError(error => {
               console.error('Erro ao enviar transação:', error);
-              const errorMessage = error.error?.message || 'Erro desconhecido ao importar transação.';
+              const errorMessage =
+                error.error?.message || 'Erro desconhecido ao importar transação.';
               this.snackBar.open(`Erro no upload: ${errorMessage}`, 'Fechar', {
                 duration: 5000,
                 panelClass: ['error-snackbar'],
               });
               return of(null);
-            }),
+            })
           )
-          .subscribe((response) => {
+          .subscribe(response => {
             if (response !== null) {
               console.log('Upload de transações bem-sucedido. Resposta da API:', response);
 
@@ -1488,7 +1676,6 @@ async onUploadTransacoes(event: Event): Promise<void> {
               let balance = 0;
               let totalVendas = 0;
               let totalCompras = 0;
-
 
               // Tenta extrair dados do formato { "compras": [...], "vendas": [...] }
               if (response && Array.isArray(response.compras) && Array.isArray(response.vendas)) {
@@ -1510,10 +1697,11 @@ async onUploadTransacoes(event: Event): Promise<void> {
                 // Calcula o balanço localmente
                 balance = transactions.reduce((sum, t) => sum + t.valorTransacao, 0);
 
-
                 console.log('Resposta em formato de array de transações detectada.');
               } else {
-                console.warn('Resposta da API não contém transações válidas para exibir no resumo.');
+                console.warn(
+                  'Resposta da API não contém transações válidas para exibir no resumo.'
+                );
               }
 
               // Se houver transações para exibir, abre o dialog
@@ -1526,16 +1714,20 @@ async onUploadTransacoes(event: Event): Promise<void> {
                 // Recarrega os dados do dashboard em segundo plano
                 // this.onUpdateDados();
               } else {
-                this.snackBar.open('Transação importada com sucesso, mas o resumo não pôde ser exibido. Verifique o console para mais detalhes.', 'Fechar', {
-                  duration: 5000,
-                  panelClass: ['warning-snackbar'],
-                });
+                this.snackBar.open(
+                  'Transação importada com sucesso, mas o resumo não pôde ser exibido. Verifique o console para mais detalhes.',
+                  'Fechar',
+                  {
+                    duration: 5000,
+                    panelClass: ['warning-snackbar'],
+                  }
+                );
               }
             }
           });
       };
 
-      fileReader.onerror = (e) => {
+      fileReader.onerror = e => {
         console.error('Erro ao ler o arquivo:', e);
         this.snackBar.open('Erro ao ler o arquivo.', 'Fechar', {
           duration: 5000,
@@ -1544,7 +1736,6 @@ async onUploadTransacoes(event: Event): Promise<void> {
       };
 
       fileReader.readAsText(file);
-
     } catch (error) {
       console.error('Erro no processamento do arquivo:', error);
       this.snackBar.open('Erro ao processar o arquivo.', 'Fechar', {
@@ -1556,8 +1747,6 @@ async onUploadTransacoes(event: Event): Promise<void> {
       this.cdr.markForCheck();
     }
   }
-
-
 
   /**
    * Valida a estrutura de um array de transações.
@@ -1589,14 +1778,18 @@ async onUploadTransacoes(event: Event): Promise<void> {
 
       for (const { key, type } of requiredKeys) {
         if (!(key in item)) {
-          console.error(`Erro de validação: Chave obrigatória "${key}" está faltando em um objeto.`);
+          console.error(
+            `Erro de validação: Chave obrigatória "${key}" está faltando em um objeto.`
+          );
           return false;
         }
 
         const currentType = typeof item[key];
         // Verifica se o tipo atual está contido na lista de tipos esperados
         if (Array.isArray(type) ? !type.includes(currentType) : currentType !== type) {
-          console.error(`Erro de validação: A chave "${key}" tem o tipo incorreto. Esperado: ${Array.isArray(type) ? type.join(' ou ') : type}, Recebido: ${currentType}.`);
+          console.error(
+            `Erro de validação: A chave "${key}" tem o tipo incorreto. Esperado: ${Array.isArray(type) ? type.join(' ou ') : type}, Recebido: ${currentType}.`
+          );
           return false;
         }
       }
@@ -1604,8 +1797,4 @@ async onUploadTransacoes(event: Event): Promise<void> {
 
     return true;
   }
-
-
-
-
 }
