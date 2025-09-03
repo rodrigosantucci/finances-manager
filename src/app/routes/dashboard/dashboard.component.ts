@@ -35,7 +35,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PageHeaderComponent } from '@shared';
 import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.component';
-import { MatButtonToggle } from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-dashboard',
@@ -61,7 +60,6 @@ import { MatButtonToggle } from '@angular/material/button-toggle';
     MatFormFieldModule,
     MatInputModule,
     PageHeaderComponent,
-    MatButtonToggle
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -388,14 +386,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             panelClass: ['error-snackbar'],
           });
         }
-        this.periodChangeSubject.pipe(debounceTime(300)).subscribe(() => this.updateChartData());
         this.cdr.markForCheck();
       });
   }
 
-  updateChartData(): void {
-  this.periodChangeSubject.next(this.selectedPeriod);
-  }
+
+
+
 
   private loadTradingViewWidget(): void {
     const tradingViewElement = this.el.nativeElement.querySelector('#tradingview-widget');
@@ -637,17 +634,21 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         return data; // Return all data if period is invalid
     }
 
-    return data.filter(item => new Date(item.data) >= startDate);
+    console.warn('Filtering data from:', startDate, data);
+
+    return data.filter(item => new Date(item.dataRegistro) >= startDate);
   }
 
   setupCharts(userId: number | string): void {
     this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
-    map(data => {
-      const labels = data.map(item =>
-        new Date(item.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-      );
-      const seriesData = data.map(item => item.valorTotal);
 
+      map(data => {
+        const labels = data.map(item => {
+          const [day, month, year] = item.dataRegistro.split('/');
+          return `${month}/${year}`;
+        });
+
+      const seriesData = data.map(item => item.valorTotal);
       const theme = this.tema === 'dark' ? 'dark' : 'light';
       const colors = ['#008FFB'];
 
@@ -659,8 +660,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         ],
         chart: {
+          width: 800,
           height: 300,
-          type: 'line', // Alterado de 'area' para 'line' para maior clareza, ambos funcionam.
+          type: 'area', // Alterado de 'area' para 'line' para maior clareza, ambos funcionam.
           toolbar: {
             show: true,
           },
@@ -686,7 +688,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           enabled: false,
         },
         stroke: {
-          curve: 'straight',
+          curve: 'smooth',
         },
         tooltip: {
           enabled: true,
@@ -707,9 +709,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         xaxis: {
           categories: labels,
-          title: {
-            text: 'Data',
-          },
         },
         yaxis: {
           labels: {
@@ -1222,7 +1221,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         categories: chartLabels,
         type: 'datetime',
         labels: {
-          format: 'dd MM yyyy',
+          format: 'MM yyyy',
           style: {
             colors: textSecondary,
             fontSize: '12px',

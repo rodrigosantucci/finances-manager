@@ -43,22 +43,8 @@
 
     <div class="col-12 col-md-8">
       <mat-card class="chart-card">
-        <mat-card-header class="chart-header">
-          <mat-card-title>Evolução do Patrimônio</mat-card-title>
-          <mat-card-subtitle>
-            <mat-button-toggle-group
-            class="mat-button-toggle-group-sm"
-            [(ngModel)]="selectedPeriod"
-            (change)="updateChartData()"
-            name="filterDataByPeriod"
-          >
-              <mat-button-toggle value="1M">1M</mat-button-toggle>
-              <mat-button-toggle value="3M">3M</mat-button-toggle>
-              <mat-button-toggle value="6M">6M</mat-button-toggle>
-              <mat-button-toggle value="1Y">1A</mat-button-toggle>
-              <mat-button-toggle value="ALL">ALL</mat-button-toggle>
-            </mat-button-toggle-group>
-          </mat-card-subtitle>
+        <mat-card-header>
+          <h3 class="section-title">Evolução do Patrimônio</h3>
         </mat-card-header>
         <mat-card-content class="d-flex justify-content-center">
           <div
@@ -78,7 +64,7 @@
     </div>
 
 
-      <div class="col-md-4 col-4 flex-column justify-content-between">
+      <div class="col-md-4 flex-column justify-content-between">
         <mat-card class="summary-card">
           <mat-card-content class="d-flex flex-column">
             <div class="button-controls mb-4 d-flex justify-content-center gap-10">
@@ -186,7 +172,7 @@
 
   <section class="resumo-section mb-4" aria-labelledby="subresumo-title">
     <div class="row">
-      <div class="col-8 col-md-8">
+      <div class="col-6 col-md-6">
         <mat-card class="table-card">
           <mat-card-content>
             <table mat-table [dataSource]="distribuicaoDataSource" class="w-100">
@@ -219,7 +205,7 @@
         </mat-card>
       </div>
 
-      <div class="col-4 col-md-4">
+      <div class="col-6 col-md-6">
         <mat-card class="chart-card">
           <mat-card-content class="d-flex justify-content-center">
             <div

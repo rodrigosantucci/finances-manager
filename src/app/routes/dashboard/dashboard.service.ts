@@ -20,9 +20,9 @@ interface CotacaoUSD {
 }
 
 export interface PatrimonioHistoricoVO {
-  id: number;
+  idHistorico: number;
   usuarioId: number;
-  data: string;
+  dataRegistro: string;
   valorTotal: number;
 }
 
@@ -252,7 +252,7 @@ export class DashboardService {
               return of(ativosConvertidosNumeric);
             }),
             catchError(error => {
-              console.error(`DashboardService: Error fetching complete patrimony for user ${usuarioId}:`, error);
+              console.error(`DashboardService: Error fetching complete patrimony for user:`, error);
               return of([]);
             })
           );
@@ -272,7 +272,7 @@ export class DashboardService {
             return of([]);
           }
           if (authUserId !== usuarioId) {
-            console.warn(`User ID mismatch: auth ID (${authUserId}) does not match requested ID (${usuarioId}).`);
+            console.warn(`User ID mismatch: auth ID does not match requested ID.`);
             return of([]);
           }
           const url = `${this.apiUserPatrimonioPrefix}/${usuarioId}/historico`;
@@ -281,15 +281,15 @@ export class DashboardService {
               map(data => {
                 return data
                   .map(item => ({
-                    id: item.id,
+                    idHistorico: item.idHistorico,
                     usuarioId: item.usuarioId,
-                    data: this.validateDate(item.data) ?? new Date().toISOString(),
+                    dataRegistro: this.validateDate(item.dataRegistro) ?? new Date().toISOString(),
                     valorTotal: this.validateNumber(item.valorTotal) ?? 0
                   }))
-                  .filter(item => item.data !== null && item.valorTotal !== null) as PatrimonioHistoricoVO[];
+                  .filter(item => item.dataRegistro !== null && item.valorTotal !== null) as PatrimonioHistoricoVO[];
               }),
               catchError(error => {
-                console.error(`DashboardService: Error fetching historical patrimony for user ${usuarioId}:`, error);
+                console.error(`DashboardService: Error fetching historical patrimony for user:`, error);
                 return of([]);
               })
             ),
@@ -297,7 +297,7 @@ export class DashboardService {
           }).pipe(
             map(({ historico, completo }) => {
               if (!historico || historico.length === 0) {
-                console.warn(`No historical data available for user ${usuarioId}.`);
+                console.warn(`No historical data available for user.`);
                 return [];
               }
 
