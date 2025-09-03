@@ -41,49 +41,46 @@
     <div class="row">
 
 
-      <div class="col-md-8">
-  <mat-card>
-    <mat-card-content class="mat-mdc-card-content">
-      <div class="filter-container">
-        <mat-form-field appearance="outline">
-          <mat-label>Período</mat-label>
-          <mat-select [(value)]="selectedPeriod" (selectionChange)="updateChartData()">
-            <mat-option value="1M">1 Mês</mat-option>
-            <mat-option value="3M">3 Meses</mat-option>
-            <mat-option value="6M">6 Meses</mat-option>
-            <mat-option value="1Y">1 Ano</mat-option>
-            <mat-option value="5Y">5 Anos</mat-option>
-            <mat-option value="10Y">10 Anos</mat-option>
-            <mat-option value="20Y">20 Anos</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-      <div *ngIf="isLoading" class="loading text-center">
-        <mat-spinner diameter="40" aria-label="Carregando gráfico"></mat-spinner>
-        <p>Carregando...</p>
-      </div>
-      <div *ngIf="hasError" class="error text-center">
-        Erro ao carregar o gráfico de patrimônio histórico.
-      </div>
-      <div
-        *ngIf="!isLoading && !hasError"
-        id="headerChart"
-        style="min-height: 365px;"
-        class=""
-        role="img"
-        aria-label="Gráfico de patrimônio histórico"
-      ></div>
-      <p *ngIf="!(headerChart$ | async)?.series?.length && !isLoading && !hasError" class="no-data-text">
-        Nenhum dado disponível para patrimônio histórico
-      </p>
-    </mat-card-content>
-  </mat-card>
-</div>
+    <div class="col-12 col-md-8">
+      <mat-card class="chart-card">
+        <mat-card-header class="chart-header">
+          <mat-card-title>Evolução do Patrimônio</mat-card-title>
+          <mat-card-subtitle>
+            <mat-button-toggle-group
+            class="mat-button-toggle-group-sm"
+            [(ngModel)]="selectedPeriod"
+            (change)="updateChartData()"
+            name="filterDataByPeriod"
+          >
+              <mat-button-toggle value="1M">1M</mat-button-toggle>
+              <mat-button-toggle value="3M">3M</mat-button-toggle>
+              <mat-button-toggle value="6M">6M</mat-button-toggle>
+              <mat-button-toggle value="1Y">1A</mat-button-toggle>
+              <mat-button-toggle value="ALL">ALL</mat-button-toggle>
+            </mat-button-toggle-group>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="d-flex justify-content-center">
+          <div
+            #headerChart
+            id="headerChart"
+            role="img"
+            aria-label="Gráfico da evolução do patrimônio"
+          ></div>
+          <p
+            *ngIf="!(headerChart$ | async)?.series?.length"
+            class="no-data-text"
+          >
+            Nenhum dado disponível para o período
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
 
 
       <div class="col-md-4 col-4 flex-column justify-content-between">
         <mat-card class="summary-card">
-          <mat-card-content class="d-flex flex-column h-100">
+          <mat-card-content class="d-flex flex-column">
             <div class="button-controls mb-4 d-flex justify-content-center gap-10">
               <div class="metric mb-2 text-center">
                 <p class="metric-label">Nova Transação</p>

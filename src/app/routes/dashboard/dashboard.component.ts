@@ -35,7 +35,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PageHeaderComponent } from '@shared';
 import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.component';
-import { MatOption, MatSelect } from '@angular/material/select';
+import { MatButtonToggle } from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-dashboard',
@@ -53,8 +53,6 @@ import { MatOption, MatSelect } from '@angular/material/select';
     MatIconModule,
     MatDialogModule,
     MatButtonModule,
-    MatSelect,
-    MatOption,
     MtxAlertModule,
     QuantidadeFormatPipe,
     CurrencyPipe,
@@ -63,6 +61,7 @@ import { MatOption, MatSelect } from '@angular/material/select';
     MatFormFieldModule,
     MatInputModule,
     PageHeaderComponent,
+    MatButtonToggle
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -104,6 +103,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   introducingItem = this.introducingItems[this.getRandom(0, this.introducingItems.length - 1)];
 
   distribuicaoDataSource = new MatTableDataSource<PatrimonioDistribuicaoVO>([]);
+  patrimonioHistoricoDataSource = new MatTableDataSource<PatrimonioHistoricoVO>([]);
   acoesDataSource = new MatTableDataSource<AtivoVO>([]);
   fundosDataSource = new MatTableDataSource<AtivoVO>([]);
   caixaDataSource = new MatTableDataSource<AtivoVO>([]);
@@ -181,7 +181,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   editingRowTicker: string | null = null;
   currentEditedAtivo: AtivoVO | null = null;
   originalAtivoBeforeEdit: AtivoVO | null = null;
-  selectedPeriod: string = '1Y'; // Default period
+  selectedPeriod: string = '1M'; // Default period
   private periodChangeSubject = new Subject<string>();
 
   protected currentUserId: number | string | null = null;
@@ -554,6 +554,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     forkJoin([
+      this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
+        take(1),
+        catchError(error => handleError(error, 'patrimônio histórico'))
+      ),
       this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
         take(1),
         catchError(error => handleError(error, 'distribuição de patrimônio'))
@@ -581,7 +585,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.cdr.markForCheck();
         })
       )
-      .subscribe(([distribuicao, acoes, fundos, caixa, assets]) => {
+      .subscribe(([patrimonioHistorico, distribuicao, acoes, fundos, caixa, assets]) => {
+        this.patrimonioHistoricoDataSource.data = patrimonioHistorico;
         this.distribuicaoDataSource.data = distribuicao;
         this.acoesDataSource.data = acoes;
         this.fundosDataSource.data = fundos;
@@ -637,21 +642,100 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   setupCharts(userId: number | string): void {
     this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
-      catchError(error => {
-        console.error('Erro ao buscar dados para #headerChart:', error);
-        this.hasError = true;
-        this.isLoading = false;
-        this.cdr.markForCheck();
-        return of([]);
-      }),
-      map((data: PatrimonioHistoricoVO[]) => {
-        // Filter data based on selectedPeriod
-        const filteredData = this.filterDataByPeriod(data, this.selectedPeriod);
-        const series = filteredData.map(item => this.parseAndValidateNumber(item.valorTotal));
-        const labels = filteredData.map(item => item.data);
-        return this.getChartOptions(series, labels, 'Patrimônio Histórico', false);
-      })
-    );
+    map(data => {
+      const labels = data.map(item =>
+        new Date(item.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+      );
+      const seriesData = data.map(item => item.valorTotal);
+
+      const theme = this.tema === 'dark' ? 'dark' : 'light';
+      const colors = ['#008FFB'];
+
+      const options: ApexOptions = {
+        series: [
+          {
+            name: 'Patrimônio Total',
+            data: seriesData,
+          },
+        ],
+        chart: {
+          height: 300,
+          type: 'line', // Alterado de 'area' para 'line' para maior clareza, ambos funcionam.
+          toolbar: {
+            show: true,
+          },
+          zoom: {
+            enabled: true,
+          },
+          animations: {
+            enabled: true,
+            speed: 800,
+          },
+          dropShadow: {
+            enabled: true,
+            color: '#000',
+            top: 18,
+            left: 7,
+            blur: 10,
+            opacity: 0.2,
+          },
+          fontFamily: 'Roboto, sans-serif',
+        },
+        colors: colors,
+        dataLabels: {
+          enabled: false,
+        },
+        stroke: {
+          curve: 'straight',
+        },
+        tooltip: {
+          enabled: true,
+          theme: theme,
+          x: {
+            formatter: (val: any, opts: any) => {
+              return labels[opts.dataPointIndex];
+            },
+          },
+          y: {
+            formatter: (val: any) => {
+              return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(val);
+            },
+          },
+        },
+        xaxis: {
+          categories: labels,
+          title: {
+            text: 'Data',
+          },
+        },
+        yaxis: {
+          labels: {
+            formatter: val =>
+              new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(val),
+          },
+        },
+      };
+
+      return options;
+    }),
+    catchError(err => {
+      console.error('Erro ao buscar histórico de patrimônio:', err);
+      this.hasError = true;
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return of({ series: [] } as ApexOptions);
+    }),
+    finalize(() => {
+      this.isLoading = false;
+      this.cdr.markForCheck();
+    })
+  );
 
     this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
       catchError(error => {
@@ -982,17 +1066,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private getChartOptions(
-    series: number[],
+ private getChartOptions(
+    series: number[] | { name: string; data: number[] }[],
     labels: string[],
     title: string,
-    isPercentage: boolean
+    isPercentage: boolean,
+    isLineChart: boolean = false
   ): ApexOptions {
-    const hasData =
-      series && series.length > 0 && labels && labels.length > 0 && !series.every(val => val === 0);
-    const chartSeries = hasData ? series : [1];
-    const chartLabels = hasData ? labels.map(label => String(label)) : ['Sem dados'];
-
     const isDarkTheme = this.tema === 'dark';
     const textPrimary = isDarkTheme ? '#f9fafb' : '#11161d';
     const textSecondary = isDarkTheme ? '#d1d5db' : '#4b5563';
@@ -1000,27 +1080,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const chartBackground = isDarkTheme ? '#2d2d2d' : '#ffffff';
 
     const chartColors = [
-      '#d32f2f',
-      '#10B981',
-      '#F59E0B',
-      '#3B82F6',
-      '#8B5CF6',
-      '#EC4899',
-      '#6EE7B7',
-      '#FBBF24',
-      '#ef5350',
-      '#42a5f5',
-      '#66bb6a',
-      '#ab47bc',
-      '#ff7043',
-      '#26c6da',
+      '#d32f2f', // Red
+      '#10B981', // Green
+      '#F59E0B', // Yellow
+      '#3B82F6', // Blue
+      '#8B5CF6', // Purple
+      '#EC4899', // Pink
+      '#6EE7B7', // Light Green
+      '#FBBF24', // Amber
+      '#ef5350', // Light Red
+      '#42a5f5', // Light Blue
+      '#66bb6a', // Light Green
+      '#ab47bc', // Light Purple
+      '#ff7043', // Orange
+      '#26c6da', // Cyan
     ];
 
-    return {
+    const hasData = Array.isArray(series)
+      ? isLineChart
+        ? (series as { name: string; data: number[] }[]).some(s => s.data.some(val => val !== 0))
+        : (series as number[]).length > 0 && !series.every(val => val === 0)
+      : false;
+
+    const chartSeries = hasData ? series : isLineChart ? [{ name: 'Sem dados', data: [0] }] : [1];
+    const chartLabels = hasData ? labels.map(label => String(label)) : ['Sem dados'];
+
+    const options: ApexOptions = {
       chart: {
-        type: 'pie',
-        height: '400px', // Fixed height for all charts to maintain consistency
-        width: '400px', // Use full width of parent
+        type: isLineChart ? 'line' : 'pie',
+        height: '400px',
+        width: '100%',
         animations: {
           enabled: true,
           speed: 600,
@@ -1034,16 +1123,27 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           blur: 4,
           opacity: isDarkTheme ? 0.3 : 0.2,
         },
-        toolbar: { show: true },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: true,
+            zoom: isLineChart,
+            zoomin: isLineChart,
+            zoomout: isLineChart,
+            pan: isLineChart,
+            reset: isLineChart,
+          },
+        },
         sparkline: { enabled: false },
+        background: chartBackground,
       },
       series: chartSeries,
-      labels: chartLabels,
       colors: chartColors,
       legend: {
-        show: true, // Enable legend
-        position: 'bottom', // Position below the chart
-        horizontalAlign: 'center', // Center-align legend items
+        show: true,
+        position: 'bottom',
+        horizontalAlign: 'center',
         fontSize: '12px',
         fontFamily: 'Roboto, sans-serif',
         fontWeight: 400,
@@ -1052,7 +1152,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           useSeriesColors: false,
         },
         markers: {
-          shape: 'circle',
+          shape: isLineChart ? 'circle' : 'circle',
+          size: isLineChart ? 0 : 10,
           strokeWidth: 0,
           fillColors: chartColors,
           offsetX: -2,
@@ -1063,14 +1164,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           vertical: 4,
         },
         formatter: (seriesName: string, opts: any) => {
-          const value = opts.w.globals.series[opts.seriesIndex];
+          if (!hasData) return 'Sem dados';
+          const value = isLineChart
+            ? opts.w.globals.series[opts.seriesIndex][opts.dataPointIndex] || 0
+            : opts.w.globals.series[opts.seriesIndex];
           return `${seriesName}: ${isPercentage ? value.toFixed(1) + '%' : 'R$ ' + value.toFixed(2)}`;
         },
         onItemClick: {
-          toggleDataSeries: true, // Allow toggling series visibility
+          toggleDataSeries: true,
         },
         onItemHover: {
-          highlightDataSeries: true, // Highlight on hover
+          highlightDataSeries: true,
         },
       },
       title: {
@@ -1107,72 +1211,132 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
       },
       stroke: {
-        width: 2,
-        colors: [chartBackground],
+        width: isLineChart ? 3 : 2,
+        colors: isLineChart ? undefined : [chartBackground],
+        curve: isLineChart ? 'smooth' : undefined,
       },
-      responsive: [
-        {
-          breakpoint: 768,
-          options: {
-            chart: {
-              width: '100%',
-              height: 300, // Maintain fixed height for tablets
-            },
-            legend: {
-              fontSize: '10px',
-              itemMargin: {
-                horizontal: 6,
-                vertical: 3,
-              },
-              markers: {
-                width: 10,
-                height: 10,
-                shape: 'circle',
-                strokeWidth: 0,
-                fillColors: chartColors,
-                offsetX: -2,
-                offsetY: 0,
-              },
-            },
-            title: {
-              style: {
-                fontSize: '14px',
-              },
-            },
-          },
-        },
-        {
-          breakpoint: 576,
-          options: {
-            chart: {
-              width: '100%',
-              height: 300, // Maintain fixed height for mobile
-            },
-            legend: {
-              fontSize: '9px',
-              itemMargin: {
-                horizontal: 4,
-                vertical: 2,
-              },
-              markers: {
-                width: 8,
-                height: 8,
-                shape: 'circle',
-                strokeWidth: 0,
-                fillColors: chartColors,
-                offsetX: -2,
-                offsetY: 0,
-              },
-            },
-            title: {
-              style: {
-                fontSize: '12px',
-              },
-            },
-          },
-        },
-      ],
     };
+
+    if (isLineChart) {
+      options.xaxis = {
+        categories: chartLabels,
+        type: 'datetime',
+        labels: {
+          format: 'dd MM yyyy',
+          style: {
+            colors: textSecondary,
+            fontSize: '12px',
+            fontFamily: 'Roboto, sans-serif',
+          },
+        },
+        axisBorder: {
+          show: true,
+          color: textMuted,
+        },
+        axisTicks: {
+          show: true,
+          color: textMuted,
+        },
+      };
+      options.yaxis = {
+        labels: {
+          formatter: val => `R$ ${val.toFixed(2)}`,
+          style: {
+            colors: textSecondary,
+            fontSize: '12px',
+            fontFamily: 'Roboto, sans-serif',
+          },
+        },
+      };
+      options.fill = {
+        type: 'gradient',
+        gradient: {
+          shade: isDarkTheme ? 'dark' : 'light',
+          type: 'vertical',
+          shadeIntensity: 0.5,
+          gradientToColors: chartColors,
+          inverseColors: false,
+          opacityFrom: 0.7,
+          opacityTo: 0.3,
+        },
+      };
+      options.markers = {
+        size: 4,
+        colors: chartColors,
+        strokeColors: chartBackground,
+        strokeWidth: 2,
+        hover: {
+          size: 6,
+        },
+      };
+    } else {
+      options.labels = chartLabels;
+    }
+
+    options.responsive = [
+      {
+        breakpoint: 768,
+        options: {
+          chart: {
+            width: '100%',
+            height: isLineChart ? 300 : 300,
+          },
+          legend: {
+            fontSize: '10px',
+            itemMargin: {
+              horizontal: 6,
+              vertical: 3,
+            },
+            markers: {
+              size: isLineChart ? 0 : 10,
+              height: isLineChart ? 0 : 10,
+              shape: 'circle',
+              strokeWidth: 0,
+              fillColors: chartColors,
+              offsetX: -2,
+              offsetY: 0,
+            },
+          },
+          title: {
+            style: {
+              fontSize: '14px',
+            },
+          },
+        },
+      },
+      {
+        breakpoint: 576,
+        options: {
+          chart: {
+            width: '100%',
+            height: isLineChart ? 300 : 300,
+          },
+          legend: {
+            fontSize: '9px',
+            itemMargin: {
+              horizontal: 4,
+              vertical: 2,
+            },
+            markers: {
+              size: isLineChart ? 0 : 8,
+              height: isLineChart ? 0 : 8,
+              shape: 'circle',
+              strokeWidth: 0,
+              fillColors: chartColors,
+              offsetX: -2,
+              offsetY: 0,
+            },
+          },
+          title: {
+            style: {
+              fontSize: '12px',
+            },
+          },
+        },
+      },
+    ];
+
+    return options;
   }
 
   private initChart(
