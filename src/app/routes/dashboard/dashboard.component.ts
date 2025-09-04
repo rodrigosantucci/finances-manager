@@ -1076,7 +1076,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const textPrimary = isDarkTheme ? '#f9fafb' : '#11161d';
     const textSecondary = isDarkTheme ? '#d1d5db' : '#4b5563';
     const textMuted = isDarkTheme ? '#9ca3af' : '#6b7280';
-    const chartBackground = isDarkTheme ? '#2d2d2d' : '#ffffff';
+    const chartBackground = isDarkTheme ? '#131216' : '#ffffff';
 
     const chartColors = [
       '#d32f2f', // Red
