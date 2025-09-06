@@ -15,6 +15,29 @@ import { catchError, finalize, take } from 'rxjs/operators';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { forkJoin, of, Subscription } from 'rxjs';
 
+// Define interfaces for type safety
+interface AnaliseResponse {
+  data: string;
+  nota: number;
+  ai_provider: string;
+  analise: any; // Will be parsed into specific structure
+}
+
+interface PessoaisAnalise {
+  estrategia_sugerida?: string;
+  alocacao_sugerida?: {
+    renda_fixa: number;
+    renda_variavel: number;
+    caixa: number;
+  };
+  desempenho_estimativas?: {
+    retorno_anual_esperado: number;
+    volatilidade_esperada: number;
+    periodo_analise: string;
+  };
+  perguntas_respostas?: Array<{ pergunta: string; resposta: string }>;
+}
+
 @Component({
   selector: 'app-ia-assistant',
   templateUrl: './assistant.component.html',
@@ -42,9 +65,9 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('chartElement', { static: false }) chartElement?: ElementRef;
 
-  fundamentos: any = null;
-  tecnica: any = null;
-  pessoais: any = null;
+  fundamentos: AnaliseResponse | null = null;
+  tecnica: AnaliseResponse | null = null;
+  pessoais: AnaliseResponse | null = null;
   isLoading = false;
   currentUserId: number | null = null;
 
@@ -203,18 +226,30 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chart.render().catch(err => console.error('Erro ao renderizar o gráfico:', err));
       this.updateChart();
       // Update series if data is already loaded
-      if (this.pessoais?.analise?.alocacao_sugerida) {
-        const allocation = this.pessoais.analise.alocacao_sugerida;
-        const newSeries = [
-          allocation.renda_fixa || 0,
-          allocation.renda_variavel || 0,
-          allocation.caixa || 0,
-        ];
-        console.log('Inicializando série do gráfico:', newSeries);
-        this.chart.updateSeries(newSeries, true);
-      }
+      this.updateChartSeries();
     } else {
       console.warn('Elemento do gráfico #assistant-chart não encontrado. Aguardando mudança de aba.');
+    }
+  }
+
+  updateChartSeries() {
+    const allocation = this.pessoais?.analise?.alocacao_sugerida as
+      | { renda_fixa: number; renda_variavel: number; caixa: number }
+      | undefined;
+    if (allocation) {
+      const newSeries = [
+        allocation.renda_fixa || 0,
+        allocation.renda_variavel || 0,
+        allocation.caixa || 0,
+      ];
+      console.log('Atualizando série do gráfico:', newSeries);
+      this.chart?.updateSeries(newSeries, true);
+      if (newSeries.every(val => val === 0)) {
+        console.warn('Dados de alocação sugerida são todos zero.');
+      }
+    } else {
+      console.warn('Dados de alocação sugerida não disponíveis:', this.pessoais?.analise);
+      this.chart?.updateSeries([0, 0, 0], true); // Reset chart if no data
     }
   }
 
@@ -296,22 +331,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         this.fundamentos = fundamentos;
         this.tecnica = tecnica;
         this.pessoais = pessoais;
-
-        if (pessoais?.analise?.alocacao_sugerida) {
-          const allocation = pessoais.analise.alocacao_sugerida;
-          const newSeries = [
-            allocation.renda_fixa || 0,
-            allocation.renda_variavel || 0,
-            allocation.caixa || 0,
-          ];
-          console.log('Atualizando série do gráfico:', newSeries);
-          this.chart?.updateSeries(newSeries, true);
-          if (newSeries.every(val => val === 0)) {
-            console.warn('Dados de alocação sugerida são todos zero.');
-          }
-        } else {
-          console.warn('Dados de alocação sugerida não disponíveis:', pessoais?.analise);
-        }
+        this.updateChartSeries(); // Update chart after data is loaded
       },
       error: (err) => {
         console.error('Erro geral ao carregar dados do assistente:', err);
