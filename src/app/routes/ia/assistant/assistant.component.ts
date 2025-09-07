@@ -28,7 +28,6 @@ interface PessoaisAnalise {
   alocacao_sugerida?: {
     renda_fixa: number;
     renda_variavel: number;
-    caixa: number;
   };
   desempenho_estimativas?: {
     retorno_anual_esperado: number;
@@ -83,9 +82,9 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       width: '100%',
       height: 300,
     },
-    labels: ['Renda Fixa', 'Renda Variável', 'Caixa'],
-    series: [0, 0, 0],
-    colors: ['#00D4FF', '#EF5350', '#FFD700'],
+    labels: ['Renda Fixa', 'Renda Variável'],
+    series: [0, 0],
+    colors: ['#00D4FF', '#EF5350'],
     dataLabels: {
       enabled: true,
       style: {
@@ -234,13 +233,12 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   updateChartSeries() {
     const allocation = this.pessoais?.analise?.alocacao_sugerida as
-      | { renda_fixa: number; renda_variavel: number; caixa: number }
+      | { renda_fixa: number; renda_variavel: number; }
       | undefined;
     if (allocation) {
       const newSeries = [
         allocation.renda_fixa || 0,
         allocation.renda_variavel || 0,
-        allocation.caixa || 0,
       ];
       console.log('Atualizando série do gráfico:', newSeries);
       this.chart?.updateSeries(newSeries, true);

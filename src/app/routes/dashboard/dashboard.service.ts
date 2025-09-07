@@ -490,18 +490,49 @@ export class DashboardService {
     }
   }
 
-  private validateDate(date: string | undefined | null): string | undefined {
+private validateDate(date: string | undefined | null): string | undefined {
     if (!date) {
-      console.warn(`Invalid date: ${date}`);
-      return undefined;
+        console.warn(`Invalid date: ${date}`);
+        return undefined;
     }
+
+    // Regex para validar o formato DD/MM/YYYY
+    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    const match = date.match(dateRegex);
+
+    if (match) {
+        // Extrai dia, mês e ano
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Mês começa em 0 no JavaScript
+        const year = parseInt(match[3], 10);
+
+        // Cria objeto Date
+        const parsed = new Date(year, month, day);
+
+        // Verifica se a data é válida
+        if (
+            !isNaN(parsed.getTime()) &&
+            parsed.getDate() === day &&
+            parsed.getMonth() === month &&
+            parsed.getFullYear() === year
+        ) {
+            // Retorna a data no formato original (ou pode formatar como preferir)
+            return date;
+        } else {
+            console.warn(`Invalid date values: ${date}`);
+            return undefined;
+        }
+    }
+
+    // Tenta parsear outros formatos (como fallback, para compatibilidade com o código original)
     const parsed = new Date(date);
-    if (isNaN(parsed.getTime())) {
-      console.warn(`Invalid date format: ${date}`);
-      return undefined;
+    if (!isNaN(parsed.getTime())) {
+        return date;
     }
-    return date;
-  }
+
+    console.warn(`Invalid date format: ${date}`);
+    return undefined;
+}
 
   private validateNumber(value: any): number | undefined {
     const parsed = parseFloat(value);
