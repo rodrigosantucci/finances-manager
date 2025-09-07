@@ -113,7 +113,7 @@
 /* Ajustar campos de formulário */
 .form-control {
   width: 100%;
-  max-width: 100px; /* Ajustado para ser mais fluido */
+  max-width: 100%; /* Permite que o campo ocupe toda a largura disponível */
 }
 
 /* Ajustar botões para telas sensíveis ao toque */
@@ -176,8 +176,6 @@
     }
   }
 
-
-
   .metrics {
     display: flex;
     flex-direction: column;
@@ -219,79 +217,78 @@
 
 /* Ajustar cartões de gráficos */
 .chart-card {
-  height: auto; /* Permitir que a altura se ajuste ao conteúdo */
-  min-height: 400px; /* Altura mínima para acomodar gráfico e legenda */
+  height: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Centraliza verticalmente o conteúdo */
-  align-items: center; /* Centraliza horizontalmente o conteúdo */
-  overflow: hidden; /* Evita qualquer overflow do cartão */
-  margin-bottom: 16px; /* Espaço para separação vertical */
-  width: 100%; /* Usa toda a largura disponível */
-  max-width: 100%; /* Evita ultrapassar o contêiner pai */
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 
   .mat-mdc-card-content {
     display: flex;
-    flex-direction: column; /* Garante que gráfico e legenda sejam empilhados verticalmente */
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     padding: 12px;
     box-sizing: border-box;
-    overflow: hidden; /* Garante que o conteúdo não transborde */
+    overflow: hidden;
   }
 
+  #headerChart,
   #chart1,
   #chart2,
   #chart3,
   #chart4,
   #chart5 {
     width: 100%;
-    min-width: 300px; /* Definir largura mínima para o gráfico */
-    height: 300px; /* Tamanho fixo do gráfico */
-    max-height: 300px; /* Mantém altura fixa */
-    margin: 0 auto; /* Centraliza o gráfico horizontalmente */
-    overflow: hidden; /* Impede qualquer transbordo do gráfico */
+    min-width: 0; /* Remove a largura mínima fixa para maior fluidez */
+    height: auto; /* Permite que a altura se ajuste automaticamente */
+    margin: 0 auto;
+    overflow: hidden;
   }
 
   /* Estilizar a legenda do ApexCharts */
   .apexcharts-legend {
-    width: 100%; /* Usa toda a largura do contêiner pai */
-    max-width: 100%; /* Evita ultrapassar o contêiner */
-    padding: 8px 0; /* Espaçamento vertical */
+    width: 100%;
+    max-width: 100%;
+    padding: 8px 0;
     display: flex;
-    flex-wrap: wrap; /* Permite que os itens da legenda quebrem linha */
-    justify-content: center; /* Centraliza os itens da legenda horizontalmente */
-    align-items: center; /* Centraliza os itens da legenda verticalmente */
-    gap: 8px; /* Espaço entre itens da legenda */
-    margin-top: 8px; /* Espaço entre gráfico e legenda */
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .apexcharts-legend-series {
     display: flex;
     align-items: center;
-    font-size: 12px; /* Tamanho da fonte para legenda */
+    font-size: 12px;
     color: var(--text-secondary);
-    margin: 0 4px; /* Espaço horizontal entre itens */
-    white-space: nowrap; /* Evita quebra de texto nos itens */
+    margin: 0 4px;
+    white-space: nowrap;
   }
 
   .apexcharts-legend-marker {
-    margin-right: 6px; /* Espaço entre marcador e texto */
+    margin-right: 6px;
     width: 10px;
     height: 10px;
   }
 
   .apexcharts-legend-text {
-    white-space: nowrap; /* Evita quebra de texto nos itens */
+    white-space: nowrap;
   }
 }
 
 /* Ajustar tabelas para responsividade */
 .table-card {
   height: 100%;
-  overflow-x: auto;
+  overflow-x: auto; /* Mantém a rolagem horizontal, essencial para tabelas em mobile */
 
 
   .mat-mdc-card-content {
@@ -301,7 +298,7 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 200px; /* Garante um tamanho mínimo, mas permite rolagem */
+    min-width: 0; /* Remove a largura mínima para maior fluidez */
   }
 
   /* Estilizar linhas da tabela com Angular Material */
@@ -315,8 +312,8 @@
         text-align: center;
         font-size: 13px;
         font-weight: 500;
-        border-bottom: 1px solid #e5e7eb; /* Borda para separar cabeçalho */
-        box-sizing: border-box; /* Garante consistência no tamanho */
+        border-bottom: 1px solid #e5e7eb;
+        box-sizing: border-box;
       }
     }
 
@@ -329,17 +326,17 @@
     }
 
     .mat-mdc-row {
-      transition: all 0.3s ease !important; /* Transição suave para hover */
-      position: relative; /* Necessário para o pseudo-elemento ::after */
+      transition: all 0.3s ease !important;
+      position: relative;
     }
 
     .mat-mdc-row:hover {
-      background-color: var(--table-row-hover-light) !important; /* Fundo do hover */
-      animation: hover-pulse 0.5s ease-in-out; /* Aplica a animação de pulso */
-      cursor: pointer; /* Indica que a linha é interativa */
-      box-shadow: 0 2px 8px var(--table-shadow-light) !important; /* Sombra no hover */
-      transform: scale(1.005) !important; /* Leve escala para efeito de elevação */
-      z-index: 2; /* Garante que a linha fique acima de outras */
+      background-color: var(--table-row-hover-light) !important;
+      animation: hover-pulse 0.5s ease-in-out;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--table-shadow-light) !important;
+      transform: scale(1.005) !important;
+      z-index: 2;
     }
 
     .mat-mdc-row:hover::after {
@@ -349,10 +346,10 @@
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
-      background-color: var(--table-overlay-light) !important; /* Overlay semitransparente */
-      z-index: 1 !important; /* Overlay acima do fundo, abaixo do conteúdo */
-      pointer-events: none !important; /* Evita que o overlay interfira com interações */
-      transition: background-color 0.3s ease !important; /* Transição suave para o overlay */
+      background-color: var(--table-overlay-light) !important;
+      z-index: 1 !important;
+      pointer-events: none !important;
+      transition: background-color 0.3s ease !important;
     }
 
     .mat-mdc-footer-row {
@@ -360,24 +357,24 @@
       font-weight: 600;
 
       .mat-mdc-footer-cell {
-        border-top: 2px solid #cbd5e1; /* Borda superior mais escura para destacar o rodapé */
-        padding: 8px 6px; /* Mesmo padding das células normais */
+        border-top: 2px solid #cbd5e1;
+        padding: 8px 6px;
         font-size: 12px;
         color: var(--table-text-light);
-        text-align: center; /* Alinhamento consistente com outras células */
-        box-sizing: border-box; /* Garante consistência no tamanho */
+        text-align: center;
+        box-sizing: border-box;
       }
     }
 
     .mat-mdc-cell {
       color: var(--table-text-light);
       text-align: center;
-      padding: 8px 6px; /* Mesmo padding do rodapé */
+      padding: 8px 6px;
       font-size: 12px;
-      border-bottom: 1px solid #e5e7eb; /* Borda para separar linhas */
-      position: relative; /* Garante que o conteúdo da célula fique acima do overlay */
-      z-index: 3; /* Coloca o conteúdo acima do overlay */
-      box-sizing: border-box; /* Garante consistência no tamanho */
+      border-bottom: 1px solid #e5e7eb;
+      position: relative;
+      z-index: 3;
+      box-sizing: border-box;
     }
 
     .text-success {
@@ -388,20 +385,22 @@
       color: #d32f2f;
     }
   }
+}
 
-  /* Ajustes para o tema escuro */
-  [data-theme="dark"] ::ng-deep .mat-mdc-table {
+/* Ajustes para o tema escuro */
+[data-theme="dark"] {
+  ::ng-deep .mat-mdc-table {
     .mat-mdc-header-row {
       background-color: var(--table-header-bg-dark) !important;
 
       .mat-mdc-header-cell {
         color: var(--table-text-dark);
-        border-bottom: 1px solid #4b5563; /* Borda para tema escuro */
+        border-bottom: 1px solid #4b5563;
         padding: 10px 6px;
         text-align: center;
         font-size: 13px;
         font-weight: 500;
-        box-sizing: border-box; /* Garante consistência no tamanho */
+        box-sizing: border-box;
       }
     }
 
@@ -414,17 +413,17 @@
     }
 
     .mat-mdc-row {
-      transition: all 0.3s ease !important; /* Transição suave para hover */
-      position: relative; /* Necessário para o pseudo-elemento ::after */
+      transition: all 0.3s ease !important;
+      position: relative;
     }
 
     .mat-mdc-row:hover {
-      background-color: var(--table-row-hover-dark) !important; /* Fundo do hover */
-      animation: hover-pulse 0.5s ease-in-out; /* Aplica a animação de pulso */
-      cursor: pointer; /* Indica que a linha é interativa */
-      box-shadow: 0 2px 8px var(--table-shadow-dark) !important; /* Sombra no hover */
-      transform: scale(1.005) !important; /* Leve escala para efeito de elevação */
-      z-index: 2; /* Garante que a linha fique acima de outras */
+      background-color: var(--table-row-hover-dark) !important;
+      animation: hover-pulse 0.5s ease-in-out;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--table-shadow-dark) !important;
+      transform: scale(1.005) !important;
+      z-index: 2;
     }
 
     .mat-mdc-row:hover::after {
@@ -434,10 +433,10 @@
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
-      background-color: var(--table-overlay-dark) !important; /* Overlay semitransparente */
-      z-index: 1 !important; /* Overlay acima do fundo, abaixo do conteúdo */
-      pointer-events: none !important; /* Evita que o overlay interfira com interações */
-      transition: background-color 0.3s ease !important; /* Transição suave para o overlay */
+      background-color: var(--table-overlay-dark) !important;
+      z-index: 1 !important;
+      pointer-events: none !important;
+      transition: background-color 0.3s ease !important;
     }
 
     .mat-mdc-footer-row {
@@ -445,31 +444,31 @@
       font-weight: 600;
 
       .mat-mdc-footer-cell {
-        border-top: 2px solid #1f2937; /* Borda superior para tema escuro */
-        padding: 8px 6px; /* Mesmo padding das células normais */
+        border-top: 2px solid #1f2937;
+        padding: 8px 6px;
         font-size: 12px;
         color: var(--table-text-dark);
-        text-align: center; /* Alinhamento consistente com outras células */
-        box-sizing: border-box; /* Garante consistência no tamanho */
+        text-align: center;
+        box-sizing: border-box;
       }
     }
 
     .mat-mdc-cell {
       color: var(--table-text-dark);
-      border-bottom: 1px solid #4b5563; /* Borda para tema escuro */
-      padding: 8px 6px; /* Mesmo padding do rodapé */
+      border-bottom: 1px solid #4b5563;
+      padding: 8px 6px;
       font-size: 12px;
-      position: relative; /* Garante que o conteúdo da célula fique acima do overlay */
-      z-index: 3; /* Coloca o conteúdo acima do overlay */
-      box-sizing: border-box; /* Garante consistência no tamanho */
+      position: relative;
+      z-index: 3;
+      box-sizing: border-box;
     }
 
     .text-success {
-      color: #22c55e; /* Verde mais claro para tema escuro */
+      color: #22c55e;
     }
 
     .text-danger {
-      color: #ef4444; /* Vermelho mais claro para tema escuro */
+      color: #ef4444;
     }
   }
 }
@@ -480,9 +479,8 @@
   color: #6b7280;
   font-size: 13px;
   margin-top: 12px;
-
   [data-theme="dark"] & {
-    color: #9ca3af; /* Cor de texto para tema escuro */
+    color: #9ca3af;
   }
 }
 
@@ -492,7 +490,7 @@
   gap: 6px;
   align-items: center;
   justify-content: flex-start;
-  flex-wrap: wrap; /* Permite que botões quebrem linha */
+  flex-wrap: wrap;
 }
 
 /* Ajustar campos de formulário do Angular Material */
@@ -501,384 +499,68 @@
   min-height: 48px;
 }
 
-::ng-deep div .mat-mdc-form-field-infix {
-  width: 100% !important;
-  min-width: 80px; /* Garante um tamanho mínimo para inputs */
+::ng-deep .mat-mdc-form-field-outline {
+  max-width: 100%;
 }
 
-::ng-deep .mat-mdc-input-element {
-  font-size: 13px !important;
-  text-align: center !important;
-}
-
-/* Ajustar o TradingView widget */
-.tradingview-widget-container {
+::ng-deep .edit-input-field {
   width: 100%;
-  overflow: hidden;
-
-  .tradingview-widget-container__widget {
-    width: 100%;
-    height: auto;
-  }
 }
 
-/* Media Queries para telas menores */
-@media (max-width: 768px) {
+/* Ajustes para telas pequenas */
+@media (max-width: 767.98px) {
   .dashboard-container {
     padding: 12px;
   }
 
+  .resumo-section {
+    padding: 0.5rem;
+  }
+
   .section-title {
     font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
-
-  .resumo-section {
-    padding: 0.75rem 0.5rem;
+    text-align: center;
   }
 
   .summary-card {
-    .mat-mdc-card-content {
-      padding: 10px;
-    }
-
-    .button-controls {
-      margin-bottom: 10px;
-      gap: 6px;
-
-      button.mat-icon-button {
-        width: 34px;
-        height: 34px;
-        line-height: 34px;
-
-        .mat-icon {
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
-          line-height: 18px;
-        }
-      }
-    }
-
-    .metric {
-      .metric-label {
-        font-size: 12px;
-      }
-
-      .metric-value {
-        font-size: 14px;
-      }
-    }
+    margin: 8px 0;
   }
 
   .chart-card {
-    min-height: 380px; /* Ajusta altura mínima para telas menores */
-    height: auto; /* Ajusta dinamicamente ao conteúdo */
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
-    overflow: hidden; /* Garante que não haja overflow */
-
-    .mat-mdc-card-content {
-      padding: 10px;
-      justify-content: center; /* Centraliza verticalmente */
-      align-items: center; /* Centraliza horizontalmente */
-    }
-
-    #chart1,
-    #chart2,
-    #chart3,
-    #chart4,
-    #chart5 {
-      min-width: 300px; /* Mantém largura mínima do gráfico */
-      height: 300px; /* Mantém altura fixa do gráfico */
-      max-height: 300px; /* Mantém altura fixa */
-      width: 100%;
-      margin: 0 auto; /* Centraliza o gráfico horizontalmente */
-    }
-
-    .apexcharts-legend {
-      padding: 6px 0;
-      gap: 6px;
-      font-size: 10px; /* Reduz tamanho da fonte para telas menores */
-      margin-top: 6px;
-      justify-content: center; /* Centraliza os itens da legenda */
-      align-items: center; /* Centraliza verticalmente */
-    }
-
-    .apexcharts-legend-series {
-      margin: 0 3px;
-    }
-
-    .apexcharts-legend-marker {
-      margin-right: 5px;
-      width: 10px;
-      height: 10px;
-    }
+    margin: 8px 0;
+    min-height: 250px;
   }
 
   .table-card {
-    ::ng-deep .mat-mdc-table {
-      min-width: 500px; /* Reduz o tamanho mínimo para telas menores */
-
-      .mat-mdc-header-cell,
-      .mat-mdc-cell,
-      .mat-mdc-footer-cell {
-        font-size: 11px;
-        padding: 6px 4px;
-        box-sizing: border-box; /* Garante consistência no tamanho */
-      }
-    }
+    margin: 8px 0;
   }
 
-  .error-container {
-    margin: 10px 6px;
-    padding: 10px;
-
-    p {
-      font-size: 13px;
-    }
-
-    button {
-      font-size: 13px;
-      padding: 6px 12px;
-    }
+  .metric-label {
+    font-size: 12px !important;
   }
 
-  .loading-indicator {
-    margin: 20px 0;
-
-    .mat-mdc-progress-spinner {
-      width: 30px;
-      height: 30px;
-    }
-
-    p {
-      font-size: 12px;
-    }
+  .metric-value {
+    font-size: 14px !important;
   }
 
-  .form-control {
-    max-width: 80px;
-  }
-
-  .edit-input-field {
-    max-width: 120px;
-  }
-}
-
-@media (max-width: 576px) {
-  .dashboard-container {
-    padding: 8px;
-  }
-
-  .resumo-section .col-4,
-  .resumo-section .col-md-3,
-  .resumo-section .col-md-4,
-  .acoes-section .col-12,
-  .acoes-section .col-md-8,
-  .acoes-section .col-md-4,
-  .fundos-section .col-12,
-  .fundos-section .col-md-8,
-  .fundos-section .col-md-4,
-  .caixa-section .col-12,
-  .caixa-section .col-md-8,
-  .caixa-section .col-md-4,
-  .assets-section .col-12,
-  .assets-section .col-md-8,
-  .assets-section .col-md-4 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-  .section-title {
-    font-size: 1.1rem;
-  }
-
-  .chart-card {
-    min-height: 360px; /* Ajusta altura mínima para telas muito pequenas */
-    height: 100%; /* Ajusta dinamicamente ao conteúdo */
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Centraliza verticalmente */
-    align-items: center; /* Centraliza horizontalmente */
-    overflow: hidden; /* Garante que não haja overflow */
-    margin-bottom: 12px; /* Espaço para separação vertical */
-
-    .mat-mdc-card-content {
-      padding: 8px;
-      width: 100%;
-      justify-content: center; /* Centraliza verticalmente */
-      align-items: center; /* Centraliza horizontalmente */
-      overflow: hidden;
-    }
-
-    #chart1,
-    #chart2,
-    #chart3,
-    #chart4,
-    #chart5 {
-      min-width: 300px; /* Mantém largura mínima do gráfico */
-      height: 400px; /* Mantém altura fixa do gráfico */
-      max-height: 300px; /* Mantém altura fixa */
-      width: 100%;
-      margin: 0 auto; /* Centraliza o gráfico horizontalmente */
-      overflow: hidden; /* Impede qualquer transbordo */
-    }
-
-    .apexcharts-legend {
-      padding: 4px 0;
-      gap: 4px;
-      font-size: 9px; /* Tamanho ainda menor para telas pequenas */
-      margin-top: 4px;
-      justify-content: center; /* Centraliza os itens da legenda */
-      align-items: center; /* Centraliza verticalmente */
-    }
-
-    .apexcharts-legend-series {
-      margin: 0 2px;
-    }
-
-    .apexcharts-legend-marker {
-      margin-right: 4px;
-      width: 8px;
-      height: 8px;
-    }
-  }
-
-  .table-card {
-    ::ng-deep .mat-mdc-table {
-      min-width: 400px; /* Reduz ainda mais para telas muito pequenas */
-
-      .mat-mdc-header-cell,
-      .mat-mdc-cell,
-      .mat-mdc-footer-cell {
-        font-size: 10px;
-        padding: 5px 3px;
-        box-sizing: border-box; /* Garante consistência no tamanho */
-      }
-    }
-  }
-
-  .row {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-  }
-
-  .button-controls {
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .summary-card {
-    .button-controls {
-      button.mat-icon-button {
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-
-        .mat-icon {
-          font-size: 16px;
-          width: 16px;
-          height: 16px;
-          line-height: 16px;
-        }
-      }
-    }
-
-    .metric {
-      .metric-label {
-        font-size: 11px;
-      }
-
-      .metric-value {
-        font-size: 13px;
-      }
-    }
-  }
-
-  .error-container {
-    margin: 8px 4px;
-    padding: 8px;
-
-    p {
-      font-size: 12px;
-    }
-
-    button {
-      font-size: 12px;
-      padding: 6px 10px;
-    }
-  }
-
-  .loading-indicator {
-    margin: 16px 0;
-
-    .mat-mdc-progress-spinner {
-      width: 28px;
-      height: 28px;
-    }
-
-    p {
+  ::ng-deep .mat-mdc-table {
+    .mat-mdc-header-cell,
+    .mat-mdc-cell,
+    .mat-mdc-footer-cell {
+      padding: 6px 4px;
       font-size: 11px;
     }
   }
 
-  .form-control {
-    max-width: 70px;
+  .edit-input-field {
+    max-width: 100%;
   }
 
-  .edit-input-field {
-    max-width: 100px;
+  .action-buttons-group {
+    justify-content: center;
   }
 
   .tradingview-widget-container {
-    height: 80px; /* Ajustar altura do widget para telas pequenas */
+    height: 100px;
   }
-}
-
-/* Ajustar botões do Angular Material */
-button[mat-icon-button][color="primary"] {
-  color: var(--primary);
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-button[mat-icon-button][color="primary"]:hover:enabled {
-  color: var(--primary-hover);
-  background-color: var(--primary-hover-bg);
-}
-
-button[mat-icon-button][color="primary"]:disabled {
-  color: var(--disabled-text);
-  background-color: transparent;
-}
-
-[data-theme="dark"] button[mat-icon-button][color="primary"]:hover:enabled {
-  background-color: var(--primary-hover-bg);
-}
-
-mat-icon {
-  font-size: 22px;
-  width: 22px;
-  height: 22px;
-  line-height: 22px;
-}
-
-/* Estilos de SnackBar */
-.success-snackbar {
-  background-color: var(--success-bg);
-  color: var(--success-text);
-}
-
-.error-snackbar {
-  background-color: var(--error-bg);
-  color: var(--error-text);
-}
-
-mat-mdc-cell .mdc-data-table__cell cdk-cell cdk-column-tipoAtivo mat-column-tipoAtivo ng-star-inserted {
-  font-weight: 500;
-  color: var(--text-secondary);
 }

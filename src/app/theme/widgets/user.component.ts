@@ -130,7 +130,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
    openGuide() {
-     window.open('/assets/guia-transacoes.html', '_blank');
+     window.open('./assets/guia-transacoes.html', '_blank');
    }
 
   ngOnDestroy(): void {
