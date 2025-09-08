@@ -85,7 +85,7 @@
           <!-- Campo Quantidade (exibir apenas se assetType não for TÍTULO) -->
           <mat-form-field appearance="outline" class="form-field quantity-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
             <mat-label>Quantidade</mat-label>
-            <input matInput type="number" formControlName="quantity" min="1" aria-required="true">
+            <input matInput type="number" formControlName="quantity" min="0" aria-required="true">
             <mat-hint class="form-hint">Ex: 100</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('quantity')?.hasError('required') && formGroupDetalhesAtivo.get('quantity')?.touched">
               Informe a quantidade

@@ -131,14 +131,14 @@ export class TransactionDialogComponent implements OnInit {
 
     if (assetType === 'TÍTULO') {
       tickerControl?.setValidators([Validators.minLength(1), Validators.maxLength(10)]);
-      quantityControl?.setValidators([Validators.min(1)]);
+      quantityControl?.setValidators([Validators.min(0)]);
       averagePriceControl?.setValidators([Validators.min(0.01)]);
       tickerControl?.setValue('');
       quantityControl?.setValue('');
       averagePriceControl?.setValue('');
     } else {
       tickerControl?.setValidators([Validators.required, Validators.minLength(1), Validators.maxLength(10)]);
-      quantityControl?.setValidators([Validators.required, Validators.min(1)]);
+      quantityControl?.setValidators([Validators.required, Validators.min(0)]);
       averagePriceControl?.setValidators([Validators.required, Validators.min(0.01)]);
     }
 
