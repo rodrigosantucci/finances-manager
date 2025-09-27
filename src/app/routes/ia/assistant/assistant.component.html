@@ -33,6 +33,54 @@
                         </mat-panel-description>
                       </mat-expansion-panel-header>
                       <mat-list dense>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Visão Geral:</strong> {{ ativo.ratings_heuristics.visao_geral }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Panorama Geral:</strong> {{ ativo.ratings_heuristics.panorama_geral }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Cinco Forças:</strong> {{ ativo.ratings_heuristics.cinco_forcas }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Barreiras de Entrada:</strong> {{ ativo.ratings_heuristics.barreiras_entrada }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Rivalidade:</strong> {{ ativo.ratings_heuristics.rivalidade }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Disrupção:</strong> {{ ativo.ratings_heuristics.disrupcao }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Específico da Empresa:</strong> {{ ativo.ratings_heuristics.especifico_empresa }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Interação com a Empresa:</strong> {{ ativo.ratings_heuristics.interacao_empresa }}
+                          </div>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <div class="qa-item">
+                            <strong>Marcas:</strong> {{ ativo.ratings_heuristics.marcas }}
+                          </div>
+                        </mat-list-item>
+                      </mat-list>
+
+                      <mat-list dense>
                         <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
                           <div class="qa-item">
                             <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
@@ -76,7 +124,7 @@
                     <mat-expansion-panel-header>
                       <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
                       <mat-panel-description>
-                        Indicadores: {{ ativo.indicadores.length }} | Recomendações: {{ ativo.recomendacoes.length }}
+                           Lucro Ultimo Trimestre: {{ ativo.lucro_ultimo_trimestre }} | Dividend Yield: {{ ativo.dividend_yield }} | Divida Bruta: {{ ativo.divida_bruta }} | Valor Patrimonial: {{ ativo.valor_patrimonial }}
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     <mat-list dense>
@@ -102,6 +150,20 @@
                           </mat-list>
                         </div>
                       </mat-list-item>
+
+                      <mat-list-item>
+                        <div class="qa-item">
+                          <strong>Fator Competitivo:</strong>
+                          <mat-list dense>
+                            <mat-list-item *ngFor="let fc of ativo.fator_competitivo">
+                              <p matLine>
+                                {{ fc.recomendacao }}: {{ fc.texto }}
+                              </p>
+                            </mat-list-item>
+                          </mat-list>
+                        </div>
+                      </mat-list-item>
+
                       <mat-list-item>
                         <div class="qa-item">
                           <strong>Perguntas e Respostas:</strong>
@@ -177,6 +239,15 @@
                         </mat-list-item>
                         <mat-list-item>
                           <p matLine>Período de Análise: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
+                        </mat-list-item>
+                        <mat-list-item>
+                         <p>Estimativa 1 Ano: {{ pessoais.analise.desempenho_estimativas.patrimonio_1_ano | currency: 'BRL':'symbol':'1.2-2' }}</p>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <p>Estimativa 5 Anos: {{ pessoais.analise.desempenho_estimativas.patrimonio_5_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <p>Estimativa 10 Anos: {{ pessoais.analise.desempenho_estimativas.patrimonio_10_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
                         </mat-list-item>
                       </mat-list>
                     </mat-card-content>
