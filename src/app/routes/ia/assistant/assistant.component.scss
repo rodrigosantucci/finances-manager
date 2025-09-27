@@ -71,13 +71,6 @@
   pointer-events: auto;
 }
 
-.maintenance-icon {
-  font-size: 48px;
-  height: 48px;
-  width: 48px;
-  margin-bottom: 1rem;
-}
-
 .blur-content {
   filter: blur(4px);
   pointer-events: none;
@@ -239,6 +232,16 @@ mat-card-content {
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px dashed var(--card-border);
+
+  // ESTILO PARA O NOVO DROPDOWN
+  .date-select-field {
+    width: 300px; /* Define uma largura para o dropdown */
+    margin-bottom: 4px;
+    margin-top:10px;
+    font-size: 0.9rem;
+  }
+  // FIM ESTILO PARA O NOVO DROPDOWN
+
   h3 {
     margin: 0 0 8px 0;
     font-size: 1.1rem;
@@ -451,6 +454,10 @@ mat-card-content {
       height: 18px;
     }
   }
+  .report-header .date-select-field {
+    width: 160px; /* Ajuste para telas menores */
+    font-size: 0.85rem;
+  }
   .futuristic-tabs .mat-tab-label {
     font-size: 0.85rem;
     padding: 6px 10px;
@@ -517,6 +524,10 @@ mat-card-content {
       width: 16px;
       height: 16px;
     }
+  }
+  .report-header .date-select-field {
+    width: 140px; /* Ajuste para telas muito pequenas */
+    font-size: 0.8rem;
   }
   .futuristic-tabs .mat-tab-label {
     font-size: 0.8rem;

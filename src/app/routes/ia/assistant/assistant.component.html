@@ -1,189 +1,207 @@
 <page-header class="bg-dark text-light" title="Assistente IA" />
 
-
-
 <div class="container">
   <mat-card class="control-card">
     <mat-card-content>
       <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
-        <!-- Aba: Análise de Fundamentos -->
         <mat-tab label="Análise de Fundamentos">
-          <div class="tab-content" *ngIf="fundamentos; else noData">
-            <div class="report-header">
-              <h3>
-                Nota Geral:
-                <span class="stars-container">
-                  <mat-icon *ngFor="let star of getStars(fundamentos.nota)" class="star-icon">{{ star }}</mat-icon>
-                </span>
-              </h3>
-              <p>Data: {{ fundamentos.data }}</p>
-            </div>
-            <div class="panel-grid">
-              <mat-expansion-panel *ngFor="let ativo of fundamentos.analise.ativos" class="futuristic-panel">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
-                  <mat-panel-description>
-                    Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota: {{ ativo.nota | number: '1.1-1' }}
-                  </mat-panel-description>
-                </mat-expansion-panel-header>
-                <mat-list dense>
-                  <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
-                    <div class="qa-item">
-                      <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                      <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
-                    </div>
-                  </mat-list-item>
-                </mat-list>
-              </mat-expansion-panel>
-            </div>
-          </div>
-          <ng-template #noData>
-            <p class="no-data">Nenhum dado disponível para Análise de Fundamentos.</p>
-          </ng-template>
-        </mat-tab>
+          <div class="tab-content">
+            <div *ngIf="fundamentos || allFundamentos.length > 0; else noDataFundamentos">
+              <div class="report-header">
+                <h3>
+                  Nota Geral:
+                  <span class="stars-container">
+                    <mat-icon *ngFor="let star of getStars(fundamentos?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
+                  </span>
+                </h3>
+                <mat-form-field appearance="outline" class="date-select-field">
+                  <mat-label>Data da Análise</mat-label>
+                  <mat-select [value]="selectedFundamentosDate" (valueChange)="loadFundamentosByDate($event)" [disabled]="allFundamentos.length === 0">
+                    <mat-option *ngFor="let analise of allFundamentos" [value]="analise.data">
+                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
 
-        <!-- Aba: Análise Técnica -->
-        <mat-tab label="Análise Técnica">
-          <div class="tab-content" *ngIf="tecnica; else noData">
-            <div class="report-header">
-              <h3>
-                Nota Geral:
-                <span class="stars-container">
-                  <mat-icon *ngFor="let star of getStars(tecnica.nota)" class="star-icon">{{ star }}</mat-icon>
-                </span>
-              </h3>
-              <p>Data: {{ tecnica.data }}</p>
-            </div>
-            <div class="panel-grid">
-              <mat-expansion-panel *ngFor="let ativo of tecnica.analise.ativos" class="futuristic-panel">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
-                  <mat-panel-description>
-                    Indicadores: {{ ativo.indicadores.length }} | Recomendações: {{ ativo.recomendacoes.length }}
-                  </mat-panel-description>
-                </mat-expansion-panel-header>
-                <mat-list dense>
-                  <mat-list-item>
-                    <div class="qa-item">
-                      <strong>Indicadores:</strong>
-                      <mat-list dense>
-                        <mat-list-item *ngFor="let indicador of ativo.indicadores">
-                          <p matLine>
-                            {{ indicador.indicador }}: {{ indicador.valor }} (Nota: {{ indicador.nota | number: '1.1-1' }})
-                          </p>
-                        </mat-list-item>
-                      </mat-list>
-                    </div>
-                  </mat-list-item>
-                  <mat-list-item>
-                    <div class="qa-item">
-                      <strong>Recomendações:</strong>
-                      <mat-list dense>
-                        <mat-list-item *ngFor="let rec of ativo.recomendacoes">
-                          <p matLine>{{ rec.recomendacao }}: {{ rec.texto }}</p>
-                        </mat-list-item>
-                      </mat-list>
-                    </div>
-                  </mat-list-item>
-                  <mat-list-item>
-                    <div class="qa-item">
-                      <strong>Perguntas e Respostas:</strong>
+
+                <div class="panel-grid" *ngIf="fundamentos">
+                    <mat-expansion-panel *ngFor="let ativo of fundamentos.analise.ativos" class="futuristic-panel">
+                      <mat-expansion-panel-header>
+                        <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
+                        <mat-panel-description>
+                          Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota: {{ ativo.nota | number: '1.1-1' }}
+                        </mat-panel-description>
+                      </mat-expansion-panel-header>
                       <mat-list dense>
                         <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
-                          <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                          <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                          <div class="qa-item">
+                            <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                            <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                          </div>
                         </mat-list-item>
                       </mat-list>
-                    </div>
-                  </mat-list-item>
-                </mat-list>
-              </mat-expansion-panel>
+                    </mat-expansion-panel>
+                </div>
+                <p class="no-data" *ngIf="!fundamentos && allFundamentos.length > 0">Selecione uma data para carregar a análise.</p>
+              </div>
             </div>
+            <ng-template #noDataFundamentos>
+              <p class="no-data">Nenhum dado ou data disponível para Análise de Fundamentos.</p>
+            </ng-template>
           </div>
-          <ng-template #noData>
-            <p class="no-data">Nenhum dado disponível para Análise Técnica.</p>
-          </ng-template>
         </mat-tab>
 
-        <!-- Aba: Objetivos Pessoais -->
-        <mat-tab label="Análise de Objetivos Pessoais">
-          <div class="tab-content" *ngIf="pessoais; else noData">
-            <div class="report-header">
-              <h3>
-                Nota Geral:
-                <span class="stars-container">
-                  <mat-icon *ngFor="let star of getStars(pessoais.nota)" class="star-icon">{{ star }}</mat-icon>
-                </span>
-              </h3>
-              <p>Data: {{ pessoais.data }}</p>
+        <mat-tab label="Análise Técnica">
+           <div class="tab-content">
+            <div *ngIf="tecnica || allTecnica.length > 0; else noDataTecnica">
+              <div class="report-header">
+                <h3>
+                  Nota Geral:
+                  <span class="stars-container">
+                    <mat-icon *ngFor="let star of getStars(tecnica?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
+                  </span>
+                </h3>
+                <mat-form-field appearance="outline" class="date-select-field">
+                  <mat-label>Data da Análise</mat-label>
+                  <mat-select [value]="selectedTecnicaDate" (valueChange)="loadTecnicaByDate($event)" [disabled]="allTecnica.length === 0">
+                    <mat-option *ngFor="let analise of allTecnica" [value]="analise.data">
+                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+
+                <div class="panel-grid" *ngIf="tecnica">
+                  <mat-expansion-panel *ngFor="let ativo of tecnica.analise.ativos" class="futuristic-panel">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
+                      <mat-panel-description>
+                        Indicadores: {{ ativo.indicadores.length }} | Recomendações: {{ ativo.recomendacoes.length }}
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <mat-list dense>
+                      <mat-list-item>
+                        <div class="qa-item">
+                          <strong>Indicadores:</strong>
+                          <mat-list dense>
+                            <mat-list-item *ngFor="let indicador of ativo.indicadores">
+                              <p matLine>
+                                {{ indicador.indicador }}: {{ indicador.valor }} (Nota: {{ indicador.nota | number: '1.1-1' }})
+                              </p>
+                            </mat-list-item>
+                          </mat-list>
+                        </div>
+                      </mat-list-item>
+                      <mat-list-item>
+                        <div class="qa-item">
+                          <strong>Recomendações:</strong>
+                          <mat-list dense>
+                            <mat-list-item *ngFor="let rec of ativo.recomendacoes">
+                              <p matLine>{{ rec.recomendacao }}: {{ rec.texto }}</p>
+                            </mat-list-item>
+                          </mat-list>
+                        </div>
+                      </mat-list-item>
+                      <mat-list-item>
+                        <div class="qa-item">
+                          <strong>Perguntas e Respostas:</strong>
+                          <mat-list dense>
+                            <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
+                              <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                              <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                            </mat-list-item>
+                          </mat-list>
+                        </div>
+                      </mat-list-item>
+                    </mat-list>
+                  </mat-expansion-panel>
+                </div>
+                <p class="no-data" *ngIf="!tecnica && allTecnica.length > 0">Selecione uma data para carregar a análise.</p>
+              </div>
             </div>
-            <div class="card-grid">
-              <mat-card class="info-card futuristic-card">
-                <mat-card-header>
-                  <mat-card-title>Estratégia Sugerida</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <p>{{ pessoais.analise.estrategia_sugerida }}</p>
-                </mat-card-content>
-              </mat-card>
-              <mat-card class="info-card futuristic-card">
-                <mat-card-header>
-                  <mat-card-title>Alocação Sugerida</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <div #chartElement id="assistant-chart" class="chart">
-                    <apx-chart
-                      [series]="chartOptions.series"
-                      [chart]="chartOptions.chart"
-                      [labels]="chartOptions.labels"
-                      [colors]="chartOptions.colors"
-                      [dataLabels]="chartOptions.dataLabels"
-                      [legend]="chartOptions.legend"
-                      [responsive]="chartOptions.responsive"
-                      [theme]="chartOptions.theme"
-                      [plotOptions]="chartOptions.plotOptions"
-                      [tooltip]="chartOptions.tooltip"
-                      [grid]="chartOptions.grid"
-                    ></apx-chart>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-              <mat-card class="info-card futuristic-card">
-                <mat-card-header>
-                  <mat-card-title>Desempenho e Estimativas</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <mat-list dense>
-                    <mat-list-item>
-                      <p matLine>Retorno Anual Esperado: {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%</p>
-                    </mat-list-item>
-                    <mat-list-item>
-                      <p matLine>Volatilidade Esperada: {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%</p>
-                    </mat-list-item>
-                    <mat-list-item>
-                      <p matLine>Período de Análise: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
-                    </mat-list-item>
-                  </mat-list>
-                </mat-card-content>
-              </mat-card>
-              <mat-expansion-panel class="futuristic-panel">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>Perguntas e Respostas</mat-panel-title>
-                </mat-expansion-panel-header>
-                <mat-list dense>
-                  <mat-list-item *ngFor="let pr of pessoais.analise.perguntas_respostas">
-                    <div class="qa-item">
-                      <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                      <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
-                    </div>
-                  </mat-list-item>
-                </mat-list>
-              </mat-expansion-panel>
-            </div>
+            <ng-template #noDataTecnica>
+              <p class="no-data">Nenhum dado ou data disponível para Análise Técnica.</p>
+            </ng-template>
           </div>
-          <ng-template #noData>
-            <p class="no-data">Nenhum dado disponível para Objetivos Pessoais.</p>
-          </ng-template>
+        </mat-tab>
+
+        <mat-tab label="Análise de Objetivos Pessoais">
+          <div class="tab-content">
+            <div *ngIf="pessoais || allPessoais.length > 0; else noDataPessoais">
+              <div class="report-header">
+                <h3>
+                  Nota Geral:
+                  <span class="stars-container">
+                    <mat-icon *ngFor="let star of getStars(pessoais?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
+                  </span>
+                </h3>
+                <mat-form-field appearance="outline" class="date-select-field">
+                  <mat-label>Data da Análise</mat-label>
+                  <mat-select [value]="selectedPessoaisDate" (valueChange)="loadPessoaisByDate($event)" [disabled]="allPessoais.length === 0">
+                    <mat-option *ngFor="let analise of allPessoais" [value]="analise.data">
+                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+
+                <div class="card-grid" *ngIf="pessoais">
+                  <mat-card class="info-card futuristic-card">
+                    <mat-card-header>
+                      <mat-card-title>Estratégia Sugerida</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <p>{{ pessoais.analise.estrategia_sugerida }}</p>
+                    </mat-card-content>
+                  </mat-card>
+                  <mat-card class="info-card futuristic-card">
+                    <mat-card-header>
+                      <mat-card-title>Alocação Sugerida</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <div #chartElement id="assistant-chart" class="chart">
+                        </div>
+                    </mat-card-content>
+                  </mat-card>
+                  <mat-card class="info-card futuristic-card">
+                    <mat-card-header>
+                      <mat-card-title>Desempenho e Estimativas</mat-card-title>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <mat-list dense>
+                        <mat-list-item>
+                          <p matLine>Retorno Anual Esperado: {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%</p>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <p matLine>Volatilidade Esperada: {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%</p>
+                        </mat-list-item>
+                        <mat-list-item>
+                          <p matLine>Período de Análise: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
+                        </mat-list-item>
+                      </mat-list>
+                    </mat-card-content>
+                  </mat-card>
+                  <mat-expansion-panel class="futuristic-panel">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>Perguntas e Respostas</mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <mat-list dense>
+                      <mat-list-item *ngFor="let pr of pessoais.analise.perguntas_respostas">
+                        <div class="qa-item">
+                          <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
+                          <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                        </div>
+                      </mat-list-item>
+                    </mat-list>
+                  </mat-expansion-panel>
+                </div>
+                <p class="no-data" *ngIf="!pessoais && allPessoais.length > 0">Selecione uma data para carregar a análise.</p>
+              </div>
+            </div>
+            <ng-template #noDataPessoais>
+              <p class="no-data">Nenhum dado ou data disponível para Objetivos Pessoais.</p>
+            </ng-template>
+          </div>
         </mat-tab>
       </mat-tab-group>
 
@@ -192,7 +210,7 @@
           mat-icon-button
           color="primary"
           (click)="loadAssistantData()"
-          matTooltip="Recarregar dados"
+          matTooltip="Recarregar dados (Atual/Selecionado)"
           aria-label="Recarregar dados"
           [disabled]="isLoading"
           class="action-button"

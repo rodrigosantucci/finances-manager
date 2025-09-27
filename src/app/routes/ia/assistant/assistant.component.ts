@@ -6,35 +6,24 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatListModule } from '@angular/material/list';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
 import { PageHeaderComponent } from '@shared';
 import { AssistantService } from './assistant.service';
 import { AuthService } from '@core/authentication';
 import { SettingsService } from '@core';
-import { catchError, finalize, take } from 'rxjs/operators';
+import { catchError, finalize, take, switchMap, map } from 'rxjs/operators';
 import ApexCharts, { ApexOptions } from 'apexcharts';
-import { forkJoin, of, Subscription } from 'rxjs';
+import { forkJoin, of, Subscription, EMPTY, Observable } from 'rxjs';
 
 // Define interfaces for type safety
 interface AnaliseResponse {
-  data: string;
+  data: string; // Data da análise
   nota: number;
   ai_provider: string;
-  analise: any; // Will be parsed into specific structure
-}
-
-interface PessoaisAnalise {
-  estrategia_sugerida?: string;
-  alocacao_sugerida?: {
-    renda_fixa: number;
-    renda_variavel: number;
-  };
-  desempenho_estimativas?: {
-    retorno_anual_esperado: number;
-    volatilidade_esperada: number;
-    periodo_analise: string;
-  };
-  perguntas_respostas?: Array<{ pergunta: string; resposta: string }>;
+  analise: any; // Conteúdo completo da análise
 }
 
 @Component({
@@ -51,7 +40,10 @@ interface PessoaisAnalise {
     MatIconButton,
     MatProgressSpinnerModule,
     MatListModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatSelectModule,
+    MatFormFieldModule,
+    MatTooltipModule
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })
@@ -64,11 +56,23 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('chartElement', { static: false }) chartElement?: ElementRef;
 
+  // Variáveis para armazenar a análise ATUALMENTE selecionada
   fundamentos: AnaliseResponse | null = null;
   tecnica: AnaliseResponse | null = null;
   pessoais: AnaliseResponse | null = null;
+
+  // Listas para armazenar todas as análises carregadas do serviço
+  allFundamentos: AnaliseResponse[] = [];
+  allTecnica: AnaliseResponse[] = [];
+  allPessoais: AnaliseResponse[] = [];
+
   isLoading = false;
   currentUserId: number | null = null;
+
+  // Variáveis de controle de seleção
+  selectedFundamentosDate: string | null = null;
+  selectedTecnicaDate: string | null = null;
+  selectedPessoaisDate: string | null = null;
 
   chartOptions: ApexOptions = {
     chart: {
@@ -194,20 +198,79 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.authService
       .user()
-      .pipe(take(1))
-      .subscribe((user) => {
-        if (user?.id) {
-          this.currentUserId = user.id;
-          this.loadAssistantData();
-          this.updateThemeStyles();
-        } else {
+      .pipe(
+        take(1),
+        switchMap(user => {
+          if (user?.id) {
+            this.currentUserId = user.id;
+            this.updateThemeStyles();
+            // Carrega as listas completas e o conteúdo inicial
+            return this.loadAllAnalyses();
+          }
           console.error('ID do usuário não disponível.');
+          return EMPTY;
+        })
+      )
+      .subscribe({
+        next: () => {
+          console.log('Dados do assistente carregados e conteúdo inicial definido.');
+        },
+        error: (err) => {
+          console.error('Erro na inicialização do assistente:', err);
         }
       });
   }
 
+  // MÉTODO ATUALIZADO: Carrega a lista COMPLETA de todas as análises E define o conteúdo inicial.
+  private loadAllAnalyses(): Observable<any> {
+    if (!this.currentUserId) {
+      return EMPTY;
+    }
+
+    this.isLoading = true;
+    return forkJoin({
+      fundamentos: this.assistantService.getFundamentos(this.currentUserId).pipe(
+        catchError(() => of([] as AnaliseResponse[]))
+      ),
+      tecnica: this.assistantService.getTecnica(this.currentUserId).pipe(
+        catchError(() => of([] as AnaliseResponse[]))
+      ),
+      pessoais: this.assistantService.getPessoais(this.currentUserId).pipe(
+        catchError(() => of([] as AnaliseResponse[]))
+      )
+    }).pipe(
+      map(({ fundamentos, tecnica, pessoais }) => {
+        // 1. Armazena as listas completas
+        this.allFundamentos = fundamentos;
+        this.allTecnica = tecnica;
+        this.allPessoais = pessoais;
+
+        // 2. Define o conteúdo INICIAL (mais recente, primeiro da lista) e a data selecionada.
+
+        // Fundamentos
+        this.fundamentos = fundamentos.length > 0 ? fundamentos[0] : null;
+        this.selectedFundamentosDate = this.fundamentos?.data || null;
+
+        // Técnica
+        this.tecnica = tecnica.length > 0 ? tecnica[0] : null;
+        this.selectedTecnicaDate = this.tecnica?.data || null;
+
+        // Pessoais
+        this.pessoais = pessoais.length > 0 ? pessoais[0] : null;
+        this.selectedPessoaisDate = this.pessoais?.data || null;
+
+        // 3. Atualiza o gráfico com os dados iniciais dos Pessoais (se existirem)
+        this.updateChartSeries();
+      }),
+      finalize(() => {
+        this.isLoading = false;
+      })
+    );
+  }
+
+  // loadInitialContent REMOVIDO
+
   ngAfterViewInit() {
-    // Initial chart initialization delayed to ensure DOM readiness
     setTimeout(() => this.initChart(), 0);
   }
 
@@ -219,15 +282,14 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   initChart() {
     if (this.chartElement?.nativeElement) {
       if (this.chart) {
-        this.chart.destroy(); // Destroy existing chart to prevent duplicates
+        this.chart.destroy();
       }
       this.chart = new ApexCharts(this.chartElement.nativeElement, this.chartOptions);
       this.chart.render().catch(err => console.error('Erro ao renderizar o gráfico:', err));
       this.updateChart();
-      // Update series if data is already loaded
       this.updateChartSeries();
     } else {
-      console.warn('Elemento do gráfico #assistant-chart não encontrado. Aguardando mudança de aba.');
+      console.warn('Elemento do gráfico #assistant-chart não encontrado.');
     }
   }
 
@@ -242,12 +304,9 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       ];
       console.log('Atualizando série do gráfico:', newSeries);
       this.chart?.updateSeries(newSeries, true);
-      if (newSeries.every(val => val === 0)) {
-        console.warn('Dados de alocação sugerida são todos zero.');
-      }
     } else {
       console.warn('Dados de alocação sugerida não disponíveis:', this.pessoais?.analise);
-      this.chart?.updateSeries([0, 0, 0], true); // Reset chart if no data
+      this.chart?.updateSeries([0, 0], true);
     }
   }
 
@@ -291,12 +350,55 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onTabChange(index: number) {
-    // Index 2 corresponds to "Objetivos Pessoais" tab
     if (index === 2) {
-      setTimeout(() => this.initChart(), 100); // Delay to ensure tab content is rendered
+      setTimeout(() => this.initChart(), 100);
     }
   }
 
+  // Filtra a lista local para carregar Fundamentos por data (Mantido)
+  loadFundamentosByDate(date: string): void {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.selectedFundamentosDate = date;
+
+    // FILTRAGEM LOCAL
+    const analise = this.allFundamentos.find(a => a.data === date);
+    this.fundamentos = analise || null;
+
+    this.isLoading = false;
+  }
+
+  // Filtra a lista local para carregar Técnica por data (Mantido)
+  loadTecnicaByDate(date: string): void {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.selectedTecnicaDate = date;
+
+    // FILTRAGEM LOCAL
+    const analise = this.allTecnica.find(a => a.data === date);
+    this.tecnica = analise || null;
+
+    this.isLoading = false;
+  }
+
+  // Filtra a lista local para carregar Pessoais por data (Mantido)
+  loadPessoaisByDate(date: string): void {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.selectedPessoaisDate = date;
+
+    // FILTRAGEM LOCAL
+    const analise = this.allPessoais.find(a => a.data === date);
+    this.pessoais = analise || null;
+
+    this.updateChartSeries();
+    this.isLoading = false;
+  }
+
+  // loadAssistantData agora chama apenas loadAllAnalyses
   loadAssistantData(): void {
     if (!this.currentUserId || this.isLoading) {
       return;
@@ -307,32 +409,13 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tecnica = null;
     this.pessoais = null;
 
-    const handleError = (error: any, type: string) => {
-      console.error(`Erro ao carregar ${type}:`, error);
-      return of(null);
-    };
-
-    forkJoin({
-      fundamentos: this.assistantService.getFundamentos(this.currentUserId).pipe(
-        catchError((error) => handleError(error, 'fundamentos'))
-      ),
-      tecnica: this.assistantService.getTecnica(this.currentUserId).pipe(
-        catchError((error) => handleError(error, 'técnica'))
-      ),
-      pessoais: this.assistantService.getPessoais(this.currentUserId).pipe(
-        catchError((error) => handleError(error, 'pessoais'))
-      )
-    }).pipe(
-      finalize(() => (this.isLoading = false))
-    ).subscribe({
-      next: ({ fundamentos, tecnica, pessoais }) => {
-        this.fundamentos = fundamentos;
-        this.tecnica = tecnica;
-        this.pessoais = pessoais;
-        this.updateChartSeries(); // Update chart after data is loaded
+    this.loadAllAnalyses().subscribe({
+      next: () => {
+        this.isLoading = false;
       },
       error: (err) => {
-        console.error('Erro geral ao carregar dados do assistente:', err);
+        console.error('Erro ao recarregar todas as análises:', err);
+        this.isLoading = false;
       }
     });
   }

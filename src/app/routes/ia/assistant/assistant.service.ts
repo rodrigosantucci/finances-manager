@@ -11,51 +11,40 @@ export class AssistantService {
 
   constructor(private http: HttpClient) {}
 
-  getFundamentos(usuarioId: number | string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/fundamentos/${usuarioId}`).pipe(
-      map((response: any) => {
-        if (response?.analise) {
-          try {
-            response.analise = JSON.parse(response.analise);
-          } catch (error) {
-            console.error('Failed to parse analise for fundamentos:', error);
-            response.analise = {};
-          }
-        }
-        return response;
-      })
+  // Função utilitária para garantir que o campo 'analise' seja um objeto
+  private parseAnalise(item: any): any {
+    if (item?.analise && typeof item.analise === 'string') {
+      try {
+        item.analise = JSON.parse(item.analise);
+      } catch (error) {
+        console.error('Failed to parse analise:', error);
+        item.analise = {};
+      }
+    }
+    return item;
+  }
+
+  // Retorna a LISTA de todas as análises de Fundamentos para o usuário.
+  // Assume o endpoint: /api/analytics/fundamentos/all/{usuarioId}
+  getFundamentos(usuarioId: number | string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/fundamentos/all/${usuarioId}`).pipe(
+      map((response: any[]) => response.map(this.parseAnalise))
     );
   }
 
-  getTecnica(usuarioId: number | string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/tecnica/${usuarioId}`).pipe(
-      map((response: any) => {
-        if (response?.analise) {
-          try {
-            response.analise = JSON.parse(response.analise);
-          } catch (error) {
-            console.error('Failed to parse analise for tecnica:', error);
-            response.analise = {};
-          }
-        }
-        return response;
-      })
+  // Retorna a LISTA de todas as análises Técnicas.
+  // Assume o endpoint: /api/analytics/tecnica/all/{usuarioId}
+  getTecnica(usuarioId: number | string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/tecnica/all/${usuarioId}`).pipe(
+      map((response: any[]) => response.map(this.parseAnalise))
     );
   }
 
-  getPessoais(usuarioId: number | string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/pessoais/${usuarioId}`).pipe(
-      map((response: any) => {
-        if (response?.analise) {
-          try {
-            response.analise = JSON.parse(response.analise);
-          } catch (error) {
-            console.error('Failed to parse analise for pessoais:', error);
-            response.analise = {};
-          }
-        }
-        return response;
-      })
+  // Retorna a LISTA de todas as análises Pessoais.
+  // Assume o endpoint: /api/analytics/pessoais/all/{usuarioId}
+  getPessoais(usuarioId: number | string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/pessoais/all/${usuarioId}`).pipe(
+      map((response: any[]) => response.map(this.parseAnalise))
     );
   }
 }
