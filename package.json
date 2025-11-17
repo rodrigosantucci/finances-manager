@@ -12,7 +12,7 @@
     "lint:ts": "eslint \"src/**/*.ts\" --fix",
     "lint:scss": "stylelint \"src/**/*.scss\" --fix",
     "resources": "npx cap sync && npx capacitor-assets generate --assetPath 'src/assets/'",
-    "deploy:android": "npx run resources  && npx cap sync android",
+    "deploy:android": "ng build && npx run resources  && npx cap sync android",
     "build:ghpages-win": "ng build --configuration production --output-path docs --base-href /finances-manager/ && copy src\\404.html docs\\404.html && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
     "build:ghpages-linux": "ng build --configuration production --output-path docs --base-href /finances-manager/ && cp src/404.html docs/404.html && cp -r docs/browser/* docs/ && rm -rf docs/browser"
     },

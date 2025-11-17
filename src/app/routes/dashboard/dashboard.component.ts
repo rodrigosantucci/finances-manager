@@ -660,7 +660,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         ],
         chart: {
-          width: 800,
+          width: 1000,
           height: 300,
           type: 'area', // Alterado de 'area' para 'line' para maior clareza, ambos funcionam.
           toolbar: {
