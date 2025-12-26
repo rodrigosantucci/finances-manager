@@ -20,4 +20,5 @@
   "ngx-translate.lookup.resourcesType": "json",
   "ngx-translate.lookup.resourcesPath": "public/i18n/pt-BR.json",
   "nxConsole.generateAiAgentRules": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
 }
