@@ -6,6 +6,11 @@
       <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
         <mat-tab label="Análise de Fundamentos">
           <div class="tab-content">
+            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+              <button mat-raised-button color="primary" (click)="generateFundamentos()" [disabled]="isLoading">
+                <mat-icon>auto_awesome</mat-icon> Gerar Análise Fundamentalista
+              </button>
+            </div>
             <div *ngIf="fundamentos || allFundamentos.length > 0; else noDataFundamentos">
               <div class="report-header">
                 <h3>
@@ -101,6 +106,11 @@
 
         <mat-tab label="Análise Técnica">
            <div class="tab-content">
+            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+              <button mat-raised-button color="primary" (click)="generateTecnica()" [disabled]="isLoading">
+                <mat-icon>auto_awesome</mat-icon> Gerar Análise Técnica
+              </button>
+            </div>
             <div *ngIf="tecnica || allTecnica.length > 0; else noDataTecnica">
               <div class="report-header">
                 <h3>
@@ -122,9 +132,11 @@
                 <div class="panel-grid" *ngIf="tecnica">
                   <mat-expansion-panel *ngFor="let ativo of tecnica.analise.ativos" class="futuristic-panel">
                     <mat-expansion-panel-header>
-                      <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
-                      <mat-panel-description>
-                           Lucro Ultimo Trimestre: {{ ativo.lucro_ultimo_trimestre }} | Dividend Yield: {{ ativo.dividend_yield }} | Divida Bruta: {{ ativo.divida_bruta }} | Valor Patrimonial: {{ ativo.valor_patrimonial }}
+                      <mat-panel-title style="flex-grow: 0; margin-right: 16px;">
+                        {{ ativo.ticker }}
+                      </mat-panel-title>
+                      <mat-panel-description style="justify-content: center; flex-grow: 1;">
+                           Lucro Ultimo Trimestre: {{ ativo.lucro_ultimo_trimestre | currency:'BRL' }} | Dividend Yield: {{ ativo.dividend_yield }}% | Divida Bruta: {{ ativo.divida_bruta | currency:'BRL' }} | Valor Patrimonial: {{ ativo.valor_patrimonial | currency:'BRL' }}
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     <mat-list dense>
@@ -189,6 +201,11 @@
 
         <mat-tab label="Análise de Objetivos Pessoais">
           <div class="tab-content">
+            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+              <button mat-raised-button color="primary" (click)="generatePessoais()" [disabled]="isLoading">
+                <mat-icon>auto_awesome</mat-icon> Gerar Análise Pessoal
+              </button>
+            </div>
             <div *ngIf="pessoais || allPessoais.length > 0; else noDataPessoais">
               <div class="report-header">
                 <h3>

@@ -68,4 +68,16 @@ export class AssistantService {
       map((response: any[]) => response.map(item => this.parseAnalise(item)))
     );
   }
+
+  createPessoais(usuarioId: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pessoais/${usuarioId}`, {});
+  }
+
+  createTecnica(usuarioId: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/tecnica/${usuarioId}`, {});
+  }
+
+  createFundamentos(usuarioId: number | string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/fundamentos/${usuarioId}`, {});
+  }
 }

@@ -9,6 +9,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { PageHeaderComponent } from '@shared';
 import { AssistantService } from './assistant.service';
@@ -38,6 +40,7 @@ interface AnaliseResponse {
     MatTabsModule,
     MatIcon,
     MatIconButton,
+    MatButtonModule,
     MatProgressSpinnerModule,
     MatListModule,
     MatExpansionModule,
@@ -51,6 +54,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly assistantService = inject(AssistantService);
   private readonly authService = inject(AuthService);
   private readonly settings = inject(SettingsService);
+  private readonly snackBar = inject(MatSnackBar);
   private notifySubscription = Subscription.EMPTY;
   private chart?: ApexCharts;
 
@@ -418,6 +422,81 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  generateFundamentos() {
+    if (!this.currentUserId || this.isLoading) return;
+
+    this.isLoading = true;
+    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+      duration: 5000,
+      panelClass: ['info-snackbar']
+    });
+
+    this.assistantService.createFundamentos(this.currentUserId)
+      .subscribe({
+        next: () => {
+          this.loadAllAnalyses().subscribe();
+        },
+        error: (err) => {
+          console.error('Erro ao gerar análise de fundamentos:', err);
+          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+             duration: 5000,
+             panelClass: ['error-snackbar']
+          });
+          this.isLoading = false;
+        }
+      });
+  }
+
+  generateTecnica() {
+    if (!this.currentUserId || this.isLoading) return;
+
+    this.isLoading = true;
+    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+      duration: 5000,
+      panelClass: ['info-snackbar']
+    });
+
+    this.assistantService.createTecnica(this.currentUserId)
+      .subscribe({
+        next: () => {
+          this.loadAllAnalyses().subscribe();
+        },
+        error: (err) => {
+          console.error('Erro ao gerar análise técnica:', err);
+          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+             duration: 5000,
+             panelClass: ['error-snackbar']
+          });
+          this.isLoading = false;
+        }
+      });
+  }
+
+  generatePessoais() {
+    if (!this.currentUserId || this.isLoading) return;
+
+    this.isLoading = true;
+    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+      duration: 5000,
+      panelClass: ['info-snackbar']
+    });
+
+    this.assistantService.createPessoais(this.currentUserId)
+      .subscribe({
+        next: () => {
+          this.loadAllAnalyses().subscribe();
+        },
+        error: (err) => {
+          console.error('Erro ao gerar análise pessoal:', err);
+          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+             duration: 5000,
+             panelClass: ['error-snackbar']
+          });
+          this.isLoading = false;
+        }
+      });
   }
 
   getStars(nota: number): string[] {
