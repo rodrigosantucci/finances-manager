@@ -4,6 +4,7 @@ import { filterObject, isEmptyObject } from './helpers';
 import { Token, User } from './interface'; // Certifique-se de que este caminho está correto
 import { LoginService } from './login.service'; // Certifique-se de que este caminho está correto
 import { TokenService } from './token.service'; // Certifique-se de que este caminho está correto
+import { LocalStorageService, SessionStorageService } from '@shared';
 
 
 // Importe a interface Menu do seu MenuService para garantir a tipagem correta
@@ -16,6 +17,8 @@ import { Menu } from '../bootstrap/menu.service'; // Exemplo de caminho
 export class AuthService {
   private readonly loginService = inject(LoginService);
   private readonly tokenService = inject(TokenService);
+  private readonly localStorage = inject(LocalStorageService);
+  private readonly sessionStorage = inject(SessionStorageService);
   private user$ = new BehaviorSubject<User>({});
 
   private readonly USER_STORAGE_KEY = 'currentUserData';
@@ -50,10 +53,10 @@ export class AuthService {
   login(username: string, password: string, rememberMe = false) {
     return this.loginService.login(username, password, rememberMe).pipe(
       tap(response => {
-        this.tokenService.set({ access_token: response.token } as Token);
+        this.tokenService.set({ access_token: response.token } as Token, rememberMe);
 
         if (response.user) {
-          this.saveUserData(response.user);
+          this.saveUserData(response.user, rememberMe);
           this.user$.next(response.user);
         } else {
           this.clearUserData();
@@ -170,28 +173,35 @@ export class AuthService {
     return of(fullMenu); // Retorna um Observable com o menu completo
   }
 
-  private saveUserData(user: User): void {
+  private saveUserData(user: User, rememberMe = true): void {
     try {
-      localStorage.setItem(this.USER_STORAGE_KEY, JSON.stringify(user));
+      if (rememberMe) {
+        this.localStorage.set(this.USER_STORAGE_KEY, user);
+        this.sessionStorage.remove(this.USER_STORAGE_KEY);
+      } else {
+        this.sessionStorage.set(this.USER_STORAGE_KEY, user);
+        this.localStorage.remove(this.USER_STORAGE_KEY);
+      }
     } catch (e) {
-      console.error('AuthService: Erro ao guardar dados do utilizador no localStorage', e);
+      console.error('AuthService: Erro ao guardar dados do utilizador', e);
     }
   }
 
   private loadUserDataFromStorage(): void {
     try {
-      const userString = localStorage.getItem(this.USER_STORAGE_KEY);
-      if (userString) {
-        const user: User = JSON.parse(userString);
-        if (!isEmptyObject(user as any)) {
-          this.user$.next(user);
-        } else {
-          console.warn('AuthService: Dados do utilizador no localStorage inválidos ou incompletos.');
-          this.clearUserData();
-        }
+      let user = this.localStorage.get(this.USER_STORAGE_KEY);
+      if (isEmptyObject(user)) {
+        user = this.sessionStorage.get(this.USER_STORAGE_KEY);
+      }
+
+      if (user && !isEmptyObject(user as any)) {
+        this.user$.next(user);
+      } else {
+        console.warn('AuthService: Dados do utilizador no localStorage inválidos ou incompletos.');
+        this.clearUserData();
       }
     } catch (e) {
-      console.error('AuthService: Erro ao carregar dados do utilizador do localStorage', e);
+      console.error('AuthService: Erro ao carregar dados do utilizador', e);
       this.clearUserData();
     }
     if (isEmptyObject(this.user$.getValue() as any)) {
@@ -200,7 +210,8 @@ export class AuthService {
   }
 
   private clearUserData(): void {
-    localStorage.removeItem(this.USER_STORAGE_KEY);
+    this.localStorage.remove(this.USER_STORAGE_KEY);
+    this.sessionStorage.remove(this.USER_STORAGE_KEY);
   }
 
   private assignUser(): Observable<User> {

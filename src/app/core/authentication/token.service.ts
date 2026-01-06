@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Subject, Subscription, share, timer } from 'rxjs';
 
-import { LocalStorageService } from '@shared';
+import { LocalStorageService, SessionStorageService } from '@shared';
 import { currentTimestamp, filterObject } from './helpers';
 import { Token } from './interface';
 import { BaseToken } from './token';
@@ -14,6 +14,7 @@ export class TokenService implements OnDestroy {
   private readonly key = 'app-token';
 
   private readonly store = inject(LocalStorageService);
+  private readonly sessionStore = inject(SessionStorageService);
   private readonly factory = inject(TokenFactory);
 
   private readonly change$ = new BehaviorSubject<BaseToken | undefined>(undefined);
@@ -25,7 +26,11 @@ export class TokenService implements OnDestroy {
 
   private get token(): BaseToken | undefined {
     if (!this._token) {
-      this._token = this.factory.create(this.store.get(this.key));
+      let tokenData = this.store.get(this.key);
+      if (!tokenData || Object.keys(tokenData).length === 0) {
+        tokenData = this.sessionStore.get(this.key);
+      }
+      this._token = this.factory.create(tokenData);
     }
 
     return this._token;
@@ -41,8 +46,8 @@ export class TokenService implements OnDestroy {
     return this.refresh$.pipe(share());
   }
 
-  set(token?: Token) {
-    this.save(token);
+  set(token?: Token, rememberMe = true) {
+    this.save(token, rememberMe);
 
     return this;
   }
@@ -67,16 +72,25 @@ export class TokenService implements OnDestroy {
     this.clearRefresh();
   }
 
-  private save(token?: Token) {
+  private save(token?: Token, rememberMe = true) {
     this._token = undefined;
 
     if (!token) {
       this.store.remove(this.key);
+      this.sessionStore.remove(this.key);
     } else {
       const value = Object.assign({ access_token: '', token_type: 'Bearer' }, token, {
         exp: token.expires_in ? currentTimestamp() + token.expires_in : null,
       });
-      this.store.set(this.key, filterObject(value));
+      const filteredValue = filterObject(value);
+
+      if (rememberMe) {
+        this.store.set(this.key, filteredValue);
+        this.sessionStore.remove(this.key);
+      } else {
+        this.sessionStore.set(this.key, filteredValue);
+        this.store.remove(this.key);
+      }
     }
 
     this.change$.next(this.token);

@@ -27,6 +27,33 @@ export class LocalStorageService {
   }
 }
 
+@Injectable({
+  providedIn: 'root',
+})
+export class SessionStorageService {
+  get(key: string) {
+    return JSON.parse(sessionStorage.getItem(key) || '{}') || {};
+  }
+
+  set(key: string, value: any): boolean {
+    sessionStorage.setItem(key, JSON.stringify(value));
+
+    return true;
+  }
+
+  has(key: string): boolean {
+    return !!sessionStorage.getItem(key);
+  }
+
+  remove(key: string) {
+    sessionStorage.removeItem(key);
+  }
+
+  clear() {
+    sessionStorage.clear();
+  }
+}
+
 export class MemoryStorageService {
   private store: Record<string, string> = {};
 
