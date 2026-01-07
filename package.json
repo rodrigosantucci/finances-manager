@@ -15,8 +15,8 @@
     "deploy:android": "ng build --configuration production && npm run resources && npx cap sync android",
     "build:apk": "npm run deploy:android && cd android && gradlew.bat assembleDebug",
     "release:all": "npm run build:apk && copy android\\app\\build\\outputs\\apk\\debug\\app-debug.apk .\\dpt-investimentos.apk && npm run build:ghpages-win && move .\\dpt-investimentos.apk docs\\dpt-investimentos.apk",
-    "deploy": "npm run release:all && npx gh-pages -d docs",
-    "build:ghpages-win": "ng build --configuration production --output-path docs --base-href /finances-manager/ && copy src\\404.html docs\\404.html && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
+    "deploy": "npm run release:all && npx gh-pages -d docs --dotfiles",
+    "build:ghpages-win": "ng build --configuration production --output-path docs --base-href /finances-manager/ && copy src\\404.html docs\\404.html && echo > docs\\.nojekyll && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser",
     "build:ghpages-linux": "ng build --configuration production --output-path docs --base-href /finances-manager/ && cp src/404.html docs/404.html && cp -r docs/browser/* docs/ && rm -rf docs/browser"
   },
   "private": true,
@@ -80,7 +80,6 @@
     "@types/jspdf": "^1.3.3",
     "angular-eslint": "^19.0.2",
     "eslint": "^9.17.0",
-    "gh-pages": "^6.3.0",
     "jasmine-core": "~5.4.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
