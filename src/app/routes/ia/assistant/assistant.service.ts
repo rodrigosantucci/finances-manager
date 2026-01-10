@@ -46,7 +46,7 @@ export class AssistantService {
   }
 
   // Retorna a LISTA de todas as análises de Fundamentos para o usuário.
-  getFundamentos(usuarioId: number | string): Observable<any[]> {
+  getFundamentos(usuarioId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/fundamentos/all/${usuarioId}`).pipe(
       // CORREÇÃO: Usar uma função de seta para preservar o contexto 'this' da classe
       map((response: any[]) => response.map(item => this.parseAnalise(item)))
@@ -54,7 +54,7 @@ export class AssistantService {
   }
 
   // Retorna a LISTA de todas as análises Técnicas.
-  getTecnica(usuarioId: number | string): Observable<any[]> {
+  getTecnica(usuarioId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/tecnica/all/${usuarioId}`).pipe(
       // CORREÇÃO: Usar uma função de seta para preservar o contexto 'this' da classe
       map((response: any[]) => response.map(item => this.parseAnalise(item)))
@@ -62,22 +62,22 @@ export class AssistantService {
   }
 
   // Retorna a LISTA de todas as análises Pessoais.
-  getPessoais(usuarioId: number | string): Observable<any[]> {
+  getPessoais(usuarioId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/pessoais/all/${usuarioId}`).pipe(
       // CORREÇÃO: Usar uma função de seta para preservar o contexto 'this' da classe
       map((response: any[]) => response.map(item => this.parseAnalise(item)))
     );
   }
 
-  createPessoais(usuarioId: number | string): Observable<any> {
+  createPessoais(usuarioId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/pessoais/${usuarioId}`, {});
   }
 
-  createTecnica(usuarioId: number | string): Observable<any> {
+  createTecnica(usuarioId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/tecnica/${usuarioId}`, {});
   }
 
-  createFundamentos(usuarioId: number | string): Observable<any> {
+  createFundamentos(usuarioId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/fundamentos/${usuarioId}`, {});
   }
 }

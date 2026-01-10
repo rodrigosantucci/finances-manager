@@ -15,7 +15,7 @@ export class PatrimonioService {
   constructor(private http: HttpClient) {}
 
   // Corrigida a assinatura do método para aceitar usuarioId como number
-  getUserTickers(usuarioId: number | string): Observable<string[]> {
+  getUserTickers(usuarioId: number): Observable<string[]> {
     // Constrói a URL completa usando o caminho base e o ID do usuário
     const url = `${this.baseUrl}${usuarioId}`;
     // A requisição GET para esta URL deve retornar uma lista de Transacoes

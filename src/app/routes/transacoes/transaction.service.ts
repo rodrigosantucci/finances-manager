@@ -30,15 +30,15 @@ export class TransacaoService {
 
 
     // Método auxiliar para obter o ID do usuário logado.
-    // Agora ele apenas retorna o Observable<User> do AuthService e mapeia para o ID,
-    // garantindo que o ID seja number ou string (ou null/undefined).
-    private getUsuarioIdObservable(): Observable<string | number | null | undefined> {
-      // authService.user() é um BehaviorSubject<User>, então .pipe(take(1)) pega o valor atual.
-      return this.authService.user().pipe(
-        take(1), // Pega apenas o valor atual/primeiro e completa
-        map(user => user?.id) // Mapeia para a propriedade 'id' do objeto User
-      );
-    }
+  // Agora ele apenas retorna o Observable<User> do AuthService e mapeia para o ID,
+  // garantindo que o ID seja number (ou null/undefined).
+  private getUsuarioIdObservable(): Observable<number | null | undefined> {
+    // authService.user() é um BehaviorSubject<User>, então .pipe(take(1)) pega o valor atual.
+    return this.authService.user().pipe(
+      take(1), // Pega apenas o valor atual/primeiro e completa
+      map(user => user?.id) // Mapeia para a propriedade 'id' do objeto User
+    );
+  }
 
 
   createTransacao(transacao: Transacao): Observable<Transacao> {

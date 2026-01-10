@@ -84,7 +84,7 @@ export class DashboardService {
   private cotacaoUSDCache$: Observable<number> | null = null;
   private patrimonioHistoricoCache$: Observable<PatrimonioHistoricoVO[]> | null = null;
 
-  private getUsuarioIdObservable(): Observable<string | number | null | undefined> {
+  private getUsuarioIdObservable(): Observable<number | null | undefined> {
     return this.authService.user().pipe(
       take(1),
       map(user => user?.id)

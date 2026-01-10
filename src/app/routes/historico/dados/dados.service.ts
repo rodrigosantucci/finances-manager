@@ -30,7 +30,7 @@ export class DadosService {
   private readonly authService = inject(AuthService);
   private readonly apiPatrimoniosPrefix = '/api/patrimonios/usuario/';
 
-  private getUsuarioIdObservable(): Observable<string | number | null | undefined> {
+  private getUsuarioIdObservable(): Observable<number | null | undefined> {
     return this.authService.user().pipe(
       take(1),
       map(user => user?.id)

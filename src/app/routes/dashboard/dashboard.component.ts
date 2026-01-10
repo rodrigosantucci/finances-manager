@@ -567,7 +567,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
-  loadData(userId: number | string): void {
+  loadData(userId: number): void {
     this.isLoading = true;
     this.hasError = false;
     
@@ -594,7 +594,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     forkJoin([
-      this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
+      this.dashboardSrv.getPatrimonioHistorico(userId).pipe(
         take(1),
         catchError(error => handleError(error, 'patrimônio histórico'))
       ),
@@ -682,8 +682,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return data.filter(item => new Date(item.dataRegistro) >= startDate);
   }
 
-  setupCharts(userId: number | string): void {
-    this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId as number).pipe(
+  setupCharts(userId: number): void {
+    this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId).pipe(
 
       map(data => {
         const labels = data.map(item => {
