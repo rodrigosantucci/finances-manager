@@ -11,7 +11,7 @@
     "lint": "nx lint --fix && npm run lint:scss",
     "lint:ts": "eslint \"src/**/*.ts\" --fix",
     "lint:scss": "stylelint \"src/**/*.scss\" --fix",
-    "resources": "npx cap sync && npx capacitor-assets generate --assetPath 'src/assets/'",
+    "resources": "npx cap sync && npx capacitor-assets generate --assetPath \"src/assets\"",
     "build:angular-native": "ng build --configuration production",
     "sync:android": "npm run resources && npx cap sync android",
     "compile:apk": "cd android && gradlew.bat assembleDebug",
