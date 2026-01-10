@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { forkJoin, Observable, of, throwError } from 'rxjs';
+import { LocalStorageService } from '@shared';
 import { catchError, map, switchMap, take, tap, shareReplay } from 'rxjs/operators';
 import { AuthService } from '@core/authentication';
 
@@ -70,10 +71,14 @@ export interface PatrimonioCompletoResponse {
 export class DashboardService {
   protected readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly store = inject(LocalStorageService);
 
   private readonly apiUserPatrimonioPrefix = '/api/patrimonios/usuario';
   private readonly apiCotacoesPrefix = '/api/cotacoes/tickers';
   private readonly apiTransacoesPrefix = '/api/transacoes/lote';
+
+  private readonly PATRIMONIO_COMPLETO_KEY = 'patrimonioCompletoCache';
+  private readonly PATRIMONIO_HISTORICO_KEY = 'patrimonioHistoricoCache';
 
   private patrimonioCompletoCache$: Observable<AtivoVO[]> | null = null;
   private cotacaoUSDCache$: Observable<number> | null = null;
@@ -251,6 +256,7 @@ export class DashboardService {
               }
               return of(ativosConvertidosNumeric);
             }),
+            tap(data => this.store.set(this.PATRIMONIO_COMPLETO_KEY, data)),
             catchError(error => {
               console.error(`DashboardService: Error fetching complete patrimony for user:`, error);
               return of([]);
@@ -303,6 +309,7 @@ export class DashboardService {
 
               return historico;
             }),
+            tap(data => this.store.set(this.PATRIMONIO_HISTORICO_KEY, data)),
             catchError(error => {
               console.error(`DashboardService: Error processing historical patrimony:`, error);
               return of([]);
@@ -317,33 +324,35 @@ export class DashboardService {
 
   getDistribuicaoPatrimonio(): Observable<PatrimonioDistribuicaoVO[]> {
     return this.getPatrimonioCompleto().pipe(
-      map(patrimonioCompleto => {
-        if (!patrimonioCompleto || patrimonioCompleto.length === 0) {
-          return [];
-        }
-        const categoryTotals: { [key: string]: number } = {};
-        patrimonioCompleto.forEach(ativo => {
-          const category = ativo.category || 'outros';
-          categoryTotals[category] = (categoryTotals[category] || 0) + (ativo.valorAtualFormatado || 0);
-        });
-        const distribuicaoModificada: PatrimonioDistribuicaoVO[] = Object.entries(categoryTotals).map(([tipoAtivo, total]) => ({
-          tipoAtivo: tipoAtivo.charAt(0).toUpperCase() + tipoAtivo.slice(1),
-          valorTotal: total,
-          percentual: 0
-        }));
-        const totalGeral = distribuicaoModificada.reduce((sum, item) => sum + item.valorTotal, 0);
-        const distribuicaoFinal = distribuicaoModificada.map(item => {
-          item.percentual = totalGeral > 0 ? (item.valorTotal / totalGeral) * 100 : 0;
-          item.percentual = Math.round(item.percentual * 100) / 100;
-          return item;
-        });
-        return distribuicaoFinal;
-      }),
+      map(patrimonioCompleto => this.calculateDistribuicao(patrimonioCompleto)),
       catchError(error => {
         console.error(`DashboardService: Error fetching patrimony distribution:`, error);
         return of([]);
       })
     );
+  }
+
+  private calculateDistribuicao(patrimonioCompleto: AtivoVO[]): PatrimonioDistribuicaoVO[] {
+    if (!patrimonioCompleto || patrimonioCompleto.length === 0) {
+      return [];
+    }
+    const categoryTotals: { [key: string]: number } = {};
+    patrimonioCompleto.forEach(ativo => {
+      const category = ativo.category || 'outros';
+      categoryTotals[category] = (categoryTotals[category] || 0) + (ativo.valorAtualFormatado || 0);
+    });
+    const distribuicaoModificada: PatrimonioDistribuicaoVO[] = Object.entries(categoryTotals).map(([tipoAtivo, total]) => ({
+      tipoAtivo: tipoAtivo.charAt(0).toUpperCase() + tipoAtivo.slice(1),
+      valorTotal: total,
+      percentual: 0
+    }));
+    const totalGeral = distribuicaoModificada.reduce((sum, item) => sum + item.valorTotal, 0);
+    const distribuicaoFinal = distribuicaoModificada.map(item => {
+      item.percentual = totalGeral > 0 ? (item.valorTotal / totalGeral) * 100 : 0;
+      item.percentual = Math.round(item.percentual * 100) / 100;
+      return item;
+    });
+    return distribuicaoFinal;
   }
 
   getPatrimonioAcoes(): Observable<AtivoVO[]> {
@@ -384,6 +393,41 @@ export class DashboardService {
         return of([]);
       })
     );
+  }
+
+  // --- Stored Data Access Methods ---
+
+  public getStoredPatrimonioCompleto(): AtivoVO[] {
+    return this.store.get(this.PATRIMONIO_COMPLETO_KEY) || [];
+  }
+
+  public getStoredPatrimonioHistorico(): PatrimonioHistoricoVO[] {
+    return this.store.get(this.PATRIMONIO_HISTORICO_KEY) || [];
+  }
+
+  public getStoredDistribuicaoPatrimonio(): PatrimonioDistribuicaoVO[] {
+    const completo = this.getStoredPatrimonioCompleto();
+    return this.calculateDistribuicao(completo);
+  }
+
+  public getStoredPatrimonioAcoes(): AtivoVO[] {
+    const completo = this.getStoredPatrimonioCompleto();
+    return completo.filter(ativo => ativo.category === 'acoes');
+  }
+
+  public getStoredPatrimonioFundos(): AtivoVO[] {
+    const completo = this.getStoredPatrimonioCompleto();
+    return completo.filter(ativo => ativo.category === 'fundos');
+  }
+
+  public getStoredPatrimonioCaixa(): AtivoVO[] {
+    const completo = this.getStoredPatrimonioCompleto();
+    return completo.filter(ativo => ativo.category === 'caixa');
+  }
+
+  public getStoredPatrimonioAssets(): AtivoVO[] {
+    const completo = this.getStoredPatrimonioCompleto();
+    return completo.filter(ativo => ativo.category === 'assets');
   }
 
   public deleteAtivo(usuarioId: number | string, tickerFormatado: string, category: string): Observable<void> {

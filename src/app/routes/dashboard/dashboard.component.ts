@@ -533,9 +533,48 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isShowAlert = false;
   }
 
+  private loadStoredData(): boolean {
+    const historico = this.dashboardSrv.getStoredPatrimonioHistorico();
+    const distribuicao = this.dashboardSrv.getStoredDistribuicaoPatrimonio();
+    const acoes = this.dashboardSrv.getStoredPatrimonioAcoes();
+    const fundos = this.dashboardSrv.getStoredPatrimonioFundos();
+    const caixa = this.dashboardSrv.getStoredPatrimonioCaixa();
+    const assets = this.dashboardSrv.getStoredPatrimonioAssets();
+
+    const hasData =
+      historico.length > 0 ||
+      acoes.length > 0 ||
+      fundos.length > 0 ||
+      caixa.length > 0 ||
+      assets.length > 0;
+
+    if (hasData) {
+      this.patrimonioHistoricoDataSource.data = historico;
+      this.distribuicaoDataSource.data = distribuicao;
+      this.acoesDataSource.data = acoes;
+      this.fundosDataSource.data = fundos;
+      this.caixaDataSource.data = caixa;
+      this.assetsDataSource.data = assets;
+
+      this.acoes = acoes;
+      this.fundos = fundos;
+      this.caixa = caixa;
+      this.assets = assets;
+      
+      this.cdr.markForCheck();
+      return true;
+    }
+    return false;
+  }
+
   loadData(userId: number | string): void {
     this.isLoading = true;
     this.hasError = false;
+    
+    if (this.loadStoredData()) {
+      this.isLoading = false;
+    }
+    
     this.cdr.markForCheck();
 
     const handleError = (error: any, context: string) => {
