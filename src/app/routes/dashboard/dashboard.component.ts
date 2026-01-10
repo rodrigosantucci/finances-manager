@@ -571,16 +571,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     this.hasError = false;
     
-    if (this.loadStoredData()) {
-      this.isLoading = false;
+    // Tenta carregar do storage primeiro para renderização imediata
+    const loadedFromStorage = this.loadStoredData();
+    if (loadedFromStorage) {
+        this.isLoading = false;
+        this.cdr.markForCheck();
     }
-    
-    this.cdr.markForCheck();
 
     const handleError = (error: any, context: string) => {
       console.error(`Erro ao buscar ${context}:`, error);
       this.hasError = true;
-      this.isLoading = false;
+      // Se já carregou do storage, não mostra erro de carregamento inicial
+      if (!loadedFromStorage) {
+        this.isLoading = false;
+      }
       this.snackBar.open(`Erro ao carregar ${context}.`, 'Fechar', {
         duration: 5000,
         panelClass: ['error-snackbar'],

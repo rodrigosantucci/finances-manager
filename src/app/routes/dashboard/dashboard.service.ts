@@ -396,19 +396,21 @@ export class DashboardService {
   }
 
   // --- Stored Data Access Methods ---
-
-  public getStoredPatrimonioCompleto(): AtivoVO[] {
-    return this.store.get(this.PATRIMONIO_COMPLETO_KEY) || [];
-  }
-
-  public getStoredPatrimonioHistorico(): PatrimonioHistoricoVO[] {
-    return this.store.get(this.PATRIMONIO_HISTORICO_KEY) || [];
-  }
-
-  public getStoredDistribuicaoPatrimonio(): PatrimonioDistribuicaoVO[] {
-    const completo = this.getStoredPatrimonioCompleto();
-    return this.calculateDistribuicao(completo);
-  }
+ 
+   public getStoredPatrimonioCompleto(): AtivoVO[] {
+     const data = this.store.get(this.PATRIMONIO_COMPLETO_KEY);
+     return Array.isArray(data) ? data : [];
+   }
+ 
+   public getStoredPatrimonioHistorico(): PatrimonioHistoricoVO[] {
+     const data = this.store.get(this.PATRIMONIO_HISTORICO_KEY);
+     return Array.isArray(data) ? data : [];
+   }
+ 
+   public getStoredDistribuicaoPatrimonio(): PatrimonioDistribuicaoVO[] {
+     const completo = this.getStoredPatrimonioCompleto();
+     return this.calculateDistribuicao(completo);
+   }
 
   public getStoredPatrimonioAcoes(): AtivoVO[] {
     const completo = this.getStoredPatrimonioCompleto();
