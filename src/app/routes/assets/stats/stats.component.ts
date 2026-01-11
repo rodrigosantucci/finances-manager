@@ -105,7 +105,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
 
   loadUserTickets(): void {
     this.errorMessage = null;
-    const url = `${this.apiUserPatrimonioPrefix}${this.userId}/patrimoniocompleto`;
+    const url = `${this.apiUserPatrimonioPrefix}${this.userId}`;
     this.http
       .get<any[]>(url)
       .pipe(

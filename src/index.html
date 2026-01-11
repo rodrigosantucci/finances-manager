@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="fonts/Material_Icons.css">
   <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap">
-  <script src="assets/js/lazy-load.js"></script>
 
 
 
@@ -79,6 +78,12 @@
       100% {
         background-position: -750% 0;
       }
+    }
+  </style>
+  <style>
+    /* Correction for passive event listener warning in ApexCharts/Material */
+    .apexcharts-canvas {
+      touch-action: none; 
     }
   </style>
 </head>

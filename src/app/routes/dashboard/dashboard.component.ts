@@ -182,7 +182,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedPeriod: string = '1M'; // Default period
   private periodChangeSubject = new Subject<string>();
 
-  protected currentUserId: number | string | null = null;
+  protected currentUserId: number | null = null;
   tema = this.settings.getThemeColor() as string;
 
   getRandom(min: number, max: number): number {

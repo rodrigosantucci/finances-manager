@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, catchError, iif, map, merge, Observable, of, share, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, catchError, distinctUntilChanged, iif, map, merge, Observable, of, share, switchMap, take, tap } from 'rxjs';
 import { filterObject, isEmptyObject } from './helpers';
 import { Token, User } from './interface'; // Certifique-se de que este caminho está correto
 import { LoginService } from './login.service'; // Certifique-se de que este caminho está correto
@@ -24,7 +24,7 @@ export class AuthService {
   private readonly USER_STORAGE_KEY = 'currentUserData';
 
   private change$ = merge(
-    this.tokenService.change(),
+    this.tokenService.change().pipe(distinctUntilChanged()),
     this.tokenService.refresh().pipe(switchMap(() => this.refresh()))
   ).pipe(
     switchMap(() => this.assignUser()),
@@ -229,7 +229,7 @@ export class AuthService {
       }
     } else {
       this.clearUserData();
-      this.tokenService.clear();
+      // this.tokenService.clear(); // Evita loop infinito se check() já retornou false
       this.user$.next({});
       return of({});
     }

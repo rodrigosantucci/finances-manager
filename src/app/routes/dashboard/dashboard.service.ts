@@ -53,16 +53,17 @@ export interface PatrimonioCompletoResponse {
   descricao: string;
   moeda: string;
   tipoAtivo: number;
-  valorInvestidoFormatado: string;
-  valorAtualFormatado: string;
-  precoMedioFormatado: string;
-  lucroPrejuizoFormatado: string;
-  descricaoFormatada: string;
-  tipoAtivoFormatado: string;
-  quantidadeFormatada: string;
-  moedaFormatada: string;
-  tickerFormatado: string;
-  id: number;
+  valorInvestidoFormatado?: string;
+  valorAtualFormatado?: string;
+  precoMedioFormatado?: string;
+  lucroPrejuizoFormatado?: string;
+  descricaoFormatada?: string;
+  tipoAtivoFormatado?: string;
+  quantidadeFormatada?: string;
+  moedaFormatada?: string;
+  tickerFormatado?: string;
+  idPatrimonio: number;
+  id?: number;
 }
 
 @Injectable({
@@ -133,8 +134,14 @@ export class DashboardService {
     return this.cotacaoUSDCache$;
   }
 
-  public parseFormattedString(value: string | undefined | null): number {
-    if (value === null || value === undefined || value.trim() === '') {
+  public parseFormattedString(value: string | number | undefined | null): number {
+    if (value === null || value === undefined) {
+      return 0;
+    }
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (value.trim() === '') {
       return 0;
     }
     let cleanedValue = value.trim();
@@ -192,33 +199,44 @@ export class DashboardService {
             console.error("User ID not available for fetching complete patrimony.");
             return of([]);
           }
-          const url = `${this.apiUserPatrimonioPrefix}/${usuarioId}/patrimoniocompleto`;
+          const url = `${this.apiUserPatrimonioPrefix}/${usuarioId}`;
           return forkJoin({
-            patrimonio: this.http.get<PatrimonioCompletoResponse[]>(url),
+            patrimonio: this.http.get<PatrimonioCompletoResponse[]>(url).pipe(tap(res => console.log('Raw API Response:', res))),
             cotacao: this.getCotacaoUSD()
           }).pipe(
             switchMap(({ patrimonio, cotacao }) => {
               if (!patrimonio || patrimonio.length === 0) {
                 return of([]);
               }
-              const ativosVO: AtivoVO[] = patrimonio.map(item => ({
-                id: item.id,
-                tickerFormatado: item.tickerFormatado,
-                descricaoFormatada: item.descricaoFormatada,
-                tipoAtivoFormatado: item.tipoAtivoFormatado,
-                moedaFormatada: item.moedaFormatada,
-                quantidadeFormatada: this.parseFormattedString(item.quantidadeFormatada),
-                valorInvestidoFormatado: this.parseFormattedString(item.valorInvestidoFormatado),
-                precoMedioFormatado: this.parseFormattedString(item.precoMedioFormatado),
-                precoAtualFormatado: 0,
-                valorAtualFormatado: this.parseFormattedString(item.valorAtualFormatado),
-                lucroPrejuizoFormatado: this.parseFormattedString(item.lucroPrejuizoFormatado),
-                moeda: item.moeda,
-                category: this.mapTipoAtivoToCategory(item.tipoAtivoFormatado)
-              }));
+              const ativosVO: AtivoVO[] = patrimonio.map(item => {
+                const quantidade = this.parseFormattedString(item.quantidade || item.quantidadeFormatada);
+                const precoMedio = this.parseFormattedString(item.precoMedio || item.precoMedioFormatado);
+                let valorInvestido = this.parseFormattedString(item.valorInvestido || item.valorInvestidoFormatado);
+
+                if (valorInvestido === 0 && quantidade > 0 && precoMedio > 0) {
+                  valorInvestido = quantidade * precoMedio;
+                }
+
+                return {
+                  id: item.idPatrimonio || item.id || 0,
+                  tickerFormatado: item.ticker || item.tickerFormatado || '',
+                  descricaoFormatada: item.descricao || item.descricaoFormatada || '',
+                  tipoAtivoFormatado: item.tipoAtivoFormatado || '',
+                  moedaFormatada: item.moeda || item.moedaFormatada || 'BRL',
+                  quantidadeFormatada: quantidade,
+                  valorInvestidoFormatado: valorInvestido,
+                  precoMedioFormatado: precoMedio,
+                  precoAtualFormatado: 0,
+                  valorAtualFormatado: this.parseFormattedString(item.valorAtual || item.valorAtualFormatado),
+                  lucroPrejuizoFormatado: this.parseFormattedString(item.lucroPrejuizo || item.lucroPrejuizoFormatado),
+                  moeda: item.moeda || 'BRL',
+                  category: this.mapTipoAtivoToCategory(item.tipoAtivo, item.tipoAtivoFormatado)
+                };
+              });
+              console.log('Processed AtivosVO:', ativosVO);
               const ativosConvertidosNumeric = this.convertUsdToBrlNumeric(ativosVO, cotacao);
               const tickersToFetch = ativosConvertidosNumeric
-                .filter(ativo => ativo.tipoAtivoFormatado !== 'CAIXA')
+                .filter(ativo => ativo.category !== 'caixa' && ativo.tickerFormatado)
                 .map(ativo => ativo.tickerFormatado);
               if (tickersToFetch.length > 0) {
                 const cotacoesUrl = `${this.apiCotacoesPrefix}?tickers=${tickersToFetch.join(',')}`;
@@ -228,7 +246,7 @@ export class DashboardService {
                       cotacoes.map(c => [c.ticker, { valorCotacao: c.valorCotacao, cambio: c.cambio }])
                     );
                     return ativosConvertidosNumeric.map(ativo => {
-                      if (ativo.tipoAtivoFormatado === 'CAIXA') {
+                      if (ativo.category === 'caixa') {
                         return ativo;
                       }
                       const cotacaoAtivo = cotacoesMap.get(ativo.tickerFormatado);
@@ -515,15 +533,53 @@ export class DashboardService {
     console.log('DashboardService: Patrimony and historical cache cleared.');
   }
 
-  private mapTipoAtivoToCategory(tipoAtivoFormatado: string): string {
-    switch (tipoAtivoFormatado.toUpperCase()) {
-      case 'AÇÃO': return 'acoes';
-      case 'FII':
-      case 'FUNDO': return 'fundos';
-      case 'CAIXA': return 'caixa';
-      case 'ASSET': return 'assets';
-      default: return 'outros';
+  private mapTipoAtivoToCategory(tipoAtivo: string | number | null | undefined, tipoAtivoFormatado?: string): string {
+    if (tipoAtivo === null || tipoAtivo === undefined) {
+      if (tipoAtivoFormatado && tipoAtivoFormatado.toLowerCase().includes('caixa')) {
+        return 'caixa';
+      }
+      return 'outros';
     }
+    
+    // Handle number or numeric string
+    if (typeof tipoAtivo === 'number' || (!isNaN(Number(tipoAtivo)) && !isNaN(parseFloat(tipoAtivo as string)))) {
+      const value = Number(tipoAtivo);
+      switch (value) {
+        case 1: return 'acoes';
+        case 2: return 'fundos';
+        case 3: return 'caixa';
+        case 4: return 'assets';
+        default: 
+          if (tipoAtivoFormatado && tipoAtivoFormatado.toLowerCase().includes('caixa')) {
+            return 'caixa';
+          }
+          return 'outros';
+      }
+    }
+
+    if (typeof tipoAtivo === 'string') {
+      switch (tipoAtivo.toUpperCase()) {
+        case 'AÇÃO': 
+        case 'AÇÕES': return 'acoes';
+        case 'FII':
+        case 'FUNDO': 
+        case 'FUNDOS': return 'fundos';
+        case 'CAIXA': return 'caixa';
+        case 'ASSET': 
+        case 'ASSETS': return 'assets';
+        default: 
+          if (tipoAtivoFormatado && tipoAtivoFormatado.toLowerCase().includes('caixa')) {
+            return 'caixa';
+          }
+          return 'outros';
+      }
+    }
+    
+    if (tipoAtivoFormatado && tipoAtivoFormatado.toLowerCase().includes('caixa')) {
+      return 'caixa';
+    }
+
+    return 'outros';
   }
 
   private mapCategoryToTipoAtivoNumber(category: string): number {
@@ -536,7 +592,14 @@ export class DashboardService {
     }
   }
 
-private validateDate(date: string | undefined | null): string | undefined {
+private formatDateToDDMMYYYY(date: Date): string {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private validateDate(date: string | undefined | null): string | undefined {
     if (!date) {
         console.warn(`Invalid date: ${date}`);
         return undefined;
@@ -573,7 +636,7 @@ private validateDate(date: string | undefined | null): string | undefined {
     // Tenta parsear outros formatos (como fallback, para compatibilidade com o código original)
     const parsed = new Date(date);
     if (!isNaN(parsed.getTime())) {
-        return date;
+        return this.formatDateToDDMMYYYY(parsed);
     }
 
     console.warn(`Invalid date format: ${date}`);
