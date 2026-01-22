@@ -1,0 +1,24 @@
+<div class="d-flex w-full h-full justify-center align-items-center">
+  <mat-card class="m-auto" style="max-width: 420px">
+    <mat-card-header class="m-b-16">
+      <mat-card-title class="text-center">{{ 'forgot.title' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form class="form-field-full" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" required />
+          @if (email.invalid && email.touched) {
+            <mat-error>Informe um e-mail válido</mat-error>
+          }
+        </mat-form-field>
+        <button class="w-full m-y-16" mat-flat-button color="primary" type="submit" [disabled]="form.invalid || isSubmitting">
+          Enviar instruções
+        </button>
+        <div class="text-center">
+          <a routerLink="/auth/login">Voltar ao login</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

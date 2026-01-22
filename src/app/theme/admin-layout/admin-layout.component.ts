@@ -138,5 +138,6 @@ export class AdminLayoutComponent implements OnDestroy {
     this.options = options;
     this.settings.setOptions(options);
     this.settings.setTheme();
+    this.settings.setLanguage(options.language);
   }
 }

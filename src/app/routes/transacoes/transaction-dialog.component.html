@@ -1,39 +1,39 @@
 <div class="dialog-container">
-  <h2 mat-dialog-title class="dialog-title">Nova Transação</h2>
+  <h2 mat-dialog-title class="dialog-title">{{ 'transaction.title' | translate }}</h2>
   <mat-dialog-content class="dialog-content">
     <mat-horizontal-stepper [linear]="true" #stepper class="transaction-stepper">
       <mat-step [stepControl]="formGroupDadosIniciais">
         <form [formGroup]="formGroupDadosIniciais" class="form-step-content">
           <mat-form-field appearance="outline" class="form-field transaction-type-field">
-            <mat-label>Transação</mat-label>
+            <mat-label>{{ 'transaction.fields.transaction' | translate }}</mat-label>
             <mat-select formControlName="transactionType" aria-required="true">
               <mat-option *ngFor="let type of transactionTypes" [value]="type.value">
                 {{ type.label }}
               </mat-option>
             </mat-select>
             <mat-icon matSuffix>swap_horiz</mat-icon>
-            <mat-hint class="form-hint">Tipo de operação (Compra/Venda)</mat-hint>
+            <mat-hint class="form-hint">{{ 'transaction.hints.operation_type' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDadosIniciais.get('transactionType')?.hasError('required') && formGroupDadosIniciais.get('transactionType')?.touched">
-              Selecione o tipo de transação
+              {{ 'transaction.errors.select_transaction_type' | translate }}
             </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field asset-type-field">
-            <mat-label>Tipo de Ativo</mat-label>
+            <mat-label>{{ 'transaction.fields.asset_type' | translate }}</mat-label>
             <mat-select formControlName="assetType" aria-required="true">
               <mat-option *ngFor="let type of assetTypes" [value]="type.value">
                 {{ type.label }}
               </mat-option>
             </mat-select>
             <mat-icon matSuffix>category</mat-icon>
-            <mat-hint class="form-hint">Selecione o tipo do ativo</mat-hint>
+            <mat-hint class="form-hint">{{ 'transaction.hints.select_asset_type' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDadosIniciais.get('assetType')?.hasError('required') && formGroupDadosIniciais.get('assetType')?.touched">
-              Selecione o tipo de ativo
+              {{ 'transaction.errors.select_asset_type' | translate }}
             </mat-error>
           </mat-form-field>
 
           <div class="stepper-actions">
-            <button mat-raised-button color="primary" matStepperNext aria-label="Próxima etapa">Próximo</button>
+            <button mat-raised-button color="primary" matStepperNext [attr.aria-label]="'common.next' | translate">{{ 'common.next' | translate }}</button>
           </div>
         </form>
       </mat-step>
@@ -42,77 +42,77 @@
         <form [formGroup]="formGroupDetalhesAtivo" class="form-step-content">
           <!-- Campo Ticker (exibir apenas se assetType não for TÍTULO) -->
           <mat-form-field appearance="outline" class="form-field ticker-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
-            <mat-label>Ticker</mat-label>
-            <input matInput formControlName="ticker" placeholder="Ex: PETR4" aria-required="true">
-            <mat-hint class="form-hint">Ex: PETR4, ITUB3</mat-hint>
+            <mat-label>{{ 'transaction.fields.ticker' | translate }}</mat-label>
+            <input matInput formControlName="ticker" [placeholder]="'transaction.placeholders.ticker' | translate" aria-required="true">
+            <mat-hint class="form-hint">{{ 'transaction.hints.ticker_examples' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('required') && formGroupDetalhesAtivo.get('ticker')?.touched">
-              Informe o Ticker
+              {{ 'transaction.errors.ticker_required' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('minlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
-              Mínimo 1 caractere
+              {{ 'transaction.errors.min_char_1' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('ticker')?.hasError('maxlength') && formGroupDetalhesAtivo.get('ticker')?.touched">
-              Máximo 10 caracteres
+              {{ 'transaction.errors.max_char_10' | translate }}
             </mat-error>
           </mat-form-field>
 
           <!-- Campo Descrição -->
           <mat-form-field appearance="outline" class="form-field description-field">
             <mat-label>
-              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Nome do Título' :
-                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Cotação' : 'Descrição' }}
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? ('transaction.fields.title_name' | translate) :
+                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ('transaction.fields.quote' | translate) : ('transaction.fields.description' | translate) }}
             </mat-label>
             <input matInput
                    formControlName="description"
-                   [placeholder]="formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Ex: Titulo IPCA+7%' :
-                                  formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30' : 'Ex: Nome da Empresa'"
+                   [placeholder]="formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? ('transaction.placeholders.title_example' | translate) :
+                                  formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ('transaction.placeholders.quote_example' | translate) : ('transaction.placeholders.description_example' | translate)"
                    aria-required="true">
             <mat-hint class="form-hint">
-              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? 'Título IPCA+7%' :
-                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? 'Ex: 5.30 para R$5,30' : 'Nome completo do ativo' }}
+              {{ formGroupDadosIniciais.get('assetType')?.value === 'TÍTULO' ? ('transaction.hints.title_hint' | translate) :
+                 formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ('transaction.hints.quote_hint' | translate) : ('transaction.hints.description_hint' | translate) }}
             </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('required') && formGroupDetalhesAtivo.get('description')?.touched">
-              Obrigatório
+              {{ 'common.required' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('invalidPercentage') && formGroupDetalhesAtivo.get('description')?.touched">
-              Informe um valor positivo (ex: 5.5)
+              {{ 'transaction.errors.positive_value_example_55' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('description')?.hasError('invalidCurrency') && formGroupDetalhesAtivo.get('description')?.touched">
-              Informe um valor positivo (ex: 5.30)
+              {{ 'transaction.errors.positive_value_example_530' | translate }}
             </mat-error>
           </mat-form-field>
 
           <!-- Campo Quantidade (exibir apenas se assetType não for TÍTULO) -->
           <mat-form-field appearance="outline" class="form-field quantity-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
-            <mat-label>Quantidade</mat-label>
+            <mat-label>{{ 'transaction.fields.quantity' | translate }}</mat-label>
             <input matInput type="number" formControlName="quantity" min="0" aria-required="true">
-            <mat-hint class="form-hint">Ex: 100</mat-hint>
+            <mat-hint class="form-hint">{{ 'transaction.hints.quantity_example' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('quantity')?.hasError('required') && formGroupDetalhesAtivo.get('quantity')?.touched">
-              Informe a quantidade
+              {{ 'transaction.errors.quantity_required' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('quantity')?.hasError('min') && formGroupDetalhesAtivo.get('quantity')?.touched">
-              Mínimo 1
+              {{ 'transaction.errors.min_1' | translate }}
             </mat-error>
           </mat-form-field>
 
           <!-- Campo Corretora -->
           <mat-form-field appearance="outline" class="form-field corretora-field">
-            <mat-label>Corretora</mat-label>
+            <mat-label>{{ 'transaction.fields.broker' | translate }}</mat-label>
             <mat-select formControlName="corretora" aria-required="true">
               <mat-option *ngFor="let broker of brokers" [value]="broker">
                 {{ broker }}
               </mat-option>
             </mat-select>
             <mat-icon matSuffix>account_balance</mat-icon>
-            <mat-hint class="form-hint">Selecione a corretora</mat-hint>
+            <mat-hint class="form-hint">{{ 'transaction.hints.select_broker' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupDetalhesAtivo.get('corretora')?.hasError('required') && formGroupDetalhesAtivo.get('corretora')?.touched">
-              Selecione a corretora
+              {{ 'transaction.errors.select_broker' | translate }}
             </mat-error>
           </mat-form-field>
 
           <div class="stepper-actions">
-            <button mat-raised-button color="primary" matStepperPrevious aria-label="Voltar etapa">Voltar</button>
-            <button mat-raised-button color="primary" matStepperNext aria-label="Próxima etapa">Próximo</button>
+            <button mat-raised-button color="primary" matStepperPrevious [attr.aria-label]="'common.back' | translate">{{ 'common.back' | translate }}</button>
+            <button mat-raised-button color="primary" matStepperNext [attr.aria-label]="'common.next' | translate">{{ 'common.next' | translate }}</button>
           </div>
         </form>
       </mat-step>
@@ -121,22 +121,22 @@
         <form [formGroup]="formGroupValoresData" class="form-step-content">
           <!-- Campo Data da Transação -->
           <mat-form-field appearance="outline" class="form-field date-field">
-            <mat-label>Data da Transação</mat-label>
+            <mat-label>{{ 'transaction.fields.transaction_date' | translate }}</mat-label>
             <input matInput [matDatepicker]="picker" formControlName="date" aria-required="true">
             <mat-datepicker-toggle matSuffix [for]="picker">
               <mat-icon matDatepickerToggleIcon>calendar_today</mat-icon>
             </mat-datepicker-toggle>
             <mat-datepicker #picker />
-            <mat-hint class="form-hint">Ex: 18/04/2025</mat-hint>
+            <mat-hint class="form-hint">{{ 'transaction.hints.date_example' | translate }}</mat-hint>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('date')?.hasError('required') && formGroupValoresData.get('date')?.touched">
-              Informe a data
+              {{ 'transaction.errors.date_required' | translate }}
             </mat-error>
           </mat-form-field>
 
           <!-- Campo Preço Médio (exibir apenas se assetType não for TÍTULO) -->
           <mat-form-field appearance="outline" class="form-field price-field" *ngIf="formGroupDadosIniciais.get('assetType')?.value !== 'TÍTULO'">
             <mat-label>
-              Preço Médio ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+              {{ 'transaction.fields.average_price' | translate }} ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
                               formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
                               formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? '$' : 'R$' }})
             </mat-label>
@@ -144,22 +144,20 @@
                    type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="averagePrice"
                    aria-required="true">
             <mat-hint class="form-hint">
-              Ex: 14{{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
-                        formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
-                        formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ',50' : ',50' }}
+              {{ 'transaction.hints.average_price_example' | translate }}
             </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('averagePrice')?.hasError('required') && formGroupValoresData.get('averagePrice')?.touched">
-              Informe o preço médio
+              {{ 'transaction.errors.average_price_required' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('averagePrice')?.hasError('min') && formGroupValoresData.get('averagePrice')?.touched">
-              Mínimo 0,01
+              {{ 'transaction.errors.min_001' | translate }}
             </mat-error>
           </mat-form-field>
 
           <!-- Campo Valor da Transação -->
           <mat-form-field appearance="outline" class="form-field value-field">
             <mat-label>
-              Valor da Transação ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
+              {{ 'transaction.fields.transaction_value' | translate }} ({{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
                                      formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
                                      formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? '$' : 'R$' }})
             </mat-label>
@@ -167,21 +165,19 @@
                    type="number" mask="separator.2" thousandSeparator="." decimalMarker="," formControlName="transactionValue"
                    aria-required="true">
             <mat-hint class="form-hint">
-              Ex: 1.450{{ formGroupDadosIniciais.get('assetType')?.value === 'AÇÃO_EXTERIOR' ||
-                          formGroupDadosIniciais.get('assetType')?.value === 'FUNDO_EXTERIOR' ||
-                          formGroupDadosIniciais.get('assetType')?.value === 'MOEDA' ? ',00' : ',00' }}
+              {{ 'transaction.hints.transaction_value_example' | translate }}
             </mat-hint>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('transactionValue')?.hasError('required') && formGroupValoresData.get('transactionValue')?.touched">
-              Informe o valor da transação
+              {{ 'transaction.errors.transaction_value_required' | translate }}
             </mat-error>
             <mat-error class="form-error" *ngIf="formGroupValoresData.get('transactionValue')?.hasError('min') && formGroupValoresData.get('transactionValue')?.touched">
-              Mínimo 0,01
+              {{ 'transaction.errors.min_001' | translate }}
             </mat-error>
           </mat-form-field>
 
           <div class="stepper-actions final-actions">
-            <button mat-raised-button color="primary" matStepperPrevious aria-label="Voltar etapa">Voltar</button>
-            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!transactionForm.valid || isSubmitting" aria-label="Salvar transação">Salvar</button>
+            <button mat-raised-button color="primary" matStepperPrevious [attr.aria-label]="'common.back' | translate">{{ 'common.back' | translate }}</button>
+            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!transactionForm.valid || isSubmitting" [attr.aria-label]="'transaction.actions.save_transaction' | translate">{{ 'common.save' | translate }}</button>
           </div>
         </form>
       </mat-step>
@@ -189,7 +185,7 @@
   </mat-dialog-content>
 
   <mat-dialog-actions class="dialog-actions">
-    <button mat-raised-button color="danger" (click)="onCancel()" aria-label="Cancelar">Cancelar</button>
-    <button mat-raised-button color="warn" (click)="onClean()" aria-label="Limpar">Limpar</button>
+    <button mat-raised-button color="danger" (click)="onCancel()" [attr.aria-label]="'common.cancel' | translate">{{ 'common.cancel' | translate }}</button>
+    <button mat-raised-button color="warn" (click)="onClean()" [attr.aria-label]="'common.clean' | translate">{{ 'common.clean' | translate }}</button>
   </mat-dialog-actions>
 </div>

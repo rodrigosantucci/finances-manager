@@ -4,19 +4,19 @@
   <form id="ceilingPriceForm" (ngSubmit)="onSubmit()">
     <div class="form-grid">
       <div class="form-group">
-        <label for="ticker">Código da Ação (Ticker)</label>
+        <label for="ticker">{{ 'utilities.ceiling_price_calc.ticker_label' | translate }}</label>
         <input id="ticker" [(ngModel)]="ticker" name="ticker" placeholder="Ex: BBAS3" required>
       </div>
       <div class="form-group">
-        <label for="dividends">Dividendos Médios Anuais (R$)</label>
+        <label for="dividends">{{ 'utilities.ceiling_price_calc.dividends_label' | translate }}</label>
         <input id="dividends" [(ngModel)]="dividends" name="dividends" placeholder="Ex: 2,50" data-type="currency" required>
       </div>
       <div class="form-group">
-        <label for="eps">Lucro por Ação (R$)</label>
+        <label for="eps">{{ 'utilities.ceiling_price_calc.eps_label' | translate }}</label>
         <input id="eps" [(ngModel)]="eps" name="eps" placeholder="Ex: 5,00" data-type="currency" required>
       </div>
       <div class="form-group">
-        <label for="growthRate">Taxa de Crescimento (%)</label>
+        <label for="growthRate">{{ 'utilities.ceiling_price_calc.growth_rate_label' | translate }}</label>
         <input id="growthRate" [(ngModel)]="growthRate" name="growthRate" placeholder="Ex: 5" data-type="percentage" required>
       </div>
       <div class="form-group">
@@ -24,34 +24,34 @@
         <input id="payout" [(ngModel)]="payout" name="payout" placeholder="Ex: 50" data-type="percentage" required>
       </div>
       <div class="form-group">
-        <label for="marketPrice">Preço Atual de Mercado (R$)</label>
+        <label for="marketPrice">{{ 'utilities.ceiling_price_calc.market_price_label' | translate }}</label>
         <input id="marketPrice" [(ngModel)]="marketPrice" name="marketPrice" placeholder="Ex: 50,00" data-type="currency" required>
       </div>
     </div>
     <div class="button-container">
-      <button type="submit" class="calculate-button">Calcular</button>
+      <button type="submit" class="calculate-button">{{ 'utilities.ceiling_price_calc.calculate' | translate }}</button>
     </div>
   </form>
   <section id="results" class="results-section" [ngClass]="{'hidden': !showResults}">
-    <h2>Resultados</h2>
+    <h2>{{ 'utilities.ceiling_price_calc.results_title' | translate }}</h2>
     <div class="result-item">
-      <p>Preço Teto:</p>
+      <p>{{ 'utilities.ceiling_price_calc.price_ceiling' | translate }}</p>
       <span>{{ results?.ceilingPrice }}</span>
     </div>
     <div class="result-item">
-      <p>Margem de Segurança:</p>
+      <p>{{ 'utilities.ceiling_price_calc.margin_safety' | translate }}</p>
       <span>{{ results?.marginSafety }}</span>
     </div>
     <div class="result-item">
-      <p>Status:</p>
+      <p>{{ 'utilities.ceiling_price_calc.status' | translate }}</p>
       <span>{{ results?.status }}</span>
     </div>
     <div class="chart-container">
       <canvas id="priceChart" [ngClass]="{'hidden': !showResults}"></canvas>
     </div>
     <div class="download-buttons">
-      <button class="download-button" (click)="downloadPng()">Baixar PNG</button>
-      <button class="download-button" (click)="downloadPdf()">Baixar PDF</button>
+      <button class="download-button" (click)="downloadPng()">{{ 'utilities.ceiling_price_calc.download_png' | translate }}</button>
+      <button class="download-button" (click)="downloadPdf()">{{ 'utilities.ceiling_price_calc.download_pdf' | translate }}</button>
     </div>
   </section>
 </div>

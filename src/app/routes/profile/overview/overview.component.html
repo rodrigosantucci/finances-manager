@@ -1,16 +1,135 @@
 <div class="profile-overview">
-  <div class="tradingview-widget-container" style="height: 450px; width: 100%;">
-  </div>
-  <div style="display: flex; justify-content: center; margin-top: 10px;">
-    <button
-      mat-icon-button
-      (click)="triggerWidgetRefresh()"
-      [disabled]="isLoading"
-      aria-label="Recarregar widget de News"
-      matTooltip="Recarregar News"
-      matTooltipPosition="above"
-    >
-      <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
-    </button>
-  </div>
+  <mat-tab-group dynamicHeight class="futuristic-tabs">
+    <mat-tab [label]="'edit_profile' | translate">
+      <div class="tab-content">
+        <app-profile-settings />
+      </div>
+    </mat-tab>
+    <mat-tab label="AI Settings">
+      <div class="tab-content">
+        <app-ai-settings />
+      </div>
+    </mat-tab>
+    <mat-tab label="News">
+      <div class="tab-content">
+        <div class="chart-card">
+          <mat-card-content>
+            <div class="tradingview-widget-container"></div>
+            <div class="action-buttons-group justify-content-center news-actions">
+              <button
+                mat-icon-button
+                (click)="triggerWidgetRefresh()"
+                [disabled]="isLoading"
+                aria-label="Recarregar widget de News"
+                matTooltip="Recarregar News"
+                matTooltipPosition="above"
+              >
+                <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
+              </button>
+            </div>
+          </mat-card-content>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab *ngIf="isAdmin" label="Administrador">
+      <div class="tab-content">
+        <mat-card class="table-card">
+          <mat-card-content>
+            <div class="admin-controls d-flex align-items-center">
+              <mat-form-field appearance="outline" class="user-search-field">
+                <mat-label>Buscar usuários</mat-label>
+                <input
+                  matInput
+                  (keyup)="applyFilter($any($event.target).value)"
+                  [value]="searchValue"
+                  placeholder="Nome, e-mail, ID, role"
+                />
+              </mat-form-field>
+            </div>
+            <div class="user-table-wrapper">
+              <table mat-table [dataSource]="usersDataSource" class="mat-elevation-z1 w-100 user-table" matSort>
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                <td mat-cell *matCellDef="let user">{{ user.id }}</td>
+              </ng-container>
+              <ng-container matColumnDef="username">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
+                <td mat-cell *matCellDef="let user">
+                  <input *ngIf="editingUser?.id === user.id" matInput [value]="editingUser?.username ?? ''" (input)="onEditField('username', $any($event.target).value)" />
+                  <span *ngIf="editingUser?.id !== user.id">{{ user.username }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
+                <td mat-cell *matCellDef="let user">
+                  <input *ngIf="editingUser?.id === user.id" matInput [value]="editingUser?.email ?? ''" (input)="onEditField('email', $any($event.target).value)" />
+                  <span *ngIf="editingUser?.id !== user.id">{{ user.email }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="roles">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Roles</th>
+                <td mat-cell *matCellDef="let user">{{ formatRoles(user.roles) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="lastLogin">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Último login</th>
+                <td mat-cell *matCellDef="let user">{{ user.lastLogin ? (user.lastLogin | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Data de cadastro</th>
+                <td mat-cell *matCellDef="let user">{{ user.createdAt ? (user.createdAt | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="premiumUntil">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Premium expira</th>
+                <td mat-cell *matCellDef="let user">{{ user.premiumUntil || '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="premium">
+                <th mat-header-cell *matHeaderCellDef>Premium</th>
+                <td mat-cell *matCellDef="let user">
+                  <ng-container *ngIf="premiumActivationId !== user.id; else premiumInputTpl">
+                    <button mat-stroked-button color="primary" (click)="startActivatePremium(user)">Ativar Premium</button>
+                    <button mat-stroked-button color="warn" (click)="deactivatePremium(user)">Desativar Premium</button>
+                  </ng-container>
+                  <ng-template #premiumInputTpl>
+                    <div class="premium-inputs">
+                      <mat-form-field appearance="outline" class="premium-date-field">
+                        <mat-label>Expira em</mat-label>
+                        <input matInput [matDatepicker]="pickerPremium" [value]="premiumUntilInput" (dateChange)="premiumUntilInput = $event.value" />
+                        <mat-datepicker #pickerPremium></mat-datepicker>
+                      </mat-form-field>
+                      <button mat-stroked-button color="primary" (click)="confirmActivatePremium(user)">Confirmar</button>
+                      <button mat-stroked-button (click)="cancelActivatePremium()">Cancelar</button>
+                    </div>
+                  </ng-template>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Ações</th>
+                <td mat-cell *matCellDef="let user">
+                  <button *ngIf="editingUser?.id !== user.id" mat-icon-button color="primary" aria-label="Editar" (click)="startEdit(user)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button *ngIf="editingUser?.id === user.id" mat-icon-button color="primary" aria-label="Salvar" (click)="saveEdit()">
+                    <mat-icon>save</mat-icon>
+                  </button>
+                  <button *ngIf="editingUser?.id === user.id" mat-icon-button aria-label="Cancelar" (click)="cancelEdit()">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                  <button mat-icon-button matTooltip="Resetar senha" aria-label="Resetar senha" (click)="resetPassword(user)">
+                    <mat-icon>lock_reset</mat-icon>
+                  </button>
+                  <button *ngIf="editingUser?.id !== user.id" mat-icon-button color="warn" aria-label="Excluir" (click)="deleteUser(user)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+            <mat-paginator [pageSize]="5" [pageSizeOptions]="[5]" showFirstLastButtons class="m-t-8"></mat-paginator>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>

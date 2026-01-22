@@ -5,10 +5,10 @@
     <main class="main-content">
       <form id="investmentForm" class="investment-form" (ngSubmit)="onSubmit()">
         <div class="form-group full-width-select">
-          <label for="investmentType">Tipo de Investimento:</label>
+          <label for="investmentType">{{ 'utilities.investment_simulator.investment_type_label' | translate }}</label>
           <div class="select-wrapper">
             <select id="investmentType" [(ngModel)]="investmentType" name="investmentType" (ngModelChange)="onInvestmentTypeChange()">
-              <option value="">Selecione...</option>
+              <option value="">{{ 'utilities.investment_simulator.select_placeholder' | translate }}</option>
               <option value="rendaFixa">Renda Fixa</option>
               <option value="rendaVariavel">Renda Variável</option>
             </select>
@@ -85,13 +85,13 @@
           </div>
         </div>
 
-        <button type="submit" id="simulateButton" class="simulate-button" [disabled]="!investmentType">Simular</button>
+        <button type="submit" id="simulateButton" class="simulate-button" [disabled]="!investmentType">{{ 'utilities.investment_simulator.simulate' | translate }}</button>
       </form>
 
       <section id="results" class="results-section" [ngClass]="{'hidden': !showResults}">
-        <h2>Resultados da Simulação</h2>
+        <h2>{{ 'utilities.investment_simulator.results_title' | translate }}</h2>
         <div class="result-item">
-          <p>Valor Total Investido:</p>
+          <p>{{ 'utilities.investment_simulator.total_invested' | translate }}</p>
           <span>{{ results?.totalInvested }}</span>
         </div>
         <div class="result-item">

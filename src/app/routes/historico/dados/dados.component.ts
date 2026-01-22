@@ -8,13 +8,18 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { FormsModule } from '@angular/forms';
 import { NgIf, CurrencyPipe } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, take } from 'rxjs/operators';
+import { format } from 'date-fns';
 import { PageHeaderComponent } from '@shared';
 import { HistoricoTransacaoVO, DadosService, AtivoCotacao } from './dados.service';
 import { AuthService } from '@core/authentication';
+import { DateRangeFilterComponent } from './date-range-filter.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-historico-dados',
@@ -32,8 +37,12 @@ import { AuthService } from '@core/authentication';
     MatProgressSpinnerModule,
     MatIconModule,
     MatButtonModule,
+    MatDatepickerModule,
+    FormsModule,
     NgIf,
     CurrencyPipe,
+    DateRangeFilterComponent,
+    TranslateModule,
   ],
 })
 export class HistoricoDadosComponent implements OnInit, AfterViewInit {
@@ -41,6 +50,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translate = inject(TranslateService);
 
   dataSource = new MatTableDataSource<HistoricoTransacaoVO>([]);
   displayedColumns: string[] = [
@@ -59,6 +69,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
   isLoading = true;
   hasError = false;
   currentUserId: number | string | null = null;
+  private allData: HistoricoTransacaoVO[] = [];
 
   ngOnInit() {
     this.authService.user().pipe(take(1)).subscribe(user => {
@@ -68,7 +79,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
       } else {
         this.hasError = true;
         this.isLoading = false;
-        this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('historico.errors.user_id_unavailable'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -122,7 +133,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
     }, 0);
   }
 
-  private compare(a: any, b: any, isAsc: boolean, isDate: boolean = false): number {
+  private compare(a: any, b: any, isAsc: boolean, isDate = false): number {
     if (isDate) {
       if (a === 'N/A' && b === 'N/A') return 0;
       if (a === 'N/A') return isAsc ? -1 : 1;
@@ -152,7 +163,7 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
       this.dadosService.getHistoricoTransacoes(dataInicio, dataFim).pipe(
         catchError(error => {
           console.error('Erro ao carregar histórico de transações:', error);
-          this.snackBar.open('Erro ao carregar histórico de transações.', 'Fechar', {
+          this.snackBar.open(this.translate.instant('historico.errors.load_transactions_failed'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -166,7 +177,12 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
       }))
       .subscribe(([transacoes]) => {
         console.log('Dados recebidos do serviço:', transacoes);
-        this.dataSource.data = transacoes;
+        this.allData = transacoes;
+        this.dataSource.data = this.allData;
+
+        try {
+          window.dispatchEvent(new CustomEvent('app:data-updated', { detail: { context: 'historico-dados' } }));
+        } catch { void 0; }
 
         setTimeout(() => {
           if (this.paginator && this.sort) {
@@ -184,13 +200,27 @@ export class HistoricoDadosComponent implements OnInit, AfterViewInit {
       });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
+  onApplyDateRange(range: { start?: string; end?: string }) {
+    const startDate = range.start ? new Date(range.start) : null;
+    const endDate = range.end ? new Date(range.end) : null;
+    if (startDate) startDate.setHours(0, 0, 0, 0);
+    if (endDate) endDate.setHours(23, 59, 59, 999);
+    if (!startDate && !endDate) {
+      this.dataSource.data = this.allData;
+      if (this.paginator) this.paginator.firstPage();
+      return;
     }
+    const filtered = this.allData.filter(item => {
+      if (!item?.dataRegistro || item.dataRegistro === 'N/A') return false;
+      const [day, month, year] = item.dataRegistro.split('/').map(Number);
+      const date = new Date(year, (month || 1) - 1, day || 1);
+      if (isNaN(date.getTime())) return false;
+      if (startDate && date < startDate) return false;
+      if (endDate && date > endDate) return false;
+      return true;
+    });
+    this.dataSource.data = filtered;
+    if (this.paginator) this.paginator.firstPage();
   }
 
   retryLoadData() {

@@ -9,6 +9,7 @@ import { Chart, ChartEvent, ChartConfiguration, registerables } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface Sliders {
   stocks: number;
@@ -29,14 +30,15 @@ interface Sliders {
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    TranslateModule
   ]
 })
 export class ContributionAllocatorComponent implements OnInit, AfterViewInit {
-  totalAmount: string = '';
+  totalAmount = '';
   sliders: Sliders = { stocks: 25, funds: 25, treasury: 25, intl: 25 };
   results: any = null;
-  showResults: boolean = false;
+  showResults = false;
   allocationChart: Chart<'pie', number[], string> | null = null;
   resultsChart: Chart<'bar', number[], string> | null = null;
   isDragging = false;

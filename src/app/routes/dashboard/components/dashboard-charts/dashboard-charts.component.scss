@@ -1,0 +1,65 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.charts-root {
+  height: 100%;
+}
+
+.charts-root > [class*='col-'] {
+  display: flex;
+}
+
+.chart-card {
+  width: 100%;
+  height: 100%;
+}
+
+.evolution-card .mat-mdc-card-header {
+  min-height: 64px;
+  padding: 16px;
+}
+
+.chart-card .mat-mdc-card-content {
+  padding-bottom: 0;
+}
+
+[id="evolutionChart"],
+[id="distributionChart"] {
+  width: 100%;
+  height: 100%;
+}
+
+.chart-card .apexcharts-canvas,
+.chart-card .apexcharts-svg,
+.chart-card .apexcharts-inner {
+  background: transparent !important;
+}
+
+.chart-card .apexcharts-plot-background {
+  fill: transparent !important;
+}
+
+:host ::ng-deep [id="distributionChart"] .apexcharts-plot-background,
+:host ::ng-deep [id="distributionChart"] .apexcharts-canvas,
+:host ::ng-deep [id="distributionChart"] .apexcharts-svg {
+  background: transparent !important;
+  fill: transparent !important;
+}
+
+:host ::ng-deep [id="distributionChart"] svg rect,
+:host ::ng-deep [id="distributionChart"] svg foreignObject {
+  background: transparent !important;
+  fill: transparent !important;
+}
+
+:host ::ng-deep .apexcharts-canvas,
+:host ::ng-deep .apexcharts-svg,
+:host ::ng-deep .apexcharts-inner {
+  background: transparent !important;
+}
+
+:host ::ng-deep .apexcharts-plot-background {
+  fill: transparent !important;
+}

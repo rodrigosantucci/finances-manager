@@ -1,0 +1,77 @@
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 10px;
+  border-radius: 8px;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.allocation-row {
+  display: grid;
+  grid-template-columns: 1fr 4fr auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.allocation-label {
+  font-size: 13px;
+  color: var(--mat-sys-on-background);
+  opacity: .85;
+}
+
+mat-card .allocation-label {
+  display: inline;
+}
+
+mat-card .allocation-row {
+  grid-template-columns: 1fr 4fr auto auto;
+}
+
+.allocation-bar {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--mat-sys-primary-container) 40%, transparent);
+  border-radius: 4px;
+}
+
+.allocation-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.allocation-fill.rf {
+  background-color: var(--mat-sys-primary);
+}
+
+.allocation-fill.rv {
+  background-color: var(--mat-sys-secondary);
+}
+
+.allocation-fill.exterior {
+  background-color: var(--mat-sys-tertiary);
+}
+
+.allocation-fill.bitcoin {
+  background-color: var(--mat-sys-secondary-container);
+}
+
+.allocation-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mat-sys-on-background);
+}
+
+.allocation-amount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mat-sys-on-background);
+}

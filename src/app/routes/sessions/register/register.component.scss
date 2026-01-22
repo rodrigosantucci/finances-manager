@@ -2,30 +2,28 @@
 
 /* Base styles (can serve as Light Theme) */
 .register-container {
+  box-sizing: border-box;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   min-height: 100vh;
   padding: 20px;
-  box-sizing: border-box;
-  font-family: 'Roboto', sans-serif;
+  font-family: Roboto, sans-serif;
 }
 
 .register-card {
+  box-sizing: border-box;
   width: 100%;
   max-width: 400px;
   padding: 40px 30px;
   border-radius: 10px;
-  box-sizing: border-box;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme change */
-
-
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme change */
 }
 
 .register-header {
-  text-align: center;
   margin-bottom: 10px; /* Adjusted margin to match previous version */
+  text-align: center;
 }
 
 .register-title {
@@ -43,9 +41,9 @@
 }
 
 .register-form {
-  width: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .register-form mat-form-field {
@@ -53,24 +51,29 @@
   margin-bottom: 5px; /* Adjusted margin to match previous version */
 
   /* Angular Material Form Field Overrides (Light Theme) */
+
   /* These might need ::ng-deep or theme mixins depending on your setup */
   ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
     color: rgba(0, 0, 0, 0.38); /* Default Material outline color */
     transition: color 0.3s ease;
   }
+
    ::ng-deep .mat-form-field-label {
     color: rgba(0, 0, 0, 0.6); /* Default Material label color */
     transition: color 0.3s ease;
   }
+
    ::ng-deep .mat-form-field-hint {
      color: rgba(0, 0, 0, 0.6); /* Default Material hint color */
      transition: color 0.3s ease;
    }
+
    /* Input text color */
    ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
        color: #000; /* Default Material focused outline color */
        transition: color 0.3s ease;
    }
+
    ::ng-deep .mat-form-field-flex > .mat-form-field-infix {
        color: #000; /* Default Material input text color */
        transition: color 0.3s ease;
@@ -80,46 +83,56 @@
 /* Style for the submit button */
 .register-button {
   padding: 14px 0;
-  font-size: 18px;
-  font-weight: 500;
   margin-top: 10px; /* Adjusted margin to match previous version */
   margin-bottom: 10px; /* Adjusted margin to match previous version */
-  border-radius: 6px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--mat-sys-on-primary);
 
   /* Light Theme Button */
-  background-color: #007bff; /* Standard blue primary color */
-  color: #ffffff; /* White text */
+  background-color: var(--mat-sys-primary);
+  border-radius: 6px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .register-button:hover:not([disabled]) {
-  background-color: #0056b3; /* Darker blue on hover */
+  background-color: color-mix(in oklab, var(--mat-sys-primary) 85%, white);
 }
 
 .register-button mat-spinner {
   margin: auto;
+
   /* Light Theme Spinner */
+
   /* You might need ::ng-deep or theming */
-  ::ng-deep circle { stroke: #fff !important; transition: stroke 0.3s ease; }
+  ::ng-deep circle {
+    stroke: #fff !important;
+    transition: stroke 0.3s ease;
+  }
 }
 
 /* Style for the checkbox */
 .read-and-agree-checkbox {
     margin-bottom: 10px; /* Adjusted margin to match previous version */
+
     /* Light Theme Checkbox */
+
     /* You might need ::ng-deep or theming */
     ::ng-deep .mat-checkbox-inner-container {
         border-color: rgba(0, 0, 0, 0.54); /* Default Material checkbox border */
         transition: border-color 0.3s ease;
     }
+
     ::ng-deep .mat-checkbox-checked .mat-checkbox-background {
-        background-color: #007bff; /* Default Material checked background */
+        background-color: var(--mat-sys-primary);
         transition: background-color 0.3s ease;
     }
+
     ::ng-deep .mat-checkbox-checkmark {
          fill: #fff; /* Default Material checkmark color */
          transition: fill 0.3s ease;
     }
+
     ::ng-deep .mat-checkbox-label {
         color: rgba(0, 0, 0, 0.87); /* Default Material label color */
         transition: color 0.3s ease;
@@ -129,28 +142,29 @@
 
 /* Style for the "Have an account?" link container */
 .login-link-container {
-  text-align: center;
   margin-top: 20px;
   font-size: 15px;
+  text-align: center;
   transition: color 0.3s ease;
 }
 
 .login-link-container a {
-  /* Light Theme Link */
-  color: #429cfc; /* Standard blue link color */
-  text-decoration: none;
   font-weight: 500;
+
+  /* Light Theme Link */
+  color: var(--mat-sys-primary);
+  text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .login-link-container a:hover {
+  color: color-mix(in oklab, var(--mat-sys-primary) 85%, white);
   text-decoration: underline;
-  color: #0056b3; /* Darker blue on hover */
 }
 
 
 /* Responsive adjustments */
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .register-card {
     padding: 30px 15px;
   }
@@ -164,8 +178,8 @@
   }
 
   .register-button {
-      font-size: 16px;
       padding: 12px 0;
+      font-size: 16px;
   }
 
   .login-link-container {
@@ -178,15 +192,18 @@
     font-size: 16px;
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
     .mat-form-field {
         font-size: 15px;
     }
+
      .mat-form-field-label {
         font-size: 15px !important;
     }
+
      .mat-error {
          font-size: 11px !important;
+
          /* Light Theme Error Color */
          color: #f44336; /* Standard Material error red */
          transition: color 0.3s ease;
@@ -195,6 +212,7 @@
 
 
 /* --- Dark Theme Overrides --- */
+
 /* Apply these styles when a parent element (like body) has the 'dark-theme' class */
 body.dark-theme, .dark-theme {
     .register-container {
@@ -202,13 +220,13 @@ body.dark-theme, .dark-theme {
     }
 
     .register-card {
+        color: #fff; /* Default text color for elements inside card */
         background-color: #1e1e1e; /* Dark card background */
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7); /* More prominent dark shadow */
-        color: #ffffff; /* Default text color for elements inside card */
     }
 
     .register-title {
-        color: #ffffff; /* White title */
+        color: #fff; /* White title */
     }
 
     .register-form mat-form-field {
@@ -216,25 +234,30 @@ body.dark-theme, .dark-theme {
         ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline {
             color: rgba(255, 255, 255, 0.38); /* Lighter outline in dark theme */
         }
+
         ::ng-deep .mat-form-field-label {
             color: rgba(255, 255, 255, 0.6); /* Lighter label in dark theme */
         }
+
         ::ng-deep .mat-form-field-hint {
             color: rgba(255, 255, 255, 0.6); /* Lighter hint in dark theme */
         }
+
         /* Input text color */
         ::ng-deep .mat-form-field-appearance-outline .mat-form-field-outline-thick {
-            color: #ffffff; /* White focused outline */
+            color: #fff; /* White focused outline */
         }
+
         ::ng-deep .mat-form-field-flex > .mat-form-field-infix {
-            color: #ffffff; /* White input text */
+            color: #fff; /* White input text */
         }
     }
 
     .register-button {
+        color: #121212; /* Dark text */
+
         /* Dark Theme Button */
         background-color: #bb86fc; /* Example: Purple from Material Dark theme */
-        color: #121212; /* Dark text */
     }
 
     .register-button:hover:not([disabled]) {
@@ -252,12 +275,15 @@ body.dark-theme, .dark-theme {
          ::ng-deep .mat-checkbox-inner-container {
             border-color: rgba(255, 255, 255, 0.54); /* Lighter border */
         }
+
         ::ng-deep .mat-checkbox-checked .mat-checkbox-background {
             background-color: #bb86fc; /* Match button color */
         }
+
          ::ng-deep .mat-checkbox-checkmark {
              fill: #121212; /* Match button text color */
         }
+
          ::ng-deep .mat-checkbox-label {
             color: rgba(255, 255, 255, 0.87); /* Lighter label */
         }

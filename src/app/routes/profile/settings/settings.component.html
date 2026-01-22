@@ -2,75 +2,77 @@
 
   <mat-card-content>
     <form [formGroup]="reactiveForm" class="form-field-full" (ngSubmit)="onSubmit()">
-      <div class="row">
-        <div class="col-12 m-b-16 d-flex flex-column align-items-center">
-          @if (!isLoadingAvatar) {
-            <img
-              class="m-b-8 r-full"
-              [src]="avatarPreviewUrl"
-              alt="user avatar"
-              width="130"
-              height="130"
-              (error)="onImageError($event)"
-            />
-          } @else {
-            <mat-spinner diameter="40" class="m-b-8"></mat-spinner>
-          }
-          <input
-            type="file"
-            #fileInput
-            (change)="onFileSelected($event)"
-            accept="image/jpeg,image/png"
-            style="display: none;"
+      <div class="avatar-section m-b-16">
+        @if (!isLoadingAvatar) {
+          <img
+            class="m-b-8 r-full"
+            [src]="avatarPreviewUrl"
+            alt="user avatar"
+            width="130"
+            height="130"
+            (error)="onImageError($event)"
           />
-          <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
-            Atualizar avatar
-          </button>
-          @if (avatarError) {
-            <mat-error class="m-t-8">{{ avatarError }}</mat-error>
-          }
-        </div>
-        <div class="col-sm-6 col-xl-4">
+        } @else {
+          <mat-spinner diameter="40" class="m-b-8" />
+        }
+        <input
+          type="file"
+          #fileInput
+          (change)="onFileSelected($event)"
+          accept="image/jpeg,image/png"
+          style="display: none;"
+        />
+        <button mat-stroked-button color="primary" type="button" (click)="fileInput.click()">
+          {{ 'settings.update_avatar' | translate }}
+        </button>
+        @if (avatarError) {
+          <mat-error class="m-t-8">{{ avatarError }}</mat-error>
+        }
+      </div>
+
+      <div class="inputs-grid">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Nome</mat-label>
-            <input matInput placeholder="Seu nome" formControlName="username" required />
+            <mat-label>{{ 'settings.fields.name' | translate }}</mat-label>
+            <input matInput [placeholder]="'settings.placeholders.name' | translate" formControlName="username" required />
             @if (reactiveForm.get('username')?.invalid && reactiveForm.get('username')?.touched) {
               <mat-error>{{ getErrorMessage('username') }}</mat-error>
             }
           </mat-form-field>
         </div>
-
-        <div class="col-sm-6 col-xl-4">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Email</mat-label>
-            <input matInput placeholder="Seu email" formControlName="email" required />
+            <mat-label>{{ 'settings.fields.email' | translate }}</mat-label>
+            <input matInput [placeholder]="'settings.placeholders.email' | translate" formControlName="email" required />
             @if (reactiveForm.get('email')?.invalid && reactiveForm.get('email')?.touched) {
               <mat-error>{{ getErrorMessage('email') }}</mat-error>
             }
           </mat-form-field>
         </div>
-
-        <div class="col-sm-6 col-xl-4">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Senha</mat-label>
-            <input matInput type="password" placeholder="Nova senha (opcional)" formControlName="password" />
+            <mat-label>{{ 'settings.fields.password' | translate }}</mat-label>
+            <input matInput [type]="passwordVisibility.password ? 'text' : 'password'" [placeholder]="'settings.placeholders.new_password_optional' | translate" formControlName="password" />
+            <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility('password')" [attr.aria-label]="passwordVisibility.password ? 'Ocultar senha' : 'Mostrar senha'">
+              <mat-icon>{{ passwordVisibility.password ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
           </mat-form-field>
         </div>
-
-        <div class="col-sm-6 col-xl-4">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Confirmar Senha</mat-label>
-            <input matInput type="password" placeholder="Confirme a nova senha" formControlName="confirmPassword" />
+            <mat-label>{{ 'settings.fields.confirm_password' | translate }}</mat-label>
+            <input matInput [type]="passwordVisibility.confirmPassword ? 'text' : 'password'" [placeholder]="'settings.placeholders.confirm_password' | translate" formControlName="confirmPassword" />
+            <button mat-icon-button matSuffix type="button" (click)="togglePasswordVisibility('confirmPassword')" [attr.aria-label]="passwordVisibility.confirmPassword ? 'Ocultar senha' : 'Mostrar senha'">
+              <mat-icon>{{ passwordVisibility.confirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
             @if (reactiveForm.get('confirmPassword')?.invalid && reactiveForm.get('confirmPassword')?.touched) {
               <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
             }
           </mat-form-field>
         </div>
-
-        <!-- Campo Estratégia como Dropdown -->
-        <div class="col-sm-6 col-xl-4">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Estratégia</mat-label>
+            <mat-label>{{ 'settings.fields.strategy' | translate }}</mat-label>
             <mat-select formControlName="estrategia" required>
               @for (option of estrategiaOptions; track option) {
                 <mat-option [value]="option">{{ option }}</mat-option>
@@ -81,11 +83,9 @@
             }
           </mat-form-field>
         </div>
-
-        <!-- Campo Perfil como Dropdown -->
-        <div class="col-sm-6 col-xl-4">
+        <div class="input-cell">
           <mat-form-field>
-            <mat-label>Perfil</mat-label>
+            <mat-label>{{ 'settings.fields.profile' | translate }}</mat-label>
             <mat-select formControlName="perfil" required>
               @for (option of perfilOptions; track option) {
                 <mat-option [value]="option">{{ option }}</mat-option>
@@ -98,16 +98,17 @@
         </div>
       </div>
 
-      <div class="d-flex justify-content-center m-t-16">
+      <div class="save-button-container m-t-16">
         <button
           mat-flat-button
           color="primary"
           type="submit"
           [disabled]="reactiveForm.invalid && !selectedFile"
         >
-          Salvar
+          {{ 'common.save' | translate }}
         </button>
       </div>
+
     </form>
   </mat-card-content>
 </mat-card>

@@ -21,6 +21,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SettingsService } from '@core/bootstrap/settings.service';
 import { AuthService } from '@core/authentication';
+import { ActivatedRoute } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-assets-stats',
@@ -41,6 +43,7 @@ import { AuthService } from '@core/authentication';
     MatButtonModule,
     MatSelectModule,
     MatTooltipModule,
+    TranslateModule,
   ],
 })
 export class AssetsStatsComponent implements OnInit, OnDestroy {
@@ -50,6 +53,8 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
   private readonly snackBar = inject(MatSnackBar);
   private readonly settings = inject(SettingsService);
   private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly translate = inject(TranslateService);
 
 
   temaSelecionado = this.settings.getThemeColor();
@@ -66,7 +71,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
   selectedTicker: string | null = null;
   currentLang: 'br' | 'en' = 'br';
 
-  loadingWidgets: boolean = false;
+  loadingWidgets = false;
   errorMessage: string | null = null;
 
   private injectedScripts: HTMLScriptElement[] = [];
@@ -94,6 +99,13 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
   ratioGutter = '10px';
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe(params => {
+      const t = params.get('ticker');
+      if (t) {
+        this.selectedTicker = t;
+        this.loadTradingViewWidgets();
+      }
+    });
     this.loadUserTickets();
   }
 
@@ -145,8 +157,8 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
 
   loadTradingViewWidgets(): void {
     if (!this.selectedTicker) {
-      this.errorMessage = 'Por favor, selecione um ativo para visualizar os widgets.';
-      this.snackBar.open(this.errorMessage, 'Fechar', { duration: 5000 });
+      this.errorMessage = this.translate.instant('assets_stats.errors.select_asset');
+      this.snackBar.open(this.errorMessage ?? '', this.translate.instant('close'), { duration: 5000 });
       return;
     }
 
@@ -178,7 +190,6 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
               gridLineColor: this.currentTheme === 'dark' ? 'rgba(242, 242, 242, 0.06)' : 'rgba(0, 0, 0, 0.06)',
               volumeUpColor: this.currentTheme === 'dark' ? 'rgba(34, 171, 148, 0.5)' : 'rgba(46, 125, 50, 0.5)',
               volumeDownColor: this.currentTheme === 'dark' ? 'rgba(247, 82, 95, 0.5)' : 'rgba(211, 47, 47, 0.5)',
-              backgroundColor: this.currentTheme === 'dark' ? '#0F0F0F' : '#FFFFFF',
               widgetFontColor: this.currentTheme === 'dark' ? '#DBDBDB' : '#212529',
               upColor: this.currentTheme === 'dark' ? '#22ab94' : '#2e7d32',
               downColor: this.currentTheme === 'dark' ? '#f7525f' : '#d32f2f',
@@ -203,7 +214,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
             }
           : { symbol: fullTicker }),
         colorTheme: this.currentTheme,
-        isTransparent: false,
+        isTransparent: this.currentTheme !== 'dark',
         locale: this.currentLang,
         width: title.width,
         height: title.height,
@@ -238,7 +249,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
         this.renderer.setAttribute(link, 'rel', 'noopener nofollow');
         this.renderer.setAttribute(link, 'target', '_blank');
         const span = this.renderer.createElement('span');
-        this.renderer.addClass(span, 'blue-text');
+        this.renderer.setStyle(span, 'color', 'var(--mat-sys-on-surface)');
         this.renderer.appendChild(link, span);
         this.renderer.appendChild(copyrightContainer, link);
         this.renderer.appendChild(container, widgetContainer);
@@ -273,8 +284,8 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       if (this.loadingWidgets) {
         this.loadingWidgets = false;
-        this.errorMessage = 'Tempo limite para carregamento dos widgets. Verifique sua conexão.';
-        this.snackBar.open(this.errorMessage, 'Fechar', { duration: 8000 });
+        this.errorMessage = this.translate.instant('assets_stats.errors.timeout');
+        this.snackBar.open(this.errorMessage ?? '', this.translate.instant('close'), { duration: 8000 });
       }
     }, 15000);
   }
@@ -284,15 +295,15 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
     this.selectedTicker = null;
     this.errorMessage = null;
     this.loadingWidgets = false;
-    this.snackBar.open('Widgets limpos com sucesso.', 'Fechar', { duration: 3000 });
+    this.snackBar.open(this.translate.instant('assets_stats.messages.widgets_cleared'), this.translate.instant('close'), { duration: 3000 });
   }
 
   private checkLoadingCompletion(loadedCount: number, totalCount: number, hasFailed: boolean): void {
     if (loadedCount === totalCount) {
       this.loadingWidgets = false;
       if (hasFailed) {
-        this.errorMessage = 'Alguns widgets não puderam ser carregados. Verifique o console para mais detalhes.';
-        this.snackBar.open(this.errorMessage, 'Fechar', { duration: 8000 });
+        this.errorMessage = this.translate.instant('assets_stats.errors.some_widgets_failed');
+        this.snackBar.open(this.errorMessage ?? '', this.translate.instant('close'), { duration: 8000 });
       }
     }
   }

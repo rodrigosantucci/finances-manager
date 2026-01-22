@@ -23,13 +23,13 @@ export interface Transacao {
   providedIn: 'root',
 })
 export class TransacaoService {
-   private readonly apiUserTransacaoPrefix = '/api/transacoes/';
-   private readonly authService = inject(AuthService);
+  private readonly apiUserTransacaoPrefix = '/api/transacoes/';
+  private readonly authService = inject(AuthService);
 
   constructor(private http: HttpClient) {}
 
 
-    // Método auxiliar para obter o ID do usuário logado.
+  // Método auxiliar para obter o ID do usuário logado.
   // Agora ele apenas retorna o Observable<User> do AuthService e mapeia para o ID,
   // garantindo que o ID seja number (ou null/undefined).
   private getUsuarioIdObservable(): Observable<number | null | undefined> {
@@ -45,8 +45,8 @@ export class TransacaoService {
     return this.getUsuarioIdObservable().pipe(
       switchMap(usuarioId => {
         if (usuarioId === undefined || usuarioId === null) {
-          console.error("ID do usuário não disponível para criar transação.");
-          return throwError(() => new Error("ID do usuário não disponível para criar transação."));
+          console.error('ID do usuário não disponível para criar transação.');
+          return throwError(() => new Error('ID do usuário não disponível para criar transação.'));
         }
 
 

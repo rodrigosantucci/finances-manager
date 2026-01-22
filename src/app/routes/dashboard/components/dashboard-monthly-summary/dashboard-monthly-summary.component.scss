@@ -1,0 +1,62 @@
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  border-radius: 8px;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metrics-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.metrics-row .metric {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.metrics-row .metric .metric-label {
+  font-size: 16px;
+}
+
+.metrics-row .metric .metric-value {
+  font-size: 1.26em;
+}
+
+.summary-card .metric {
+  margin: 0;
+}
+
+.metric-label {
+  font-size: 13px;
+  color: var(--mat-sys-on-background);
+  opacity: .85;
+}
+
+.metric-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mat-sys-on-background);
+}
+
+.text-success {
+  color: #13d11c;
+}
+
+.text-danger {
+  color: #d32f2f;
+}
+
+.mat-button-toggle-group {
+  height: 32px;
+}

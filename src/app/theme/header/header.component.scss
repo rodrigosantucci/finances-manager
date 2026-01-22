@@ -7,3 +7,30 @@
   background-color: var(--header-background-color);
   backdrop-filter: blur(8px);
 }
+
+.header-search-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mat-toolbar-standard-height);
+  min-height: var(--mat-toolbar-mobile-height);
+  padding: 0;
+  background-color: var(--header-background-color);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-search-button,
+.header-search-button:hover,
+.header-search-button:focus,
+.header-search-button:active {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

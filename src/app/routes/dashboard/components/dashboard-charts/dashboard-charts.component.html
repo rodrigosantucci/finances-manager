@@ -1,0 +1,35 @@
+<div class="row charts-root h-100">
+  <div class="col-12 mb-2 d-flex" [class.col-lg-8]="!!distributionOptions">
+    <mat-card class="chart-card h-100 evolution-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="mr-2">trending_up</mat-icon>
+          {{ 'dashboard.evolution.title' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div #evolutionChart id="evolutionChart"></div>
+        <p *ngIf="!hasEvolutionData" class="text-center text-muted mt-5">
+          {{ 'dashboard.evolution.no_data' | translate }}
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <div class="col-12 col-lg-4 mb-4" *ngIf="distributionOptions">
+    <mat-card class="chart-card h-100">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="mr-2">donut_small</mat-icon>
+          {{ 'dashboard.distribution.title' | translate }}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div #distributionChart id="distributionChart"></div>
+        <p *ngIf="!hasDistributionData" class="text-center text-muted mt-5">
+          {{ 'common.no_data' | translate }}
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

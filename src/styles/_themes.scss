@@ -3,16 +3,42 @@
 html {
   color-scheme: light;
 
+  --mat-sys-primary: #2C7434;
+  --mat-sys-on-primary: #FFF;
+  --mat-sys-primary-container: #CDE7D1;
+  --mat-sys-on-primary-container: #1A3E20;
+  --mat-sys-secondary: #DAA520;
+  --mat-sys-on-secondary: #221E1E;
+  --mat-sys-secondary-container: #F4D47A;
+  --mat-sys-on-secondary-container: #3B2F0A;
+  --mat-sys-tertiary: #221E1E;
+  --mat-sys-on-tertiary: #FFF;
+  --mat-sys-tertiary-container: #3A3333;
+  --mat-sys-on-tertiary-container: #FFF;
+
   @include mat.theme((
     color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
+      primary: mat.$green-palette,
+      tertiary: mat.$yellow-palette,
     ),
-    typography: Roboto,
+    typography: Open Sans,
     density: 0
   ));
 }
 
 .theme-dark {
   color-scheme: dark;
+
+  --mat-sys-primary: #2C7434;
+  --mat-sys-on-primary: #FFF;
+  --mat-sys-primary-container: #1D5929;
+  --mat-sys-on-primary-container: #E4F2E6;
+  --mat-sys-secondary: #DAA520;
+  --mat-sys-on-secondary: #111;
+  --mat-sys-secondary-container: #6B560F;
+  --mat-sys-on-secondary-container: #F9ECCC;
+  --mat-sys-tertiary: #221E1E;
+  --mat-sys-on-tertiary: #FFF;
+  --mat-sys-tertiary-container: #312C2C;
+  --mat-sys-on-tertiary-container: #F0F0F0;
 }

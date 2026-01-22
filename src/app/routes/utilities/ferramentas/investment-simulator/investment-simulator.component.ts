@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-investment-simulator',
@@ -19,24 +20,25 @@ import { MatCardModule } from '@angular/material/card';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    TranslateModule
   ]
 })
 export class InvestmentSimulatorComponent implements OnInit {
-  investmentType: string = '';
-  initialAmountRF: string = '';
-  monthlyContributionRF: string = '';
-  interestRateRF: string = '';
-  timeRF: number = 1;
-  timeUnitRF: string = 'months';
-  initialAmountRV: string = '';
-  monthlyContributionRV: string = '';
-  expectedReturnRV: string = '';
-  dividendYieldRV: string = '';
-  timeRV: number = 1;
-  timeUnitRV: string = 'years';
+  investmentType = '';
+  initialAmountRF = '';
+  monthlyContributionRF = '';
+  interestRateRF = '';
+  timeRF = 1;
+  timeUnitRF = 'months';
+  initialAmountRV = '';
+  monthlyContributionRV = '';
+  expectedReturnRV = '';
+  dividendYieldRV = '';
+  timeRV = 1;
+  timeUnitRV = 'years';
   results: any = null;
-  showResults: boolean = false;
+  showResults = false;
 
   constructor() {}
 
@@ -87,7 +89,7 @@ export class InvestmentSimulatorComponent implements OnInit {
       return;
     }
 
-    let totalInvested: number, totalReturn: number, grossTotal: number, netTotal: number, totalDividends: number = 0;
+    let totalInvested: number, totalReturn: number, grossTotal: number, netTotal: number, totalDividends = 0;
     let totalTimeInMonths: number;
 
     if (this.investmentType === 'rendaFixa') {

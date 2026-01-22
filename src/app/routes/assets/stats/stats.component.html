@@ -1,12 +1,12 @@
-<page-header class="bg-dark text-light" title="Dados de Ativos" />
+<page-header class="bg-dark text-light" title="assets_stats.title" />
 
-<mat-card class="mt-4" >
+<mat-card class="mt-4 chart-card">
   <mat-card-content>
     <section>
       <div class="flex items-center gap-2 mb-4 w-full container">
         <div id="ticker-select">
           <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Selecione o ativo</mat-label>
+            <mat-label>{{ 'assets_stats.select_asset' | translate }}</mat-label>
             <mtx-select
               [items]="userTickets"
               bindLabel="name"
@@ -14,15 +14,15 @@
               [multiple]="false"
               [(ngModel)]="selectedTicker"
               (change)="onTickerSelected()"
-            ></mtx-select>
+            />
           </mat-form-field>
         </div>
 
         <div id="widget-actions">
-          <a href="javascript:void(0);" mat-mini-fab (click)="loadTradingViewWidgets()" matTooltip="Buscar">
+          <a href="javascript:void(0);" mat-mini-fab (click)="loadTradingViewWidgets()" [matTooltip]="'common.search' | translate">
             <mat-icon>search</mat-icon>
           </a>
-          <a href="javascript:void(0);" mat-mini-fab (click)="clearWidgets()" matTooltip="Limpar">
+          <a href="javascript:void(0);" mat-mini-fab (click)="clearWidgets()" [matTooltip]="'common.clean' | translate">
             <mat-icon>clear</mat-icon>
           </a>
         </div>
@@ -34,7 +34,7 @@
 
       @if (loadingWidgets) {
         <div class="flex justify-center my-4">
-          <mat-spinner></mat-spinner>
+          <mat-spinner />
         </div>
       }
 

@@ -46,8 +46,7 @@
             </mat-error>
           }
           @if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-            <mat-error translate="validation.min_length" [translateParams]="{ number: registerForm.get('password')?.getError('minlength')?.requiredLength }">
-              </mat-error>
+            <mat-error translate="validation.min_length" [translateParams]="{ number: registerForm.get('password')?.getError('minlength')?.requiredLength }" />
           }
         </mat-form-field>
 
@@ -60,8 +59,7 @@
             </mat-error>
           }
           @if (registerForm.get('confirmPassword')?.hasError('mismatch') && registerForm.get('confirmPassword')?.touched) {
-            <mat-error translate="validation.inconsistent" [translateParams]="{ value: ('password' | translate) }">
-              </mat-error>
+            <mat-error translate="validation.inconsistent" [translateParams]="{ value: ('password' | translate) }" />
           }
         </mat-form-field>
 
@@ -69,7 +67,7 @@
 
         <button class="register-button" mat-flat-button color="primary" type="submit" [disabled]="registerForm.invalid || loading">
             <span >{{ 'register' | translate }}</span>
-            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+            <mat-spinner *ngIf="loading" diameter="20" />
         </button>
 
         <div class="login-link-container">

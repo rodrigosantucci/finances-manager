@@ -33,7 +33,7 @@ export class LoginService {
 
   // Mantém o caminho relativo. O baseUrlInterceptor adicionará a URL base da API.
   user(id:number): Observable<User> {
-    return this.http.get<User>('/usuarios/'+ id).pipe(
+    return this.http.get<User>('/api/usuarios/'+ id).pipe(
       map((res: User) => res)
     );
   }

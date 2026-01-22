@@ -61,23 +61,19 @@
           }
         </mat-form-field>
 
-        <mat-checkbox formControlName="rememberMe">{{
-          'remember_me' | translate
-        }}</mat-checkbox>
+        <div class="m-t-8">
+          <a routerLink="/auth/forgot">{{ 'forgot.link' | translate }}</a>
+        </div>
 
-        <button
-          class="w-full m-y-16"
-          mat-flat-button
-          [disabled]="!!loginForm.invalid"
-          [loading]="isSubmitting"
-          (click)="login()"
-        >
+        <mat-checkbox formControlName="rememberMe">{{ 'remember_me' | translate }}</mat-checkbox>
+
+        <button class="w-full m-y-16" mat-flat-button [disabled]="!!loginForm.invalid" [loading]="isSubmitting" (click)="login()">
           @if (!isSubmitting) {
             {{ 'login' | translate }}
           }
         </button>
 
-        <div>
+        <div class="m-t-8">
           <span>{{ 'have_no_account' | translate }}? </span>
           <a routerLink="/auth/register">{{
             'create_one_account' | translate

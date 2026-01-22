@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.kpi-card {
+  justify-content: center;
+  min-height: clamp(80px, 12vh, 260px);
+  margin: 10px;
+  background: transparent !important;
+}
+
+.kpi-card.h-100 {
+  height: auto !important;
+}
+
+.kpi-card .mat-mdc-card-content {
+  padding: 6px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 50px;
+  margin-top: 10px;
+}
+
+.metric {
+  text-align: center;
+
+  .metric-label {
+    margin: 0;
+    font-size: 16px;
+    color: var(--mat-sys-on-background);
+    opacity: .85;
+  }
+
+  .metric-value {
+    margin: 2px 0 0;
+    line-height: 1.25;
+    color: var(--mat-sys-on-background);
+  }
+}
+
+.allocation-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -1,0 +1,50 @@
+<ng-container *ngIf="showCard; else embedded">
+  <mat-card class="kpi-card h-100">
+    <mat-card-content class="d-flex flex-column justify-content-center h-100">
+      <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
+        <div class="metric mb-3 text-center">
+          <p class="metric-label text-muted">{{ 'dashboard.stats.total_invested' | translate }}</p>
+          <p class="metric-value kpi-value">
+            {{ totalInvestido | currency: 'BRL' }}
+          </p>
+        </div>
+        
+        <div class="metric mb-3 text-center">
+          <p class="metric-label text-muted">{{ 'dashboard.stats.total_profit_loss' | translate }}</p>
+          <p class="metric-value kpi-value">
+            <span [class.text-profit]="totalLucroPrejuizo >= 0" [class.text-loss]="totalLucroPrejuizo < 0">
+              {{ totalLucroPrejuizo | currency: 'BRL' }}
+            </span>
+          </p>
+        </div>
+  
+        <div class="metric mb-3 text-center">
+          <p class="metric-label text-muted">{{ 'dashboard.stats.total_exterior' | translate }}</p>
+          <p class="metric-value kpi-value">{{ totalValorExterior | currency: 'BRL' }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+<ng-template #embedded>
+  <div class="kpi-card h-100">
+    <div class="d-flex align-items-center mb-2">
+    </div>
+    <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
+      <div class="metric mb-2 text-center">
+        <p class="metric-label text-muted">{{ 'dashboard.stats.total_invested' | translate }}</p>
+        <p class="metric-value kpi-value">
+          {{ totalInvestido | currency: 'BRL' }}
+        </p>
+      </div>
+      <div class="metric mb-2 text-center">
+        <p class="metric-label text-muted">{{ 'dashboard.stats.total_profit_loss' | translate }}</p>
+        <p class="metric-value kpi-value">
+          <span [class.text-profit]="totalLucroPrejuizo >= 0" [class.text-loss]="totalLucroPrejuizo < 0">
+            {{ totalLucroPrejuizo | currency: 'BRL' }}
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+</ng-template>

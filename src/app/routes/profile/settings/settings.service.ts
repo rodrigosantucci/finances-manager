@@ -5,6 +5,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, switchMap, take, map, tap } from 'rxjs/operators';
 import { AuthService } from '@core/authentication/auth.service';
 import { User } from '@core/authentication/interface';
+import { LocalStorageService } from '@shared';
 
 // Ajuste a interface para refletir o que o backend retorna para o avatar
 // Se o backend retorna o 'id' do usuário para ser usado na URL do avatar:
@@ -20,6 +21,19 @@ export interface IProfileReduced {
   // Vamos assumir que ele retorna o 'id' do próprio usuário para o avatar.
   avatarIdentifier?: number; // <<-- AJUSTE AQUI SE SEU BACKEND RETORNA OUTRO TIPO
   id?: number;
+  provider?: AIProvider;
+  geminiApiKey?: string;
+  openaiApiKey?: string;
+  aiBackendEndpoint?: string;
+}
+
+export type AIProvider = 'gemini' | 'openai';
+
+export interface AIAccessSettings {
+  provider?: AIProvider | null;
+  geminiApiKey?: string | null;
+  openaiApiKey?: string | null;
+  aiBackendEndpoint?: string | null;
 }
 
 @Injectable({
@@ -28,6 +42,7 @@ export interface IProfileReduced {
 export class SettingsService {
   protected readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly storage = inject(LocalStorageService);
 
   private readonly apiUsuariosPrefix = '/api/usuarios/';
   private readonly apiAvatarsPrefix = '/api/avatars/';
@@ -45,7 +60,7 @@ export class SettingsService {
     return this.getUsuarioIdObservable().pipe(
       switchMap(usuarioId => {
         if (usuarioId === undefined || usuarioId === null) {
-          console.error("SettingsService: ID do usuário não disponível para buscar perfil.");
+          console.error('SettingsService: ID do usuário não disponível para buscar perfil.');
           return of(null);
         }
         const url = `${this.apiUsuariosPrefix}${usuarioId}`;
@@ -67,7 +82,7 @@ export class SettingsService {
     return this.getUsuarioIdObservable().pipe(
       switchMap(usuarioId => {
         if (usuarioId === undefined || usuarioId === null) {
-          console.error("SettingsService: ID do usuário não disponível para atualizar perfil.");
+          console.error('SettingsService: ID do usuário não disponível para atualizar perfil.');
           return of(null);
         }
 
@@ -84,6 +99,27 @@ export class SettingsService {
         );
       })
     );
+  }
+
+  getAISettings(): AIAccessSettings {
+    const provider = this.storage.get('ai.provider') as AIProvider | null;
+    const geminiApiKey = this.storage.get('ai.geminiKey') as string | null;
+    const openaiApiKey = this.storage.get('ai.openaiKey') as string | null;
+    const aiBackendEndpoint = this.storage.get('ai.backendEndpoint') as string | null;
+    return {
+      provider,
+      geminiApiKey,
+      openaiApiKey,
+      aiBackendEndpoint,
+    };
+  }
+
+  updateAISettings(settings: AIAccessSettings): boolean {
+    this.storage.set('ai.provider', settings.provider ?? null);
+    this.storage.set('ai.geminiKey', settings.geminiApiKey ?? null);
+    this.storage.set('ai.openaiKey', settings.openaiApiKey ?? null);
+    this.storage.set('ai.backendEndpoint', settings.aiBackendEndpoint ?? null);
+    return true;
   }
 
   // Helper para construir a URL COMPLETA do avatar, apontando para o endpoint do backend

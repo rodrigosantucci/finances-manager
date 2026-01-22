@@ -8,6 +8,7 @@ import { MatCardModule } from '@angular/material/card';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-ceiling-price-calculator',
@@ -20,18 +21,19 @@ import html2canvas from 'html2canvas';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    TranslateModule
   ]
 })
 export class CeilingPriceCalculatorComponent implements OnInit, AfterViewInit {
-  ticker: string = '';
-  dividends: string = '';
-  eps: string = '';
-  growthRate: string = '';
-  payout: string = '';
-  marketPrice: string = '';
+  ticker = '';
+  dividends = '';
+  eps = '';
+  growthRate = '';
+  payout = '';
+  marketPrice = '';
   results: any = null;
-  showResults: boolean = false;
+  showResults = false;
   priceChart: Chart<'bar', number[], string> | null = null;
 
   constructor() {

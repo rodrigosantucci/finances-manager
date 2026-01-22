@@ -4,6 +4,36 @@ mat-card {
   margin-bottom: var(--gutter);
 }
 
+/* Cards globais */
+.mat-mdc-card {
+  border-radius: var(--mat-sys-corner-medium);
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.mat-mdc-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
+}
+
+.mat-mdc-card-header {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid color-mix(in oklab, var(--mat-sys-primary) 12%, transparent);
+}
+
+.mat-mdc-card-content {
+  padding: 12px;
+}
+
+.mat-mdc-card-title {
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+    font-weight: 700 !important;
+  color: var(--mat-sys-on-background);
+  text-align: center;
+}
+
 mat-card-header + mat-card-content {
   margin-top: var(--gutter);
 }
@@ -12,4 +42,323 @@ mat-card-header + mat-card-content {
   .mat-mdc-form-field {
     width: 100%;
   }
+}
+
+.apexcharts-canvas,
+.apexcharts-svg,
+.apexcharts-inner {
+  background: transparent !important;
+}
+
+.apexcharts-plot-background {
+  fill: transparent !important;
+}
+
+.apexcharts-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.kpi-card {
+  color: var(--mat-sys-on-primary-container);
+  background: var(--mat-sys-primary-container);
+
+  .mat-mdc-card-header {
+    border-bottom: 1px solid color-mix(in oklab, var(--mat-sys-primary) 20%, transparent);
+  }
+
+  .kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+  }
+
+  .kpi-sub {
+    font-size: .9rem;
+    opacity: .8;
+  }
+}
+
+.chart-card {
+  background: var(--mat-sys-surface-container);
+
+  .mat-mdc-card-title {
+    color: var(--mat-sys-on-background);
+  }
+
+  .mat-mdc-card-content {
+    padding-bottom: 0;
+  }
+}
+
+.table-card {
+  background: var(--mat-sys-surface-container);
+
+  .mat-mdc-card-title {
+    color: var(--mat-sys-on-background);
+  }
+}
+
+table.mat-mdc-table {
+  overflow: hidden;
+  border-radius: var(--mat-sys-corner-medium);
+}
+
+.mat-mdc-table .mat-mdc-header-row {
+  background-color: var(--mat-sys-primary-container);
+}
+
+.mat-mdc-table .mat-mdc-header-cell {
+  font-weight: 600;
+  color: var(--mat-sys-on-primary-container);
+}
+
+.mat-mdc-table .mat-mdc-row:nth-child(even) {
+  background-color: color-mix(in oklab, var(--mat-sys-surface-container) 95%, var(--mat-sys-primary) 5%);
+}
+
+.mat-mdc-table .mat-mdc-cell,
+.mat-mdc-table .mat-mdc-footer-cell {
+  color: var(--mat-sys-on-surface);
+}
+
+/* Alinhamento vertical consistente em todas as tabelas */
+.mat-mdc-table .mat-mdc-cell,
+.mat-mdc-table .mat-mdc-header-cell,
+.mat-mdc-table .mat-mdc-footer-cell {
+  vertical-align: middle;
+}
+
+.text-profit {
+  color: #22ab94;
+}
+
+.text-loss {
+  color: #f7525f;
+}
+
+.mat-mdc-button-base {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin: 4px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.mat-mdc-button-base .mdc-button__label {
+  display: inline-flex !important;
+  flex: 1 1 auto;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  text-align: center;
+}
+
+.mat-mdc-icon-button {
+  display: inline-flex !important;
+  gap: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+button[mat-icon-button] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+}
+
+button[mat-icon-button] .mat-icon {
+  margin: 0 !important;
+}
+
+.mat-mdc-button-base:not(.mat-mdc-icon-button, .mat-mdc-fab, .mat-mdc-mini-fab) {
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.mat-mdc-button-base[disabled] {
+  box-shadow: none;
+  opacity: .6;
+  transform: none;
+}
+
+.mat-mdc-button-base:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--mat-sys-primary) 40%, transparent);
+}
+
+.mat-mdc-button-base .mat-icon {
+  margin-right: 6px;
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+.mat-mdc-button-base .mdc-button__label > .mat-icon:only-child {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Garantir centralização para estruturas onde o mat-icon não é filho direto do label */
+.mat-mdc-button-base .mat-icon:only-child {
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+/* Navegadores com suporte a :has mantêm a intenção explicitamente */
+.mat-mdc-button-base .mdc-button__label:has(> .mat-icon:only-child) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+button[mat-icon-button] .mat-icon {
+  position: static !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.mat-mdc-raised-button:not([disabled]) {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.mat-mdc-raised-button:not([disabled]):hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.mat-mdc-raised-button:not([disabled]):active {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+}
+
+.mat-mdc-stroked-button:not([disabled]) {
+  border-color: var(--mat-sys-primary);
+}
+
+.mat-mdc-stroked-button:not([disabled]):hover {
+  background: color-mix(in oklab, var(--mat-sys-primary) 12%, transparent);
+}
+
+.mat-mdc-flat-button:not([disabled]):hover {
+  background: color-mix(in oklab, var(--mat-sys-primary) 10%, transparent);
+}
+
+.mat-mdc-icon-button:not([disabled]):hover {
+  background: color-mix(in oklab, var(--mat-sys-primary) 10%, transparent);
+}
+
+.mat-mdc-icon-button .mat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+}
+
+.mat-mdc-mini-fab .mat-icon,
+.mat-mdc-fab .mat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0;
+}
+
+.action-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Título de seções globais */
+.section-title {
+  margin: 0 0 12px;
+  font-size: clamp(1rem, 0.9rem + 0.8vw, 1.6rem);
+  font-weight: 500;
+  color: var(--mat-sys-on-background);
+}
+
+/* Container para agrupar cards (aplicável em qualquer página) */
+.card-group {
+  .mat-mdc-card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mat-mdc-card-content {
+    padding: 8px 12px;
+  }
+
+  .mat-mdc-card + .mat-mdc-card {
+    margin-top: 8px;
+  }
+}
+
+/* Ajustes para ng-select / mtx-select: alinhar largura do input e do dropdown */
+.ng-select {
+  width: 100%;
+}
+
+.ng-select .ng-select-container {
+  width: 100%;
+}
+
+.ng-select .ng-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.ng-dropdown-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.ng-dropdown-panel .ng-dropdown-panel-items {
+  width: 100%;
+  max-width: 100%;
+}
+
+.controls-card .mat-mdc-card-header {
+  padding: 8px 12px;
+}
+
+.controls-card .mat-mdc-card-title .mat-icon {
+  margin-right: 6px;
+}
+
+.controls-card .mat-mdc-card-content {
+  gap: 8px;
+}
+@media (width <= 600px) {
+  .controls-card .mat-mdc-card-content {
+    gap: 4px;
+    justify-content: center;
+  }
+}
+
+/* Paginadores sem rótulo de faixa (remover "Mostrando 1 - X de Y itens") em escopos específicos */
+.no-range-label .mat-mdc-paginator-range-label {
+  display: none;
+}
+
+.no-nav-buttons .mat-mdc-paginator-range-actions .mat-mdc-icon-button {
+  display: none;
+}
+
+/* Notificações: garantir largura do menu via classe de painel aplicada no overlay */
+.notifications-menu.mat-mdc-menu-panel {
+  width: 850px !important;
+  max-width: 98vw !important;
+}
+
+.notifications-menu .mat-mdc-menu-content {
+  width: 850px !important;
+  max-width: 98vw !important;
 }

@@ -27,7 +27,7 @@ export function baseUrlInterceptor(req: HttpRequest<unknown>, next: HttpHandlerF
   // Verifica se a URL da requisição é relativa (não começa com http/https)
   if (!hasHttpScheme(originalUrl)) {
     let baseUrlToUse: string | undefined;
-    let pathWithoutPrefix: string = originalUrl; // Inicializa com a URL original
+    const pathWithoutPrefix: string = originalUrl; // Inicializa com a URL original
 
     // --- Lógica para escolher a URL base com base no prefixo ---
 

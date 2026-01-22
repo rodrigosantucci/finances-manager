@@ -1,0 +1,10 @@
+:host {
+  .action-btn {
+    width: 37.5%;
+  }
+  @media (width <= 576px) {
+    .action-btn {
+      width: 100%;
+    }
+  }
+}

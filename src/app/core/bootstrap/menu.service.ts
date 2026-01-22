@@ -135,7 +135,7 @@ export class MenuService {
 
   addNamespace(menu: Menu[] | MenuChildrenItem[], namespace: string): void {
     menu.forEach(menuItem => {
-      menuItem.translationKey = `${namespace}.${menuItem.name}`;
+      menuItem.translationKey = menuItem.translationKey ?? `${namespace}.${menuItem.name}`;
       if (menuItem.children && menuItem.children.length > 0) {
         this.addNamespace(menuItem.children, namespace);
       }

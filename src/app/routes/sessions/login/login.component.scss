@@ -13,7 +13,7 @@
     --disabled-bg: #e5e7eb;
     --disabled-text: #9ca3af;
     --error: #d32f2f;
-    --card-background: #ffffff;
+    --card-background: #fff;
     --shadow: rgba(0, 0, 0, 0.15);
     --input-border-color: #e0e0e0; /* Nova variável para bordas de input */
     --input-focus-color: #d32f2f; /* Cor da borda ao focar */
@@ -40,35 +40,36 @@
 /* Estilos Globais para o Contêiner do Formulário */
 .d-flex.w-full.h-full {
   display: flex;
-  width: 100%;
-  min-height: 90vh; /* Garante que o contêiner ocupa a altura total da viewport */
   align-items: center; /* Centraliza verticalmente */
   justify-content: center; /* Centraliza horizontalmente */
+  width: 100%;
+  min-height: 90vh; /* Garante que o contêiner ocupa a altura total da viewport */
   background-color: var(--background); /* Aplica a cor de fundo do tema */
   transition: background-color 0.3s ease; /* Transição suave para mudança de tema */
 }
 
 /* Estilos do Cartão do Formulário (mat-card) */
 mat-card {
-  box-shadow: 0 8px 25px var(--shadow); /* Sombra mais pronunciada e suave */
-  border-radius: 12px; /* Cantos mais arredondados */
-  padding: 30px; /* Mais preenchimento interno #/
-  margin: 20px; /* Margem para evitar que o cartão grude nas bordas da tela */
   width: 100%; /* Ocupa 100% da largura disponível */
   max-width: 420px; /* Aumenta um pouco a largura máxima para telas maiores */
+  padding: 30px; /* Mais preenchimento interno #/
+  margin: 20px; /* Margem para evitar que o cartão grude nas bordas da tela */
+  border-radius: 12px; /* Cantos mais arredondados */
+  box-shadow: 0 8px 25px var(--shadow); /* Sombra mais pronunciada e suave */
   transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transições para tema */
 }
 
 /* Cabeçalho do Cartão */
 mat-card-header.m-b-24 {
+  display: block; /* Garante que o margin-bottom funcione corretamente */
   margin-bottom: 15px;
   text-align: center; /* Centraliza o título */
-  display: block; /* Garante que o margin-bottom funcione corretamente */
 }
 
-mat-card-title {
+mat-card-title,
+.mat-mdc-card-title {
   font-size: 28px; /* Fonte maior para o título */
-  font-weight: 600; /* Mais negrito */
+  font-weight: 700; /* Mais negrito */
   color: var(--text-primary);
   transition: color 0.3s ease;
 }
@@ -120,9 +121,9 @@ mat-form-field {
 
 /* Mensagens de Erro dos Campos */
 mat-error {
+  padding-left: 5px; /* Alinha com o texto do input */
   font-size: 13px; /* Levemente maior */
   color: var(--error);
-  padding-left: 5px; /* Alinha com o texto do input */
 }
 
 /* Checkbox "Lembrar de mim" */
@@ -160,30 +161,30 @@ a[routerLink] {
 
 /* Mensagem de erro geral do formulário (Login ou senha inválidos) */
 .error-message {
-  color: var(--error);
-  font-size: 14px; /* Aumenta o tamanho da fonte para a mensagem geral */
-  margin-bottom: 10px; /* Mais espaçamento abaixo da mensagem */
   padding: 12px 15px; /* Mais padding */
+  margin-bottom: 10px; /* Mais espaçamento abaixo da mensagem */
+  font-size: 14px; /* Aumenta o tamanho da fonte para a mensagem geral */
+  color: var(--error);
   text-align: center;
-  border-radius: 8px; /* Cantos arredondados */
+  visibility: hidden; /* Esconde por padrão */
   background-color: rgba(255, 0, 0, 0.1); /* Um fundo suave para destaque */
   border: 1px solid var(--error); /* Borda para contraste */
+  border-radius: 8px; /* Cantos arredondados */
   opacity: 0; /* Esconde por padrão */
-  visibility: hidden; /* Esconde por padrão */
-  transform: translateY(-10px); /* Começa ligeiramente acima */
   transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  transform: translateY(-10px); /* Começa ligeiramente acima */
 }
 
 .error-message.error-visible {
-  opacity: 1; /* Torna visível */
   visibility: visible; /* Torna visível */
+  opacity: 1; /* Torna visível */
   transform: translateY(0); /* Posição final */
 }
 
 /* --- Responsividade --- */
 
 /* Telas menores que 768px (tablets e smartphones maiores) */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   mat-card {
     max-width: 380px; /* Reduz um pouco o max-width */
     padding: 25px;
@@ -203,18 +204,18 @@ a[routerLink] {
   }
 
   .error-message {
-    font-size: 13px;
-    margin-bottom: 18px;
     padding: 10px 12px;
+    margin-bottom: 18px;
+    font-size: 13px;
   }
 }
 
 /* Telas menores que 576px (smartphones) */
-@media (max-width: 576px) {
+@media (width <= 576px) {
   mat-card {
     max-width: 90%; /* Ocupa mais largura em telas pequenas */
-    margin: 20px; /* Adiciona margem para não colar nas bordas */
     padding: 20px;
+    margin: 20px; /* Adiciona margem para não colar nas bordas */
   }
 
   mat-card-title {
@@ -231,15 +232,15 @@ a[routerLink] {
   }
 
   .error-message {
-    font-size: 12px;
-    margin-bottom: 10px;
     padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
   }
 
   .form-field-full > div {
     flex-direction: column; /* Quebra em linha em telas muito pequenas */
-    align-items: center; /* Centraliza itens */
     gap: 5px;
+    align-items: center; /* Centraliza itens */
   }
 }
 

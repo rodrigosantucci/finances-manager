@@ -1,4 +1,4 @@
-import { apiInterceptor } from "@core";
+import { apiInterceptor } from '@core';
 
 export const environment = {
   production: true,

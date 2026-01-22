@@ -18,13 +18,16 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { ControlsOf } from '@shared/interfaces';
 import { AuthService, User } from '@core';
 import { IProfileReduced, SettingsService } from './settings.service';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from '@env/environment';
+import { of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { MatSelectModule } from '@angular/material/select';
+import { TranslateModule } from '@ngx-translate/core';
 
-export function confirmPasswordValidator(control: AbstractControl): { [key: string]: boolean } | null {
+export function confirmPasswordValidator(control: AbstractControl): Record<string, boolean> | null {
   const password = control.get('password');
   const confirmPassword = control.get('confirmPassword');
 
@@ -64,6 +67,7 @@ export function confirmPasswordValidator(control: AbstractControl): { [key: stri
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
+    TranslateModule,
   ],
   providers: [provideNativeDateAdapter(), SettingsService],
 })
@@ -79,14 +83,19 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
   selectedFile: File | null = null;
   avatarPreviewUrl: SafeUrl | string | ArrayBuffer | null = null;
   avatarError: string | null = null;
-  defaultAvatarPlaceholder: string = 'images/avatar.jpg';
+  defaultAvatarPlaceholder = 'images/avatar.jpg';
   private avatarObjectUrl: string | null = null;
-  isLoadingAvatar: boolean = true;
+  isLoadingAvatar = true;
 
   user!: User;
 
   perfilOptions: string[] = ['Conservador', 'Intermediário', 'Agressivo'];
   estrategiaOptions: string[] = ['Defensiva', 'Equilibrado', 'Ofensiva'];
+ 
+  passwordVisibility: Record<'password' | 'confirmPassword', boolean> = {
+    password: false,
+    confirmPassword: false,
+  };
 
   ngOnInit(): void {
     console.log('ProfileSettingsComponent: Initializing');
@@ -114,6 +123,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       avatarIdentifier: this.fb.control(undefined as any),
       id: this.fb.control(undefined as any),
     }, { validators: confirmPasswordValidator });
+ 
   }
 
   loadUserData(): void {
@@ -241,7 +251,21 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     if (control.hasError('email')) {
       return 'Por favor, insira um e-mail válido.';
     }
+    if (control.hasError('pattern')) {
+      return 'Por favor, insira uma URL válida.';
+    }
+    if (control.hasError('minlength')) {
+      return 'Deve ter no mínimo 20 caracteres.';
+    }
+    if (control.hasError('invalidEndpoint')) {
+      return 'Endpoint inválido ou indisponível.';
+    }
     return '';
+  }
+
+  togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
+    this.passwordVisibility[field] = !this.passwordVisibility[field];
+    this.cdr.detectChanges();
   }
 
   getPasswordErrorMessage(): string {
@@ -252,6 +276,23 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
 
     if (confirmPasswordControl.hasError('passwordMismatch')) {
       return 'As senhas não coincidem.';
+    }
+    return '';
+  }
+
+  getAIKeyErrorMessage(controlName: 'geminiApiKey' | 'openaiApiKey'): string {
+    const control = this.reactiveForm.get(controlName);
+    if (!control || !control.touched) {
+      return '';
+    }
+    if (control.hasError('required')) {
+      return 'API key é obrigatória.';
+    }
+    if (control.hasError('minlength')) {
+      return 'Deve ter no mínimo 20 caracteres.';
+    }
+    if (control.hasError('pattern')) {
+      return 'Formato de API key inválido.';
     }
     return '';
   }
@@ -301,6 +342,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       formData.append('avatar', this.selectedFile, this.selectedFile.name);
     }
 
+ 
+
     this.isLoadingAvatar = true;
     this.cdr.detectChanges(); // Ensure spinner shows
     this.settingsService.updateProfile(formData).subscribe({
@@ -338,6 +381,8 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+ 
 
   onImageError(event: Event): void {
     console.warn('ProfileSettingsComponent: Image failed to load:', (event.target as HTMLImageElement).src);

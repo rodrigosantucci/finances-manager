@@ -2,4 +2,38 @@
   .mt-4 {
     margin-top: 1rem;
   }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .tool-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .section-separator {
+    height: 1px;
+    margin: 8px 0 12px;
+    background: rgba(0,0,0,0.12);
+  }
+}
+
+@media (width <= 992px) {
+  :host {
+    .tools-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (width <= 600px) {
+  :host {
+    .tools-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 }

@@ -1,29 +1,37 @@
-<page-header class="bg-dark text-light" title="Assistente IA" />
+<page-header class="bg-dark text-light" title="assistant.title" />
 
 <div class="container">
   <mat-card class="control-card">
     <mat-card-content>
-      <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)">
-        <mat-tab label="Análise de Fundamentos">
+      <mat-tab-group dynamicHeight class="futuristic-tabs" (selectedTabChange)="onTabChange($event.index)" [selectedIndex]="selectedTabIndex">
+        <mat-tab [label]="'assistant.tabs.fundamentals' | translate">
           <div class="tab-content">
-            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <div class="actions-header">
               <button mat-raised-button color="primary" (click)="generateFundamentos()" [disabled]="isLoading">
-                <mat-icon>auto_awesome</mat-icon> Gerar Análise Fundamentalista
+                <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_fundamentals' | translate }}
               </button>
             </div>
             <div *ngIf="fundamentos || allFundamentos.length > 0; else noDataFundamentos">
               <div class="report-header">
                 <h3>
-                  Nota Geral:
+                  {{ 'assistant.common.overall_grade' | translate }}:
                   <span class="stars-container">
                     <mat-icon *ngFor="let star of getStars(fundamentos?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
                   </span>
                 </h3>
                 <mat-form-field appearance="outline" class="date-select-field">
-                  <mat-label>Data da Análise</mat-label>
+                  <mat-label>{{ 'assistant.common.analysis_date' | translate }}</mat-label>
                   <mat-select [value]="selectedFundamentosDate" (valueChange)="loadFundamentosByDate($event)" [disabled]="allFundamentos.length === 0">
+                    <mat-select-trigger>
+                      {{ selectedFundamentosDate | date: 'dd/MM/yyyy' }}
+                    </mat-select-trigger>
                     <mat-option *ngFor="let analise of allFundamentos" [value]="analise.data">
-                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                      <span class="option-content">
+                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <button mat-icon-button class="delete-option" (click)="deleteAnalise('fundamentos', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </span>
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -34,53 +42,53 @@
                       <mat-expansion-panel-header>
                         <mat-panel-title>{{ ativo.ticker }}</mat-panel-title>
                         <mat-panel-description>
-                          Preço Teto: R$ {{ ativo.preco_teto | number: '1.2-2' }} | Nota: {{ ativo.nota | number: '1.1-1' }}
+                          {{ 'assistant.fundamentals.price_ceiling' | translate }}: R$ {{ ativo.preco_teto | number: '1.2-2' }} | {{ 'assistant.common.grade' | translate }}: {{ ativo.nota | number: '1.1-1' }}
                         </mat-panel-description>
                       </mat-expansion-panel-header>
                       <mat-list dense>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Visão Geral:</strong> {{ ativo.ratings_heuristics.visao_geral }}
+                            <strong>{{ 'assistant.labels.overview' | translate }}:</strong> {{ ativo.ratings_heuristics.visao_geral }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Panorama Geral:</strong> {{ ativo.ratings_heuristics.panorama_geral }}
+                            <strong>{{ 'assistant.labels.general_outlook' | translate }}:</strong> {{ ativo.ratings_heuristics.panorama_geral }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Cinco Forças:</strong> {{ ativo.ratings_heuristics.cinco_forcas }}
+                            <strong>{{ 'assistant.labels.five_forces' | translate }}:</strong> {{ ativo.ratings_heuristics.cinco_forcas }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Barreiras de Entrada:</strong> {{ ativo.ratings_heuristics.barreiras_entrada }}
+                            <strong>{{ 'assistant.labels.entry_barriers' | translate }}:</strong> {{ ativo.ratings_heuristics.barreiras_entrada }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Rivalidade:</strong> {{ ativo.ratings_heuristics.rivalidade }}
+                            <strong>{{ 'assistant.labels.rivalry' | translate }}:</strong> {{ ativo.ratings_heuristics.rivalidade }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Disrupção:</strong> {{ ativo.ratings_heuristics.disrupcao }}
+                            <strong>{{ 'assistant.labels.disruption' | translate }}:</strong> {{ ativo.ratings_heuristics.disrupcao }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Específico da Empresa:</strong> {{ ativo.ratings_heuristics.especifico_empresa }}
+                            <strong>{{ 'assistant.labels.company_specific' | translate }}:</strong> {{ ativo.ratings_heuristics.especifico_empresa }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Interação com a Empresa:</strong> {{ ativo.ratings_heuristics.interacao_empresa }}
+                            <strong>{{ 'assistant.labels.company_interaction' | translate }}:</strong> {{ ativo.ratings_heuristics.interacao_empresa }}
                           </div>
                         </mat-list-item>
                         <mat-list-item>
                           <div class="qa-item">
-                            <strong>Marcas:</strong> {{ ativo.ratings_heuristics.marcas }}
+                            <strong>{{ 'assistant.labels.brands' | translate }}:</strong> {{ ativo.ratings_heuristics.marcas }}
                           </div>
                         </mat-list-item>
                       </mat-list>
@@ -88,42 +96,50 @@
                       <mat-list dense>
                         <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
                           <div class="qa-item">
-                            <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                            <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                            <p matLine><strong>{{ 'assistant.questions.question' | translate }}:</strong> {{ pr.pergunta }}</p>
+                            <p matLine><strong>{{ 'assistant.questions.answer' | translate }}:</strong> {{ pr.resposta }}</p>
                           </div>
                         </mat-list-item>
                       </mat-list>
                     </mat-expansion-panel>
                 </div>
-                <p class="no-data" *ngIf="!fundamentos && allFundamentos.length > 0">Selecione uma data para carregar a análise.</p>
+                <p class="no-data" *ngIf="!fundamentos && allFundamentos.length > 0">{{ 'assistant.errors.select_date_to_load' | translate }}</p>
               </div>
             </div>
             <ng-template #noDataFundamentos>
-              <p class="no-data">Nenhum dado ou data disponível para Análise de Fundamentos.</p>
+              <p class="no-data">{{ 'assistant.no_data.fundamentals' | translate }}</p>
             </ng-template>
           </div>
         </mat-tab>
 
-        <mat-tab label="Análise Técnica">
+        <mat-tab [label]="'assistant.tabs.technical' | translate">
            <div class="tab-content">
-            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <div class="actions-header">
               <button mat-raised-button color="primary" (click)="generateTecnica()" [disabled]="isLoading">
-                <mat-icon>auto_awesome</mat-icon> Gerar Análise Técnica
+                <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_technical' | translate }}
               </button>
             </div>
             <div *ngIf="tecnica || allTecnica.length > 0; else noDataTecnica">
               <div class="report-header">
                 <h3>
-                  Nota Geral:
+                  {{ 'assistant.common.overall_grade' | translate }}:
                   <span class="stars-container">
                     <mat-icon *ngFor="let star of getStars(tecnica?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
                   </span>
                 </h3>
                 <mat-form-field appearance="outline" class="date-select-field">
-                  <mat-label>Data da Análise</mat-label>
+                  <mat-label>{{ 'assistant.common.analysis_date' | translate }}</mat-label>
                   <mat-select [value]="selectedTecnicaDate" (valueChange)="loadTecnicaByDate($event)" [disabled]="allTecnica.length === 0">
+                    <mat-select-trigger>
+                      {{ selectedTecnicaDate | date: 'dd/MM/yyyy' }}
+                    </mat-select-trigger>
                     <mat-option *ngFor="let analise of allTecnica" [value]="analise.data">
-                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                      <span class="option-content">
+                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <button mat-icon-button class="delete-option" (click)="deleteAnalise('tecnica', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </span>
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -136,17 +152,17 @@
                         {{ ativo.ticker }}
                       </mat-panel-title>
                       <mat-panel-description style="justify-content: center; flex-grow: 1;">
-                           Lucro Ultimo Trimestre: {{ ativo.lucro_ultimo_trimestre | currency:'BRL' }} | Dividend Yield: {{ ativo.dividend_yield }}% | Divida Bruta: {{ ativo.divida_bruta | currency:'BRL' }} | Valor Patrimonial: {{ ativo.valor_patrimonial | currency:'BRL' }}
+                           {{ 'assistant.technical.last_quarter_profit' | translate }}: {{ ativo.lucro_ultimo_trimestre | currency:'BRL' }} | {{ 'assistant.technical.dividend_yield' | translate }}: {{ ativo.dividend_yield }}% | {{ 'assistant.technical.gross_debt' | translate }}: {{ ativo.divida_bruta | currency:'BRL' }} | {{ 'assistant.technical.book_value' | translate }}: {{ ativo.valor_patrimonial | currency:'BRL' }}
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     <mat-list dense>
                       <mat-list-item>
                         <div class="qa-item">
-                          <strong>Indicadores:</strong>
+                          <strong>{{ 'assistant.labels.indicators' | translate }}:</strong>
                           <mat-list dense>
                             <mat-list-item *ngFor="let indicador of ativo.indicadores">
                               <p matLine>
-                                {{ indicador.indicador }}: {{ indicador.valor }} (Nota: {{ indicador.nota | number: '1.1-1' }})
+                                {{ indicador.indicador }}: {{ indicador.valor }} ({{ 'assistant.common.grade' | translate }}: {{ indicador.nota | number: '1.1-1' }})
                               </p>
                             </mat-list-item>
                           </mat-list>
@@ -154,7 +170,7 @@
                       </mat-list-item>
                       <mat-list-item>
                         <div class="qa-item">
-                          <strong>Recomendações:</strong>
+                          <strong>{{ 'assistant.labels.recommendations' | translate }}:</strong>
                           <mat-list dense>
                             <mat-list-item *ngFor="let rec of ativo.recomendacoes">
                               <p matLine>{{ rec.recomendacao }}: {{ rec.texto }}</p>
@@ -165,7 +181,7 @@
 
                       <mat-list-item>
                         <div class="qa-item">
-                          <strong>Fator Competitivo:</strong>
+                          <strong>{{ 'assistant.labels.competitive_factor' | translate }}:</strong>
                           <mat-list dense>
                             <mat-list-item *ngFor="let fc of ativo.fator_competitivo">
                               <p matLine>
@@ -178,11 +194,11 @@
 
                       <mat-list-item>
                         <div class="qa-item">
-                          <strong>Perguntas e Respostas:</strong>
+                          <strong>{{ 'assistant.labels.questions_answers' | translate }}:</strong>
                           <mat-list dense>
                             <mat-list-item *ngFor="let pr of ativo.perguntas_respostas">
-                              <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                              <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                              <p matLine><strong>{{ 'assistant.questions.question' | translate }}:</strong> {{ pr.pergunta }}</p>
+                              <p matLine><strong>{{ 'assistant.questions.answer' | translate }}:</strong> {{ pr.resposta }}</p>
                             </mat-list-item>
                           </mat-list>
                         </div>
@@ -190,35 +206,43 @@
                     </mat-list>
                   </mat-expansion-panel>
                 </div>
-                <p class="no-data" *ngIf="!tecnica && allTecnica.length > 0">Selecione uma data para carregar a análise.</p>
+                <p class="no-data" *ngIf="!tecnica && allTecnica.length > 0">{{ 'assistant.errors.select_date_to_load' | translate }}</p>
               </div>
             </div>
             <ng-template #noDataTecnica>
-              <p class="no-data">Nenhum dado ou data disponível para Análise Técnica.</p>
+              <p class="no-data">{{ 'assistant.no_data.technical' | translate }}</p>
             </ng-template>
           </div>
         </mat-tab>
 
-        <mat-tab label="Análise de Objetivos Pessoais">
+        <mat-tab [label]="'assistant.tabs.personal_goals' | translate">
           <div class="tab-content">
-            <div class="actions-header" style="display: flex; justify-content: center; margin-bottom: 10px;">
+            <div class="actions-header">
               <button mat-raised-button color="primary" (click)="generatePessoais()" [disabled]="isLoading">
-                <mat-icon>auto_awesome</mat-icon> Gerar Análise Pessoal
+                <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_personal' | translate }}
               </button>
             </div>
             <div *ngIf="pessoais || allPessoais.length > 0; else noDataPessoais">
               <div class="report-header">
                 <h3>
-                  Nota Geral:
+                  {{ 'assistant.common.overall_grade' | translate }}:
                   <span class="stars-container">
                     <mat-icon *ngFor="let star of getStars(pessoais?.nota || 0)" class="star-icon">{{ star }}</mat-icon>
                   </span>
                 </h3>
                 <mat-form-field appearance="outline" class="date-select-field">
-                  <mat-label>Data da Análise</mat-label>
+                  <mat-label>{{ 'assistant.common.analysis_date' | translate }}</mat-label>
                   <mat-select [value]="selectedPessoaisDate" (valueChange)="loadPessoaisByDate($event)" [disabled]="allPessoais.length === 0">
+                    <mat-select-trigger>
+                      {{ selectedPessoaisDate | date: 'dd/MM/yyyy' }}
+                    </mat-select-trigger>
                     <mat-option *ngFor="let analise of allPessoais" [value]="analise.data">
-                      {{ analise.data | date: 'dd/MM/yyyy' }}
+                      <span class="option-content">
+                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <button mat-icon-button class="delete-option" (click)="deleteAnalise('pessoais', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </span>
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -227,7 +251,7 @@
                 <div class="card-grid" *ngIf="pessoais">
                   <mat-card class="info-card futuristic-card">
                     <mat-card-header>
-                      <mat-card-title>Estratégia Sugerida</mat-card-title>
+                      <mat-card-title>{{ 'assistant.personal.strategy_suggested' | translate }}</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
                       <p>{{ pessoais.analise.estrategia_sugerida }}</p>
@@ -235,7 +259,7 @@
                   </mat-card>
                   <mat-card class="info-card futuristic-card">
                     <mat-card-header>
-                      <mat-card-title>Alocação Sugerida</mat-card-title>
+                      <mat-card-title>{{ 'assistant.personal.allocation_suggested' | translate }}</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
                       <div #chartElement id="assistant-chart" class="chart">
@@ -244,50 +268,50 @@
                   </mat-card>
                   <mat-card class="info-card futuristic-card">
                     <mat-card-header>
-                      <mat-card-title>Desempenho e Estimativas</mat-card-title>
+                      <mat-card-title>{{ 'assistant.personal.performance_estimates' | translate }}</mat-card-title>
                     </mat-card-header>
                     <mat-card-content>
                       <mat-list dense>
                         <mat-list-item>
-                          <p matLine>Retorno Anual Esperado: {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%</p>
+                          <p matLine>{{ 'assistant.personal.expected_annual_return' | translate }}: {{ pessoais.analise.desempenho_estimativas.retorno_anual_esperado }}%</p>
                         </mat-list-item>
                         <mat-list-item>
-                          <p matLine>Volatilidade Esperada: {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%</p>
+                          <p matLine>{{ 'assistant.personal.expected_volatility' | translate }}: {{ pessoais.analise.desempenho_estimativas.volatilidade_esperada }}%</p>
                         </mat-list-item>
                         <mat-list-item>
-                          <p matLine>Período de Análise: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
+                          <p matLine>{{ 'assistant.personal.analysis_period' | translate }}: {{ pessoais.analise.desempenho_estimativas.periodo_analise }}</p>
                         </mat-list-item>
                         <mat-list-item>
-                         <p>Estimativa 1 Ano: {{ pessoais.analise.desempenho_estimativas.patrimonio_1_ano | currency: 'BRL':'symbol':'1.2-2' }}</p>
+                         <p>{{ 'assistant.personal.estimate_1y' | translate }}: {{ pessoais.analise.desempenho_estimativas.patrimonio_1_ano | currency: 'BRL':'symbol':'1.2-2' }}</p>
                         </mat-list-item>
                         <mat-list-item>
-                          <p>Estimativa 5 Anos: {{ pessoais.analise.desempenho_estimativas.patrimonio_5_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
+                          <p>{{ 'assistant.personal.estimate_5y' | translate }}: {{ pessoais.analise.desempenho_estimativas.patrimonio_5_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
                         </mat-list-item>
                         <mat-list-item>
-                          <p>Estimativa 10 Anos: {{ pessoais.analise.desempenho_estimativas.patrimonio_10_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
+                          <p>{{ 'assistant.personal.estimate_10y' | translate }}: {{ pessoais.analise.desempenho_estimativas.patrimonio_10_anos | currency: 'BRL':'symbol':'1.2-2' }}</p>
                         </mat-list-item>
                       </mat-list>
                     </mat-card-content>
                   </mat-card>
                   <mat-expansion-panel class="futuristic-panel">
                     <mat-expansion-panel-header>
-                      <mat-panel-title>Perguntas e Respostas</mat-panel-title>
+                      <mat-panel-title>{{ 'assistant.personal.qa_title' | translate }}</mat-panel-title>
                     </mat-expansion-panel-header>
                     <mat-list dense>
                       <mat-list-item *ngFor="let pr of pessoais.analise.perguntas_respostas">
                         <div class="qa-item">
-                          <p matLine><strong>Pergunta:</strong> {{ pr.pergunta }}</p>
-                          <p matLine><strong>Resposta:</strong> {{ pr.resposta }}</p>
+                          <p matLine><strong>{{ 'assistant.questions.question' | translate }}:</strong> {{ pr.pergunta }}</p>
+                          <p matLine><strong>{{ 'assistant.questions.answer' | translate }}:</strong> {{ pr.resposta }}</p>
                         </div>
                       </mat-list-item>
                     </mat-list>
                   </mat-expansion-panel>
                 </div>
-                <p class="no-data" *ngIf="!pessoais && allPessoais.length > 0">Selecione uma data para carregar a análise.</p>
+                <p class="no-data" *ngIf="!pessoais && allPessoais.length > 0">{{ 'assistant.errors.select_date_to_load' | translate }}</p>
               </div>
             </div>
             <ng-template #noDataPessoais>
-              <p class="no-data">Nenhum dado ou data disponível para Objetivos Pessoais.</p>
+              <p class="no-data">{{ 'assistant.no_data.personal' | translate }}</p>
             </ng-template>
           </div>
         </mat-tab>
@@ -298,8 +322,8 @@
           mat-icon-button
           color="primary"
           (click)="loadAssistantData()"
-          matTooltip="Recarregar dados (Atual/Selecionado)"
-          aria-label="Recarregar dados"
+          [matTooltip]="'assistant.actions.reload_data_tip' | translate"
+          [attr.aria-label]="'assistant.actions.reload_data' | translate"
           [disabled]="isLoading"
           class="action-button"
         >
@@ -311,7 +335,7 @@
         mode="indeterminate"
         diameter="40"
         class="spinner"
-      ></mat-progress-spinner>
+      />
     </mat-card-content>
   </mat-card>
 </div>

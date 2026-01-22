@@ -1,0 +1,17 @@
+.save-button-container {
+  display: flex;
+  justify-content: flex-end;
+}
+mat-card,
+.mat-mdc-card,
+.mdc-card,
+.mat-mdc-card-outlined,
+.mdc-card--outlined {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+mat-card-content,
+.mat-mdc-card-content {
+  background: transparent !important;
+}

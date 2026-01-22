@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '@core/authentication';
-import { format, parse } from 'date-fns';
+import { format, parse, parseISO } from 'date-fns';
 
 export interface AtivoCotacao {
   cambio: number;
@@ -44,13 +44,17 @@ export class DadosService {
     }
 
     let parsedDate: Date | null = null;
-    // Tenta interpretar como yyyy-MM-dd
-    if (/^\d{4}-\d{2}-\d{2}/.test(dateString)) {
-      parsedDate = parse(dateString, 'yyyy-MM-dd', new Date());
-    }
-    // Tenta interpretar como dd/MM/yyyy
-    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-      parsedDate = parse(dateString, 'dd/MM/yyyy', new Date());
+    const trimmed = String(dateString).trim();
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+      parsedDate = parse(trimmed, 'dd/MM/yyyy', new Date());
+    } else if (/^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})?)?$/.test(trimmed)) {
+      parsedDate = parseISO(trimmed);
+      if (isNaN(parsedDate.getTime())) {
+        parsedDate = parse(trimmed.slice(0, 10), 'yyyy-MM-dd', new Date());
+      }
+    } else if (!isNaN(Number(trimmed))) {
+      const epoch = Number(trimmed);
+      parsedDate = new Date(epoch);
     }
 
     if (parsedDate && !isNaN(parsedDate.getTime())) {

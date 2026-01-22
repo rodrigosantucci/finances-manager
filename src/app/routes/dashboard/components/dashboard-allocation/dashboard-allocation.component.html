@@ -1,0 +1,70 @@
+<ng-container *ngIf="showCard; else embedded">
+  <mat-card class="summary-card h-100">
+    <mat-card-content class="d-flex flex-column justify-content-center h-100">
+      <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
+        <div class="allocation-row mb-2">
+          <div class="allocation-label">{{ 'allocation.fixed_income' | translate }}</div>
+          <div class="allocation-bar">
+            <div class="allocation-fill rf" [style.width.%]="percentualRF"></div>
+          </div>
+          <div class="allocation-value">{{ percentualRF }}%</div>
+        </div>
+        <div class="allocation-row mb-2">
+          <div class="allocation-label">{{ 'allocation.equity' | translate }}</div>
+          <div class="allocation-bar">
+            <div class="allocation-fill rv" [style.width.%]="percentualRV"></div>
+          </div>
+          <div class="allocation-value">{{ percentualRV }}%</div>
+        </div>
+        <div class="allocation-row mb-2">
+          <div class="allocation-label">{{ 'allocation.foreign' | translate }}</div>
+          <div class="allocation-bar">
+            <div class="allocation-fill exterior" [style.width.%]="percentualExterior"></div>
+          </div>
+          <div class="allocation-value">{{ percentualExterior }}%</div>
+        </div>
+        <div class="allocation-row">
+          <div class="allocation-label">{{ 'allocation.bitcoin' | translate }}</div>
+          <div class="allocation-bar">
+            <div class="allocation-fill bitcoin" [style.width.%]="percentualBitcoin"></div>
+          </div>
+          <div class="allocation-value">{{ percentualBitcoin }}%</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+<ng-template #embedded>
+  <div class="summary-card h-100">
+    <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
+      <div class="allocation-row mb-2">
+        <div class="allocation-label">{{ 'allocation.fixed_income' | translate }}</div>
+        <div class="allocation-bar">
+          <div class="allocation-fill rf" [style.width.%]="percentualRF"></div>
+        </div>
+        <div class="allocation-value">{{ percentualRF }}%</div>
+      </div>
+      <div class="allocation-row mb-2">
+        <div class="allocation-label">{{ 'allocation.equity' | translate }}</div>
+        <div class="allocation-bar">
+          <div class="allocation-fill rv" [style.width.%]="percentualRV"></div>
+        </div>
+        <div class="allocation-value">{{ percentualRV }}%</div>
+      </div>
+      <div class="allocation-row mb-2">
+        <div class="allocation-label">{{ 'allocation.foreign' | translate }}</div>
+        <div class="allocation-bar">
+          <div class="allocation-fill exterior" [style.width.%]="percentualExterior"></div>
+        </div>
+        <div class="allocation-value">{{ percentualExterior }}%</div>
+      </div>
+      <div class="allocation-row">
+        <div class="allocation-label">{{ 'allocation.bitcoin' | translate }}</div>
+        <div class="allocation-bar">
+          <div class="allocation-fill bitcoin" [style.width.%]="percentualBitcoin"></div>
+        </div>
+        <div class="allocation-value">{{ percentualBitcoin }}%</div>
+      </div>
+    </div>
+  </div>
+</ng-template>

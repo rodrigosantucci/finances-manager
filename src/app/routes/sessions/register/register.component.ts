@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
 import {
-  AbstractControl,
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
+  AbstractControl,
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -21,63 +21,63 @@ import { throwError } from 'rxjs'; // Import throwError
 import {CommonModule} from '@angular/common'; // Import CommonModule for ngIf and ngFor
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.scss',
-  standalone: true, // Assuming it's a standalone component based on imports
-  imports: [
-    RouterLink,
-    CommonModule, // Add CommonModule for ngIf and ngFor
-    FormsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCardModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatInputModule,
-    TranslateModule,
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss',
+  standalone: true,
+  imports: [
+    RouterLink,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
+    TranslateModule,
     MatProgressSpinnerModule, // Add MatProgressSpinnerModule
     MatSnackBarModule, // Add MatSnackBarModule
-  ],
+  ],
 })
 export class RegisterComponent {
-  private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient); // Inject HttpClient
-  private readonly router = inject(Router); // Inject Router
-  private readonly snackBar = inject(MatSnackBar); // Inject MatSnackBar
+  private readonly fb = inject(FormBuilder);
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
 loading = false; // Add loading state
 
-  registerForm = this.fb.nonNullable.group(
-    {
-      username: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]], // Added email validator
-      password: ['', [Validators.required, Validators.minLength(6)]], // Added minLength validator
-      confirmPassword: ['', [Validators.required]],
-    },
-    {
-      validators: [this.matchValidator('password', 'confirmPassword')],
-    }
-  );
+  registerForm = this.fb.nonNullable.group(
+    {
+      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    {
+      validators: [this.matchValidator('password', 'confirmPassword')],
+    }
+  );
 
 
 
-  matchValidator(source: string, target: string) {
-    return (control: AbstractControl) => {
-      const sourceControl = control.get(source)!;
-      const targetControl = control.get(target)!;
-      if (targetControl.errors && !targetControl.errors['mismatch']) { // Use bracket notation for error key
-        return null;
-      }
-      if (sourceControl.value !== targetControl.value) {
-        targetControl.setErrors({ mismatch: true });
-        return { mismatch: true };
-      } else {
-        targetControl.setErrors(null);
-        return null;
-      }
-    };
-  }
+  matchValidator(source: string, target: string) {
+    return (control: AbstractControl) => {
+      const sourceControl = control.get(source)!;
+      const targetControl = control.get(target)!;
+      if (targetControl.errors && !targetControl.errors['mismatch']) {
+        return null;
+      }
+      if (sourceControl.value !== targetControl.value) {
+        targetControl.setErrors({ mismatch: true });
+        return { mismatch: true };
+      } else {
+        targetControl.setErrors(null);
+        return null;
+      }
+    };
+  }
 
   // Method to handle form submission
   onSubmit(): void {

@@ -23,7 +23,7 @@ export class FormatService {
     }
   }
 
-  formatPercentageInput(event: Event, isCeilingPrice: boolean = false): void {
+  formatPercentageInput(event: Event, isCeilingPrice = false): void {
     const input = event.target as HTMLInputElement;
     let value = isCeilingPrice ? input.value.replace(/[^0-9]/g, '') : input.value.replace(/[^0-9,]/g, '');
     if (!isCeilingPrice) {
@@ -40,7 +40,7 @@ export class FormatService {
     }
   }
 
-  formatPercentageBlur(event: Event, isCeilingPrice: boolean = false): void {
+  formatPercentageBlur(event: Event, isCeilingPrice = false): void {
     const input = event.target as HTMLInputElement;
     if (input.value) {
       if (isCeilingPrice) {
@@ -66,7 +66,7 @@ export class FormatService {
     return parseFloat(text.replace(/[R$\s.]/g, '').replace(',', '.'));
   }
 
-  unformatPercentage(text: string, isCeilingPrice: boolean = false): number {
+  unformatPercentage(text: string, isCeilingPrice = false): number {
     if (!text) return 0;
     return isCeilingPrice ? parseFloat(text.replace('%', '')) / 100 : parseFloat(text.replace(',', '.'));
   }

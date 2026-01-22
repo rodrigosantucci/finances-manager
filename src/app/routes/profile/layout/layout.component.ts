@@ -39,7 +39,7 @@ export class ProfileLayoutComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
 
 
-  defaultAvatarPlaceholder: string = 'images/avatar.jpg';
+  defaultAvatarPlaceholder = 'images/avatar.jpg';
   private readonly apiUrl: string = environment.baseUrl;
   private avatarObjectUrl: string | null = null;
 

@@ -1,0 +1,76 @@
+<mat-card>
+  <mat-card-content>
+    <form [formGroup]="aiForm" class="form-field-full" (ngSubmit)="onSubmit()">
+      <div class="row form-grid-row">
+        <div class="col-12">
+          <h3>{{ 'settings.ai.title' | translate }}</h3>
+        </div>
+        <div class="col-12">
+          <mtx-alert *ngIf="hasValidGemini || hasValidOpenAI" type="success" class="m-b-8">
+            Status de chaves: Gemini {{ hasValidGemini ? 'válida' : 'ausente' }} · OpenAI {{ hasValidOpenAI ? 'válida' : 'ausente' }}
+          </mtx-alert>
+          <mtx-alert *ngIf="!hasValidGemini && !hasValidOpenAI" type="warning" class="m-b-8">
+            Nenhuma chave válida encontrada. Faça login com Gemini ou OpenAI para obter a chave automaticamente ou insira manualmente.
+          </mtx-alert>
+          <mtx-alert *ngIf="isLoginLoading" type="info" class="m-b-8">
+            Autenticando no provedor selecionado...
+          </mtx-alert>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field>
+            <mat-label>{{ 'settings.ai.provider' | translate }}</mat-label>
+            <mtx-select formControlName="provider" [items]="aiProviderOptions"></mtx-select>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="d-flex">
+            <button mat-stroked-button color="primary" type="button" (click)="loginWithProvider('gemini')" [disabled]="isLoginLoading">
+              Login no Gemini
+            </button>
+            <span class="m-l-8"></span>
+            <button mat-stroked-button color="primary" type="button" (click)="loginWithProvider('openai')" [disabled]="isLoginLoading">
+              Login no OpenAI
+            </button>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field>
+            <mat-label>{{ 'settings.ai.gemini_api_key' | translate }}</mat-label>
+            <input matInput type="password" [placeholder]="'settings.ai.placeholders.gemini_api_key' | translate" formControlName="geminiApiKey" />
+            @if (aiForm.get('geminiApiKey')?.invalid && aiForm.get('geminiApiKey')?.touched) {
+              <mat-error>{{ getAIKeyErrorMessage('geminiApiKey') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <mat-form-field>
+            <mat-label>{{ 'settings.ai.openai_api_key' | translate }}</mat-label>
+            <input matInput type="password" [placeholder]="'settings.ai.placeholders.openai_api_key' | translate" formControlName="openaiApiKey" />
+            @if (aiForm.get('openaiApiKey')?.invalid && aiForm.get('openaiApiKey')?.touched) {
+              <mat-error>{{ getAIKeyErrorMessage('openaiApiKey') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <div class="col-12">
+          <mat-form-field class="w-100">
+            <mat-label>{{ 'settings.ai.backend_endpoint' | translate }}</mat-label>
+            <input matInput [placeholder]="'settings.ai.placeholders.backend_endpoint' | translate" formControlName="aiBackendEndpoint" />
+            @if (aiForm.get('aiBackendEndpoint')?.invalid && aiForm.get('aiBackendEndpoint')?.touched) {
+              <mat-error>{{ getErrorMessage('aiBackendEndpoint') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="save-button-container m-t-16">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="aiForm.invalid"
+        >
+          {{ 'common.save' | translate }}
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

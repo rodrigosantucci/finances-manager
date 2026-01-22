@@ -1,167 +1,194 @@
-<page-header class="bg-dark text-light" title="Dashboard" />
+<page-header class="bg-dark text-light" title="menu.dashboard" />
 
 <section class="header-section" aria-labelledby="header-title">
   <div *ngIf="isShowAlert">
-    <mtx-alert type="info" dismissible (closed)="onAlertDismiss()">
-      🎉 Novidade!
-      <a [href]="introducingItem.link" target="_blank">{{ introducingItem.name }}</a>
-      - {{ introducingItem.description }}
-      <a [href]="introducingItem.link" target="_blank">Veja mais!</a>
-    </mtx-alert>
+    <mat-card class="mb-3">
+      <mat-card-content>
+        <mtx-alert type="info" dismissible (closed)="onAlertDismiss()">
+          🎉 {{ 'dashboard.alert.new' | translate }}
+          <a [href]="introducingItem.link" target="_blank">{{ introducingItem.name }}</a>
+          - {{ introducingItem.description }}
+          <a [href]="introducingItem.link" target="_blank">{{ 'dashboard.alert.see_more' | translate }}</a>
+        </mtx-alert>
+      </mat-card-content>
+    </mat-card>
   </div>
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-    <div id="tradingview-widget"></div>
-  </div>
+  <mat-card class="mb-4 tv-card">
+    <mat-card-content>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <div id="tradingview-widget"></div>
+      </div>
+    </mat-card-content>
+  </mat-card>
   <div
     *ngIf="isLoading"
     class="loading-indicator text-center my-4"
     role="status"
     aria-live="polite"
   >
-    <mat-spinner diameter="40" aria-label="Carregando dados"></mat-spinner>
-    <p>Carregando dados...</p>
+    <mat-spinner diameter="40" [attr.aria-label]="'common.loading_data' | translate" />
+    <p>{{ 'common.loading_data' | translate }}</p>
   </div>
   <div *ngIf="hasError" class="error-container" role="alert" aria-live="assertive">
     <mat-icon color="warn" aria-hidden="true">error_outline</mat-icon>
-    <p>Erro ao carregar os dados. Tente novamente mais tarde.</p>
+    <p>{{ 'common.load_error_message' | translate }}</p>
     <button
       mat-raised-button
       color="primary"
       (click)="loadData(currentUserId!)"
-      aria-label="Tentar novamente"
+      [attr.aria-label]="'common.retry' | translate"
     >
-      Tentar Novamente
+      {{ 'common.retry' | translate }}
     </button>
   </div>
 </section>
 
 <div *ngIf="!isLoading && !hasError" class="dashboard-container">
-  <section class="resumo-section mb-4" aria-labelledby="resumo-title">
-    <div class="row">
-
-
-    <div class="col-12 col-md-8">
-      <mat-card class="chart-card">
+  <div class="period-controls-global mb-2">
+    <mat-button-toggle-group [value]="selectedPeriod" (change)="onPeriodChange($event.value)" [attr.aria-label]="'dashboard.period_selector_aria' | translate">
+      <mat-button-toggle value="3M">{{ 'dashboard.periods.3M' | translate }}</mat-button-toggle>
+      <mat-button-toggle value="6M">{{ 'dashboard.periods.6M' | translate }}</mat-button-toggle>
+      <mat-button-toggle value="1Y">{{ 'dashboard.periods.1Y' | translate }}</mat-button-toggle>
+      <mat-button-toggle value="5Y">{{ 'dashboard.periods.5Y' | translate }}</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  <div class="row mb-4 align-items-stretch">
+    <div class="col-12 col-lg-8">
+      <app-dashboard-charts
+        [evolutionOptions]="headerChart$ | async"
+      />
+    </div>
+    <div class="col-12 col-lg-4">
+      <mat-card class="group-card h-100">
         <mat-card-header>
-          <h3 class="section-title">Evolução do Patrimônio</h3>
+          <mat-card-title class="header-title"><mat-icon>dashboard</mat-icon> {{ 'dashboard.summary.title' | translate }} </mat-card-title>
         </mat-card-header>
-        <mat-card-content class="d-flex justify-content-center">
-          <div
-            #headerChart
-            id="headerChart"
-            role="img"
-            aria-label="Gráfico da evolução do patrimônio"
-          ></div>
-          <p
-            *ngIf="!(headerChart$ | async)?.series?.length"
-            class="no-data-text"
-          >
-            Nenhum dado disponível para o período
-          </p>
+        <mat-card-content>
+          <div class="group-grid">
+            <div class="grid-item actions">
+              <app-dashboard-actions
+                [isUpdating]="isUpdating"
+                (addTransaction)="openTransactionDialog()"
+                (importTransactions)="triggerFileInput()"
+                (refreshData)="onUpdateDados()"
+                [showCard]="false"
+              />
+              <input
+                #fileInput
+                type="file"
+                accept=".json"
+                (change)="onUploadTransacoes($event)"
+                style="display: none"
+              />
+            </div>
+
+            <div class="grid-item stats">
+              <app-dashboard-stats
+                [totalInvestido]="getTotalInvestido()"
+                [totalLucroPrejuizo]="getTotalLucroPrejuizoGeral()"
+                [totalValorExterior]="getTotalValorExterior()"
+                [percentualRF]="getPercentualRF()"
+                [percentualRV]="getPercentualRV()"
+                [percentualExterior]="getPercentualExterior()"
+                [percentualBitcoin]="getPercentualBitcoin()"
+                [showCard]="false"
+              />
+            </div>
+
+            <div class="grid-item monthly">
+              <app-dashboard-monthly-summary
+                [currentValue]="getMonthlyPatrimonioAtual()"
+                [initialValue]="getMonthlyPatrimonioInicial()"
+                [period]="selectedPeriod"
+                (periodChange)="onPeriodChange($event)"
+                [showCard]="false"
+                [title]="''"
+                [showControls]="false"
+              />
+            </div>
+            <div class="grid-item allocation">
+              <app-dashboard-allocation
+                [percentualRF]="getPercentualRF()"
+                [percentualRV]="getPercentualRV()"
+                [percentualExterior]="getPercentualExterior()"
+                [percentualBitcoin]="getPercentualBitcoin()"
+                [valorRF]="getTotalValorAtualCaixa()"
+                [valorRV]="getTotalValorAtualAcoes() + getTotalValorAtualFundos() + getTotalValorAtualAssets()"
+                [valorExterior]="getTotalValorExterior()"
+                [valorBitcoin]="getTotalValorBitcoin()"
+                [showCard]="false"
+              />
+            </div>
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
+  </div>
 
-
-      <div class="col-md-4 flex-column justify-content-between">
-        <mat-card class="summary-card">
-          <mat-card-content class="d-flex flex-column">
-            <div class="button-controls mb-4 d-flex justify-content-center gap-10">
-              <div class="metric mb-2 text-center">
-                <p class="metric-label">Nova Transação</p>
-                <p class="metric-value">
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    (click)="openTransactionDialog()"
-                    matTooltip="Adicionar nova transação"
-                    aria-label="Adicionar nova transação"
-                  >
-                    <mat-icon>add</mat-icon>
-                  </button>
-                </p>
+  <!-- Asset Allocation Table -->
+  <section class="resumo-section mb-4" aria-labelledby="subresumo-title">
+    <div class="row">
+      <div class="col-12">
+        <mat-card class="table-card">
+          <mat-card-header>
+            <mat-card-title><mat-icon [matTooltip]="'dashboard.distribution.tooltip' | translate" aria-label="Ajuda">pie_chart</mat-icon> {{ 'dashboard.distribution.title' | translate }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="row">
+              <div class="col-12 col-md-8">
+                <div *ngIf="!isLoading && (distribuicaoDataSource.data.length || 0) === 0"
+                  class="empty-state"
+                >
+                  <p>{{ 'dashboard.distribution.empty' | translate }}</p>
+                </div>
+                <table mat-table [dataSource]="distribuicaoDataSource" class="w-100" matSort #distribuicaoSort="matSort">
+                  <ng-container matColumnDef="tipoAtivo">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'dashboard.table.asset_type' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">{{ element.tipoAtivo }}</td>
+                    <td mat-footer-cell *matFooterCellDef><b>{{ 'common.total' | translate }}</b></td>
+                  </ng-container>
+                  <ng-container matColumnDef="percentual">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'dashboard.table.percent' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element.percentual | number: '1.2-2' }}%
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
+                  </ng-container>
+                  <ng-container matColumnDef="valorTotal">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'dashboard.table.total_value' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element.valorTotal | currency: 'BRL' }}
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef>
+                      {{ getTotalInvestido() | currency: 'BRL' }}
+                    </td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="patrimonioColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: patrimonioColumns"></tr>
+                  <tr mat-footer-row *matFooterRowDef="patrimonioColumns"></tr>
+                </table>
+                <mat-paginator
+                  #distribuicaoPaginator
+                  class="no-range-label no-nav-buttons"
+                  [length]="distribuicaoDataSource.data.length || 0"
+                  [pageSize]="10"
+                  [hidePageSize]="true"
+                />
               </div>
-              <div class="metric mb-2 text-center">
-                <p class="metric-label">Importar Transações</p>
-                <p class="metric-value">
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    (click)="triggerFileInput()"
-                    [disabled]="isUpdating"
-                    matTooltip="Importar transações"
-                    aria-label="Importar transações dados"
-                    aria-label="Recarregar dados"
-                  >
-                    <mat-icon>arrow_upward</mat-icon>
-                  </button>
-                  <input
-                    #fileInput
-                    type="file"
-                    accept=".json"
-                    (change)="onUploadTransacoes($event)"
-                    style="display: none"
-                  />
-                </p>
-              </div>
-              <div class="metric mb-2 text-center">
-                <p class="metric-label">Recarregar</p>
-                <p class="metric-value">
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    (click)="onUpdateDados()"
-                    [disabled]="isUpdating"
-                    matTooltip="Recarregar dados"
-                    aria-label="Recarregar dados"
-                  >
-                    <mat-icon>refresh</mat-icon>
-                  </button>
-                </p>
-              </div>
-            </div>
-            <div class="metrics d-flex flex-column flex-grow-1 justify-content-center">
-              <div class="metric mb-2 text-center">
-                <p class="metric-label">Total Investido</p>
-                <p class="metric-value">
-                  <span class="text-primary font-weight-bold">
-                    {{ getTotalInvestido() | currency: 'BRL' }}
-                  </span>
-                </p>
-              </div>
-              <div class="metric text-center">
-                <p class="metric-label">Lucro/Prejuízo Total</p>
-
-                <p class="metric-value">
-                  <span
-                    [ngClass]="getTotalLucroPrejuizoGeral() >= 0 ? 'text-success' : 'text-danger'"
-                  >
-                    {{ getTotalLucroPrejuizoGeral() | currency: 'BRL' }}
-                  </span>
-                </p>
-              </div>
-              <div class="metric text-center">
-                <p class="metric-label">Total Exterior</p>
-                <p class="metric-value">{{ getTotalValorExterior() | currency: 'BRL' }}</p>
-              </div>
-              <div class="metric text-center">
-                <p class="metric-label">
-                  Renda Fixa:
-                  <span class="metric-value">{{ getPercentualRF() }}%</span>
-                </p>
-                <p class="metric-label">
-                  Renda Variável:
-                  <span class="metric-value">{{ getPercentualRV() }}%</span>
-                </p>
-                <p class="metric-label">
-                  Exterior:
-                  <span class="metric-value">{{ getPercentualExterior() }}%</span>
-                </p>
-                <p class="metric-label">
-                  Bitcoin:
-                  <span class="metric-value">{{ getPercentualBitcoin() }}%</span>
-                </p>
+              <div class="col-12 col-md-4">
+                <div class="chart-card h-100">
+                  <div #chart1 id="chart1" role="img" [attr.aria-label]="'charts.global_distribution_aria' | translate"></div>
+                  <div class="custom-legend" *ngIf="(patrimoniochart$ | async)?.series?.length">
+                    <div class="legend-item" *ngFor="let label of (patrimoniochart$ | async)?.labels; let i = index">
+                      <span class="legend-color" [style.background-color]="(patrimoniochart$ | async)?.colors?.[i]"></span>
+                      <span class="legend-text">{{ label }}</span>
+                    </div>
+                  </div>
+                  <p *ngIf="!(patrimoniochart$ | async)?.series?.length" class="no-data-text">
+                    {{ 'dashboard.distribution.empty' | translate }}
+                  </p>
+                </div>
               </div>
             </div>
           </mat-card-content>
@@ -170,53 +197,29 @@
     </div>
   </section>
 
-  <section class="resumo-section mb-4" aria-labelledby="subresumo-title">
+  <!-- Calendário de Dividendos -->
+  <section class="dividend-section mb-4" aria-labelledby="dividend-card-title">
     <div class="row">
-      <div class="col-12 col-md-8" style="margin: 0 auto;">
+      <div class="col-12">
         <mat-card class="table-card">
+          <mat-card-header>
+            <mat-card-title id="dividend-card-title"><mat-icon [matTooltip]="'dashboard.dividends.tooltip' | translate">calendar_today</mat-icon> {{ 'dashboard.dividends.title' | translate }}</mat-card-title>
+          </mat-card-header>
           <mat-card-content>
-            <table mat-table [dataSource]="distribuicaoDataSource" class="w-100">
-              <ng-container matColumnDef="tipoAtivo">
-                <th mat-header-cell *matHeaderCellDef>Tipo de Ativo</th>
-                <td mat-cell *matCellDef="let element">{{ element.tipoAtivo }}</td>
-                <td mat-footer-cell *matFooterCellDef><b>TOTAL</b></td>
-              </ng-container>
-              <ng-container matColumnDef="percentual">
-                <th mat-header-cell *matHeaderCellDef>Percentual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.percentual | number: '1.2-2' }}%
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="valorTotal">
-                <th mat-header-cell *matHeaderCellDef>Valor Total</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorTotal | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalInvestido() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="patrimonioColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: patrimonioColumns"></tr>
-              <tr mat-footer-row *matFooterRowDef="patrimonioColumns"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-
-      <div class="col-12 col-md-4">
-        <mat-card class="chart-card">
-          <mat-card-content class="d-flex justify-content-center">
-            <div
-              #chart1
-              id="chart1"
-              role="img"
-              aria-label="Gráfico de distribuição de patrimônio"
-            ></div>
-            <p *ngIf="!(patrimoniochart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para distribuição de patrimônio
-            </p>
+            <div class="row">
+              <div class="col-12">
+                <mat-list role="list">
+                  <mat-list-item role="listitem" *ngFor="let item of dividendCalendar">
+                    <img matListAvatar [src]="item.logoUrl" [alt]="item.company" />
+                    <div matLine>{{ item.company }}</div>
+                    <div matLine>{{ item.amount | currency: 'BRL' }} • {{ item.paymentDate }}</div>
+                  </mat-list-item>
+                </mat-list>
+                <p *ngIf="dividendCalendar.length === 0" class="no-data-text">
+                  {{ 'common.no_data' | translate }}
+                </p>
+              </div>
+            </div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -224,883 +227,926 @@
   </section>
 
   <!-- Ações Section -->
-  <section class="acoes-section mb-4" aria-labelledby="acoes-title">
-    <h2 id="acoes-title" class="section-title">Ações</h2>
+  <section class="acoes-section mb-4" aria-labelledby="acoes-card-title">
     <div class="row">
-      <div class="col-12 col-md-8">
+      <div class="col-12">
         <mat-card class="table-card">
+          <mat-card-header>
+            <mat-card-title id="acoes-card-title" class="header-title"><mat-icon [matTooltip]="'stocks.tooltip.table' | translate">stacked_line_chart</mat-icon> {{ 'stocks.title' | translate }}</mat-card-title>
+          </mat-card-header>
           <mat-card-content>
-            <table mat-table [dataSource]="acoesDataSource" class="w-100">
-              <ng-container matColumnDef="tickerFormatado">
-                <th mat-header-cell *matHeaderCellDef>Ticker</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editTicker">
-                    {{ element.tickerFormatado }}
-                    <span style="display: none">
-                      Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
-                        element.tickerFormatado
-                      }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
-                        typeof element.tickerFormatado
-                      }}
-                    </span>
+            <div class="row">
+              <div class="col-12 col-md-8">
+                <div *ngIf="!isLoading && (acoesDataSource.data.length || 0) === 0" class="empty-state">
+                  <p>{{ 'stocks.empty' | translate }}</p>
+                </div>
+                <table mat-table [dataSource]="acoesDataSource" class="w-100" matSort #acoesSort="matSort">
+                  <ng-container matColumnDef="tickerFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.ticker' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      <ng-container *ngIf="!isEditing(element, 'acoes'); else editTicker">
+                        {{ element.tickerFormatado }}
+                        <span style="display: none">
+                          Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
+                            element.tickerFormatado
+                          }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
+                            typeof element.tickerFormatado
+                          }}
+                        </span>
+                      </ng-container>
+                      <ng-template #editTicker>
+                        <mat-form-field appearance="outline" class="edit-input-field">
+                          <input
+                            matInput
+                            [(ngModel)]="element.tickerFormatado"
+                            name="ticker_{{ element.tickerFormatado }}_acoes"
+                            required
+                            [disabled]="true"
+                            [attr.title]="'common.ticker_not_editable' | translate"
+                          />
+                        </mat-form-field>
+                      </ng-template>
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef><b>{{ 'common.total' | translate }}</b></td>
                   </ng-container>
-                  <ng-template #editTicker>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.tickerFormatado"
-                        name="ticker_{{ element.tickerFormatado }}_acoes"
-                        required
-                        [disabled]="true"
-                        title="Ticker não editável"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef><b>TOTAL</b></td>
-              </ng-container>
-              <ng-container matColumnDef="descricaoFormatada">
-                <th mat-header-cell *matHeaderCellDef>Nome</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editDescricao">
-                    {{ element.descricaoFormatada }}
+                  <ng-container matColumnDef="descricaoFormatada">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.name' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      <ng-container *ngIf="!isEditing(element, 'acoes'); else editDescricao">
+                        {{ element.descricaoFormatada }}
+                      </ng-container>
+                      <ng-template #editDescricao>
+                        <mat-form-field appearance="outline" class="edit-input-field">
+                          <input
+                            matInput
+                            [(ngModel)]="element.descricaoFormatada"
+                            name="descricao_{{ element.tickerFormatado }}_acoes"
+                            required
+                          />
+                        </mat-form-field>
+                      </ng-template>
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
-                  <ng-template #editDescricao>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.descricaoFormatada"
-                        name="descricao_{{ element.tickerFormatado }}_acoes"
-                        required
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="quantidadeFormatada">
-                <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editQuantidade">
-                    {{ element.quantidadeFormatada | quantidadeFormat }}
+                  <ng-container matColumnDef="quantidadeFormatada">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.quantity' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      <ng-container *ngIf="!isEditing(element, 'acoes'); else editQuantidade">
+                        {{ element.quantidadeFormatada | quantidadeFormat }}
+                      </ng-container>
+                      <ng-template #editQuantidade>
+                        <mat-form-field appearance="outline" class="edit-input-field">
+                          <input
+                            matInput
+                            type="number"
+                            [(ngModel)]="element.quantidadeFormatada"
+                            name="quantidade_{{ element.tickerFormatado }}_acoes"
+                            required
+                            min="0"
+                          />
+                        </mat-form-field>
+                      </ng-template>
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
-                  <ng-template #editQuantidade>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.quantidadeFormatada"
-                        name="quantidade_{{ element.tickerFormatado }}_acoes"
-                        required
-                        min="0"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoMedioFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoMedio">
-                    {{ element.precoMedioFormatado | currency: 'BRL' }}
+                  <ng-container matColumnDef="precoMedioFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.average_price' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      <ng-container *ngIf="!isEditing(element, 'acoes'); else editPrecoMedio">
+                        {{ element.precoMedioFormatado | currency: 'BRL' }}
+                      </ng-container>
+                      <ng-template #editPrecoMedio>
+                        <mat-form-field appearance="outline" class="edit-input-field">
+                          <input
+                            matInput
+                            type="number"
+                            [(ngModel)]="element.precoMedioFormatado"
+                            name="precoMedio_{{ element.tickerFormatado }}_acoes"
+                            required
+                            min="0"
+                            step="0.01"
+                          />
+                        </mat-form-field>
+                      </ng-template>
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
-                  <ng-template #editPrecoMedio>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.precoMedioFormatado"
-                        name="precoMedio_{{ element.tickerFormatado }}_acoes"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.precoAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="valorInvestidoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorInvestidoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorInvestidoAcoes() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="valorAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorAtualAcoes() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="lucroPrejuizoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
-                <td
-                  mat-cell
-                  *matCellDef="let element"
-                  [ngClass]="{
-                    'text-success': element.lucroPrejuizoFormatado >= 0,
-                    'text-danger': element.lucroPrejuizoFormatado < 0,
-                  }"
-                >
-                  {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  <span
-                    [ngClass]="getTotalLucroPrejuizoAcoes() >= 0 ? 'text-success' : 'text-danger'"
-                  >
-                    {{ getTotalLucroPrejuizoAcoes() | currency: 'BRL' }}
-                  </span>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'acoes'); else editActions">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="startEdit(element, 'acoes')"
-                      matTooltip="Editar ação"
-                      aria-label="Editar ação"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      (click)="openDeleteDialog(element, 'acoes')"
-                      matTooltip="Excluir ação"
-                      aria-label="Excluir ação"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                    <span
-                      *ngIf="!element.tickerFormatado"
-                      class="text-danger"
-                      matTooltip="Ticker inválido"
-                    >
-                      Ação indisponível
-                    </span>
+                  <ng-container matColumnDef="precoAtualFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_price' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element.precoAtualFormatado | currency: 'BRL' }}
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
                   </ng-container>
-                  <ng-template #editActions>
-                    <button
-                      mat-icon-button
-                      color="accent"
-                      (click)="saveEdit(element, 'acoes')"
-                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
-                      matTooltip="Salvar edição"
-                      aria-label="Salvar edição da ação"
+                  <ng-container matColumnDef="valorInvestidoFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.invested_value' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element.valorInvestidoFormatado | currency: 'BRL' }}
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef>
+                      {{ getTotalValorInvestidoAcoes() | currency: 'BRL' }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="valorAtualFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_value' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      {{ element.valorAtualFormatado | currency: 'BRL' }}
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef>
+                      {{ getTotalValorAtualAcoes() | currency: 'BRL' }}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="lucroPrejuizoFormatado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.profit_loss' | translate }}</th>
+                    <td
+                      mat-cell
+                      *matCellDef="let element"
+                      [ngClass]="{
+                        'text-success': element.lucroPrejuizoFormatado >= 0,
+                        'text-danger': element.lucroPrejuizoFormatado < 0,
+                      }"
                     >
-                      <mat-icon>save</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="basic"
-                      (click)="cancelEdit()"
-                      matTooltip="Cancelar edição"
-                      aria-label="Cancelar edição da ação"
-                    >
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="acoesColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: acoesColumns"></tr>
-              <tr mat-footer-row *matFooterRowDef="acoesColumns"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-12 col-md-4">
-        <mat-card class="chart-card">
-          <mat-card-content class="d-flex justify-content-center">
-            <div #chart2 id="chart2" role="img" aria-label="Gráfico de distribuição de ações"></div>
-            <p *ngIf="!(acoesChart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para ações
-            </p>
+                      {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef>
+                      <span
+                        [ngClass]="getTotalLucroPrejuizoAcoes() >= 0 ? 'text-success' : 'text-danger'"
+                      >
+                        {{ getTotalLucroPrejuizoAcoes() | currency: 'BRL' }}
+                      </span>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+                    <td mat-cell *matCellDef="let element">
+                      <ng-container *ngIf="!isEditing(element, 'acoes'); else editActions">
+                        <button
+                          mat-icon-button
+                          color="primary"
+                          (click)="startEdit(element, 'acoes')"
+                          [matTooltip]="'stocks.tooltip.edit' | translate"
+                          [attr.aria-label]="'stocks.tooltip.edit' | translate"
+                          *ngIf="element.tickerFormatado"
+                          [attr.data-ticker]="element.tickerFormatado"
+                        >
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button
+                          mat-icon-button
+                          color="warn"
+                          (click)="openDeleteDialog(element, 'acoes')"
+                          [matTooltip]="'stocks.tooltip.delete' | translate"
+                          [attr.aria-label]="'stocks.tooltip.delete' | translate"
+                          *ngIf="element.tickerFormatado"
+                          [attr.data-ticker]="element.tickerFormatado"
+                        >
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                        <span
+                          *ngIf="!element.tickerFormatado"
+                          class="text-danger"
+                          [matTooltip]="'common.tooltip.invalid_ticker' | translate"
+                        >
+                          {{ 'common.action_unavailable' | translate }}
+                        </span>
+                      </ng-container>
+                      <ng-template #editActions>
+                        <button
+                          mat-icon-button
+                          color="accent"
+                          (click)="saveEdit(element, 'acoes')"
+                          [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                          [matTooltip]="'common.tooltip.save_edit' | translate"
+                          [attr.aria-label]="'stocks.aria.save_edit' | translate"
+                        >
+                          <mat-icon>save</mat-icon>
+                        </button>
+                        <button
+                          mat-icon-button
+                          color="basic"
+                          (click)="cancelEdit()"
+                          [matTooltip]="'common.tooltip.cancel_edit' | translate"
+                          [attr.aria-label]="'stocks.aria.cancel_edit' | translate"
+                        >
+                          <mat-icon>cancel</mat-icon>
+                        </button>
+                      </ng-template>
+                    </td>
+                    <td mat-footer-cell *matFooterCellDef></td>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="acoesColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: acoesColumns"></tr>
+                  <tr mat-footer-row *matFooterRowDef="acoesColumns"></tr>
+                </table>
+                <mat-paginator #acoesPaginator [length]="acoesDataSource.data.length || 0" [pageSize]="10" [pageSizeOptions]="[5,10,25]" />
+              </div>
+              <div class="col-12 col-md-4">
+                <div class="chart-card h-100">
+                  <div #chart2 id="chart2" role="img" [attr.aria-label]="'charts.actions_distribution_aria' | translate"></div>
+                  <div class="custom-legend" *ngIf="(acoesChart$ | async)?.series?.length">
+                    <div class="legend-item" *ngFor="let label of (acoesChart$ | async)?.labels; let i = index">
+                      <span class="legend-color" [style.background-color]="(acoesChart$ | async)?.colors?.[i]"></span>
+                      <span class="legend-text">{{ label }}</span>
+                    </div>
+                  </div>
+                  <p *ngIf="!(acoesChart$ | async)?.series?.length" class="no-data-text">
+                    {{ 'stocks.no_data' | translate }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </mat-card-content>
         </mat-card>
       </div>
     </div>
   </section>
 
+  
+
   <!-- Fundos Section -->
-  <section class="fundos-section mb-4" aria-labelledby="fundos-title">
-    <h2 id="fundos-title" class="section-title">Fundos</h2>
-    <div class="row">
-      <div class="col-12 col-md-8">
-        <mat-card class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="fundosDataSource" class="w-100">
-              <ng-container matColumnDef="tickerFormatado">
-                <th mat-header-cell *matHeaderCellDef>Ticker</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editTicker">
-                    {{ element.tickerFormatado }}
-                    <span style="display: none">
-                      Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
-                        element.tickerFormatado
-                      }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
-                        typeof element.tickerFormatado
-                      }}
-                    </span>
-                  </ng-container>
-                  <ng-template #editTicker>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.tickerFormatado"
-                        name="ticker_{{ element.tickerFormatado }}_fundos"
-                        required
-                        [disabled]="true"
-                        title="Ticker não editável"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef><b>TOTAL</b></td>
-              </ng-container>
-              <ng-container matColumnDef="descricaoFormatada">
-                <th mat-header-cell *matHeaderCellDef>Nome</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editDescricao">
-                    {{ element.descricaoFormatada }}
-                  </ng-container>
-                  <ng-template #editDescricao>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.descricaoFormatada"
-                        name="descricao_{{ element.tickerFormatado }}_fundos"
-                        required
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="quantidadeFormatada">
-                <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editQuantidade">
-                    {{ element.quantidadeFormatada | quantidadeFormat }}
-                  </ng-container>
-                  <ng-template #editQuantidade>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.quantidadeFormatada"
-                        name="quantidade_{{ element.tickerFormatado }}_fundos"
-                        required
-                        min="0"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoMedioFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editPrecoMedio">
-                    {{ element.precoMedioFormatado | currency: 'BRL' }}
-                  </ng-container>
-                  <ng-template #editPrecoMedio>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.precoMedioFormatado"
-                        name="precoMedio_{{ element.tickerFormatado }}_fundos"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.precoAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="valorInvestidoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorInvestidoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorInvestidoFundos() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="valorAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorAtualFundos() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="lucroPrejuizoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
-                <td
-                  mat-cell
-                  *matCellDef="let element"
-                  [ngClass]="{
-                    'text-success': element.lucroPrejuizoFormatado >= 0,
-                    'text-danger': element.lucroPrejuizoFormatado < 0,
-                  }"
-                >
-                  {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  <span
-                    [ngClass]="getTotalLucroPrejuizoFundos() >= 0 ? 'text-success' : 'text-danger'"
-                  >
-                    {{ getTotalLucroPrejuizoFundos() | currency: 'BRL' }}
-                  </span>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'fundos'); else editActions">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="startEdit(element, 'fundos')"
-                      matTooltip="Editar fundo"
-                      aria-label="Editar fundo"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      (click)="openDeleteDialog(element, 'fundos')"
-                      matTooltip="Excluir fundo"
-                      aria-label="Excluir fundo"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                    <span
-                      *ngIf="!element.tickerFormatado"
-                      class="text-danger"
-                      matTooltip="Ticker inválido"
-                    >
-                      Ação indisponível
-                    </span>
-                  </ng-container>
-                  <ng-template #editActions>
-                    <button
-                      mat-icon-button
-                      color="accent"
-                      (click)="saveEdit(element, 'fundos')"
-                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
-                      matTooltip="Salvar edição"
-                      aria-label="Salvar edição do fundo"
-                    >
-                      <mat-icon>save</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="basic"
-                      (click)="cancelEdit()"
-                      matTooltip="Cancelar edição"
-                      aria-label="Cancelar edição do fundo"
-                    >
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="fundosColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: fundosColumns"></tr>
-              <tr mat-footer-row *matFooterRowDef="fundosColumns"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-12 col-md-4">
-        <mat-card class="chart-card">
-          <mat-card-content class="d-flex justify-content-center">
-            <div
-              #chart3
-              id="chart3"
-              role="img"
-              aria-label="Gráfico de distribuição de fundos"
-            ></div>
-            <p *ngIf="!(fundosChart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para fundos
-            </p>
-          </mat-card-content>
-        </mat-card>
+  <section class="fundos-section mb-4" aria-labelledby="fundos-card-title">
+    <div class="card-group">
+      <div class="row">
+        <div class="col-12">
+          <mat-card class="table-card">
+            <mat-card-header>
+              <mat-card-title id="fundos-card-title"><mat-icon [matTooltip]="'funds.tooltip.table' | translate">account_balance</mat-icon> {{ 'funds.title' | translate }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="row">
+                <div class="col-12 col-md-8">
+                  <div *ngIf="!isLoading && (fundosDataSource.data.length || 0) === 0" class="empty-state">
+                    <p>{{ 'funds.empty' | translate }}</p>
+                  </div>
+                  <table mat-table [dataSource]="fundosDataSource" class="w-100" matSort #fundosSort="matSort">
+                    <ng-container matColumnDef="tickerFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.ticker' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'fundos'); else editTicker">
+                          {{ element.tickerFormatado }}
+                          <span style="display: none">
+                            Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
+                              element.tickerFormatado
+                            }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
+                              typeof element.tickerFormatado
+                            }}
+                          </span>
+                        </ng-container>
+                        <ng-template #editTicker>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              [(ngModel)]="element.tickerFormatado"
+                              name="ticker_{{ element.tickerFormatado }}_fundos"
+                              required
+                              [disabled]="true"
+                              title="Ticker não editável"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef><b>{{ 'common.total' | translate }}</b></td>
+                    </ng-container>
+                    <ng-container matColumnDef="descricaoFormatada">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.name' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'fundos'); else editDescricao">
+                          {{ element.descricaoFormatada }}
+                        </ng-container>
+                        <ng-template #editDescricao>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              [(ngModel)]="element.descricaoFormatada"
+                              name="descricao_{{ element.tickerFormatado }}_fundos"
+                              required
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="quantidadeFormatada">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.quantity' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'fundos'); else editQuantidade">
+                          {{ element.quantidadeFormatada | quantidadeFormat }}
+                        </ng-container>
+                        <ng-template #editQuantidade>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.quantidadeFormatada"
+                              name="quantidade_{{ element.tickerFormatado }}_fundos"
+                              required
+                              min="0"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="precoMedioFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.average_price' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'fundos'); else editPrecoMedio">
+                          {{ element.precoMedioFormatado | currency: 'BRL' }}
+                        </ng-container>
+                        <ng-template #editPrecoMedio>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.precoMedioFormatado"
+                              name="precoMedio_{{ element.tickerFormatado }}_fundos"
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="precoAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_price' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.precoAtualFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorInvestidoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.invested_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.valorInvestidoFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        {{ getTotalValorInvestidoFundos() | currency: 'BRL' }}
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.valorAtualFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        {{ getTotalValorAtualFundos() | currency: 'BRL' }}
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="lucroPrejuizoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.profit_loss' | translate }}</th>
+                      <td
+                        mat-cell
+                        *matCellDef="let element"
+                        [ngClass]="{
+                          'text-success': element.lucroPrejuizoFormatado >= 0,
+                          'text-danger': element.lucroPrejuizoFormatado < 0,
+                        }"
+                      >
+                        {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        <span
+                          [ngClass]="getTotalLucroPrejuizoFundos() >= 0 ? 'text-success' : 'text-danger'"
+                        >
+                          {{ getTotalLucroPrejuizoFundos() | currency: 'BRL' }}
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="actions">
+                      <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'fundos'); else editActions">
+                          <button
+                            mat-icon-button
+                            color="primary"
+                            (click)="startEdit(element, 'fundos')"
+                            [matTooltip]="'funds.tooltip.edit' | translate"
+                            [attr.aria-label]="'funds.tooltip.edit' | translate"
+                            *ngIf="element.tickerFormatado"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="warn"
+                            (click)="openDeleteDialog(element, 'fundos')"
+                            [matTooltip]="'funds.tooltip.delete' | translate"
+                            [attr.aria-label]="'funds.tooltip.delete' | translate"
+                            *ngIf="element.tickerFormatado"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                          <span
+                            *ngIf="!element.tickerFormatado"
+                            class="text-danger"
+                            [matTooltip]="'common.tooltip.invalid_ticker' | translate"
+                          >
+                            {{ 'common.action_unavailable' | translate }}
+                          </span>
+                        </ng-container>
+                        <ng-template #editActions>
+                          <button
+                            mat-icon-button
+                            color="accent"
+                            (click)="saveEdit(element, 'fundos')"
+                            [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                            [matTooltip]="'common.tooltip.save_edit' | translate"
+                            [attr.aria-label]="'funds.aria.save_edit' | translate"
+                          >
+                            <mat-icon>save</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="basic"
+                            (click)="cancelEdit()"
+                            [matTooltip]="'common.tooltip.cancel_edit' | translate"
+                            [attr.aria-label]="'funds.aria.cancel_edit' | translate"
+                          >
+                            <mat-icon>cancel</mat-icon>
+                          </button>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="fundosColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: fundosColumns"></tr>
+                    <tr mat-footer-row *matFooterRowDef="fundosColumns"></tr>
+                  </table>
+                  <mat-paginator #fundosPaginator [length]="fundosDataSource.data.length || 0" [pageSize]="10" [pageSizeOptions]="[5,10,25]" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="chart-card h-100">
+                    <div
+                      #chart3
+                      id="chart3"
+                      role="img"
+                      [attr.aria-label]="'charts.funds_distribution_aria' | translate"
+                    ></div>
+                    <div class="custom-legend" *ngIf="(fundosChart$ | async)?.series?.length">
+                      <div class="legend-item" *ngFor="let label of (fundosChart$ | async)?.labels; let i = index">
+                        <span class="legend-color" [style.background-color]="(fundosChart$ | async)?.colors?.[i]"></span>
+                        <span class="legend-text">{{ label }}</span>
+                      </div>
+                    </div>
+                    <p *ngIf="!(fundosChart$ | async)?.series?.length" class="no-data-text">
+                      {{ 'funds.no_data' | translate }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Caixa Section -->
-  <section class="caixa-section mb-4" aria-labelledby="caixa-title">
-    <h2 id="caixa-title" class="section-title">Caixa</h2>
-    <div class="row">
-      <div class="col-12 col-md-8">
-        <mat-card class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="caixaDataSource" class="w-100">
-              <!-- Nome Column -->
-              <ng-container matColumnDef="descricaoFormatada">
-                <th mat-header-cell *matHeaderCellDef>Nome</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editDescricao">
-                    {{ element.descricaoFormatada }}
-                  </ng-container>
-                  <ng-template #editDescricao>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.descricaoFormatada"
-                        name="descricao_{{ element.tickerFormatado }}_caixa"
-                        required
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-
-              <!-- Valor Investido Column -->
-              <ng-container matColumnDef="valorInvestidoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorInvestido">
-                    {{ element.valorInvestidoFormatado | currency: 'BRL' }}
-                  </ng-container>
-                  <ng-template #editValorInvestido>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.valorInvestidoFormatado"
-                        name="valorInvestido_{{ element.tickerFormatado }}_caixa"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-
-              <!-- Preço Atual Column -->
-              <ng-container matColumnDef="precoAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editPrecoAtual">
-                    {{ element.precoAtualFormatado | currency: 'BRL' }}
-                  </ng-container>
-                  <ng-template #editPrecoAtual>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.precoAtualFormatado"
-                        name="precoAtual_{{ element.tickerFormatado }}_caixa"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-
-              <!-- Valor Atual Column -->
-              <ng-container matColumnDef="valorAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorAtual">
-                    {{ element.valorAtualFormatado | currency: 'BRL' }}
-                  </ng-container>
-                  <ng-template #editValorAtual>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.valorAtualFormatado"
-                        name="valorAtual_{{ element.tickerFormatado }}_caixa"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorAtualCaixa() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-
-              <!-- Lucro/Prejuízo Column -->
-              <ng-container matColumnDef="lucroPrejuizoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
-                <td
-                  mat-cell
-                  *matCellDef="let element"
-                  [ngClass]="{
-                    'text-success': element.lucroPrejuizoFormatado >= 0,
-                    'text-danger': element.lucroPrejuizoFormatado < 0,
-                  }"
-                >
-                  {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  <span
-                    [ngClass]="getTotalLucroPrejuizoCaixa() >= 0 ? 'text-success' : 'text-danger'"
-                  >
-                    {{ getTotalLucroPrejuizoCaixa() | currency: 'BRL' }}
-                  </span>
-                </td>
-              </ng-container>
-
-              <!-- Actions Column -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'caixa'); else editActions">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="startEdit(element, 'caixa')"
-                      matTooltip="Editar caixa"
-                      aria-label="Editar caixa"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      (click)="openDeleteDialog(element, 'caixa')"
-                      matTooltip="Excluir caixa"
-                      aria-label="Excluir caixa"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                    <span
-                      *ngIf="!element.tickerFormatado"
-                      class="text-danger"
-                      matTooltip="Ticker inválido"
-                    >
-                      Ação indisponível
-                    </span>
-                  </ng-container>
-                  <ng-template #editActions>
-                    <button
-                      mat-icon-button
-                      color="accent"
-                      (click)="saveEdit(element, 'caixa')"
-                      [disabled]="
-                        !element.quantidadeFormatada ||
-                        !element.precoMedioFormatado ||
-                        !element.valorInvestidoFormatado
-                      "
-                      matTooltip="Salvar edição"
-                      aria-label="Salvar edição do caixa"
-                    >
-                      <mat-icon>save</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="basic"
-                      (click)="cancelEdit()"
-                      matTooltip="Cancelar edição"
-                      aria-label="Cancelar edição do caixa"
-                    >
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="caixaColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: caixaColumns"></tr>
-              <tr mat-footer-row *matFooterRowDef="caixaColumns"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-12 col-md-4">
-        <mat-card class="chart-card">
-          <mat-card-content class="d-flex justify-content-center">
-            <div #chart4 id="chart4" role="img" aria-label="Gráfico de distribuição de caixa"></div>
-            <p *ngIf="!(caixaChart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para caixa
-            </p>
-          </mat-card-content>
-        </mat-card>
+  <section class="caixa-section mb-4" aria-labelledby="caixa-card-title">
+    <div class="card-group">
+      <div class="row">
+        <div class="col-12">
+          <mat-card class="table-card">
+            <mat-card-header>
+              <mat-card-title id="caixa-card-title"><mat-icon [matTooltip]="'cash.tooltip.table' | translate">account_balance_wallet</mat-icon> {{ 'cash.title' | translate }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="row">
+                <div class="col-12 col-md-8">
+                  <div *ngIf="!isLoading && (caixaDataSource.data.length || 0) === 0" class="empty-state">
+                    <p>{{ 'cash.empty' | translate }}</p>
+                  </div>
+                  <table mat-table [dataSource]="caixaDataSource" class="w-100" matSort #caixaSort="matSort">
+                    <ng-container matColumnDef="descricaoFormatada">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.name' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'caixa'); else editDescricao">
+                          {{ element.descricaoFormatada }}
+                        </ng-container>
+                        <ng-template #editDescricao>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              [(ngModel)]="element.descricaoFormatada"
+                              name="descricao_{{ element.tickerFormatado }}_caixa"
+                              required
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorInvestidoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.invested_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorInvestido">
+                          {{ element.valorInvestidoFormatado | currency: 'BRL' }}
+                        </ng-container>
+                        <ng-template #editValorInvestido>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.valorInvestidoFormatado"
+                              name="valorInvestido_{{ element.tickerFormatado }}_caixa"
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="precoAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_price' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'caixa'); else editPrecoAtual">
+                          {{ element.precoAtualFormatado | currency: 'BRL' }}
+                        </ng-container>
+                        <ng-template #editPrecoAtual>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.precoAtualFormatado"
+                              name="precoAtual_{{ element.tickerFormatado }}_caixa"
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'caixa'); else editValorAtual">
+                          {{ element.valorAtualFormatado | currency: 'BRL' }}
+                        </ng-container>
+                        <ng-template #editValorAtual>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.valorAtualFormatado"
+                              name="valorAtual_{{ element.tickerFormatado }}_caixa"
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        {{ getTotalValorAtualCaixa() | currency: 'BRL' }}
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="lucroPrejuizoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.profit_loss' | translate }}</th>
+                      <td
+                        mat-cell
+                        *matCellDef="let element"
+                        [ngClass]="{
+                          'text-success': element.lucroPrejuizoFormatado >= 0,
+                          'text-danger': element.lucroPrejuizoFormatado < 0,
+                        }"
+                      >
+                        {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        <span
+                          [ngClass]="getTotalLucroPrejuizoCaixa() >= 0 ? 'text-success' : 'text-danger'"
+                        >
+                          {{ getTotalLucroPrejuizoCaixa() | currency: 'BRL' }}
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="actions">
+                      <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'caixa'); else editActions">
+                          <button
+                            mat-icon-button
+                            color="primary"
+                            (click)="startEdit(element, 'caixa')"
+                            [matTooltip]="'cash.tooltip.edit' | translate"
+                            [attr.aria-label]="'cash.tooltip.edit' | translate"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="warn"
+                            (click)="openDeleteDialog(element, 'caixa')"
+                            [matTooltip]="(element.tickerFormatado && element.tickerFormatado.trim() !== '') ? ('cash.tooltip.delete' | translate) : ('common.tooltip.invalid_ticker' | translate)"
+                            [attr.aria-label]="'cash.tooltip.delete' | translate"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                        </ng-container>
+                        <ng-template #editActions>
+                          <button
+                            mat-icon-button
+                            color="accent"
+                            (click)="saveEdit(element, 'caixa')"
+                            [disabled]="
+                              !element.descricaoFormatada || element.descricaoFormatada.trim() === '' ||
+                              element.valorInvestidoFormatado == null ||
+                              element.valorAtualFormatado == null
+                            "
+                            [matTooltip]="'common.tooltip.save_edit' | translate"
+                            [attr.aria-label]="'cash.aria.save_edit' | translate"
+                          >
+                            <mat-icon>save</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="basic"
+                            (click)="cancelEdit()"
+                            [matTooltip]="'common.tooltip.cancel_edit' | translate"
+                            [attr.aria-label]="'cash.aria.cancel_edit' | translate"
+                          >
+                            <mat-icon>cancel</mat-icon>
+                          </button>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="caixaColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: caixaColumns"></tr>
+                    <tr mat-footer-row *matFooterRowDef="caixaColumns"></tr>
+                  </table>
+                  <mat-paginator #caixaPaginator [length]="caixaDataSource.data.length || 0" [pageSize]="10" [pageSizeOptions]="[5,10,25]" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="chart-card h-100">
+                    <div #chart4 id="chart4" role="img" [attr.aria-label]="'charts.cash_distribution_aria' | translate"></div>
+                    <div class="custom-legend" *ngIf="(caixaChart$ | async)?.series?.length">
+                      <div class="legend-item" *ngFor="let label of (caixaChart$ | async)?.labels; let i = index">
+                        <span class="legend-color" [style.background-color]="(caixaChart$ | async)?.colors?.[i]"></span>
+                        <span class="legend-text">{{ label }}</span>
+                      </div>
+                    </div>
+                    <p *ngIf="!(caixaChart$ | async)?.series?.length" class="no-data-text">
+                      {{ 'cash.no_data' | translate }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Assets Section -->
-  <section class="assets-section mb-4" aria-labelledby="assets-title">
-    <h2 id="assets-title" class="section-title">Assets Internacionais</h2>
-    <div class="row">
-      <div class="col-12 col-md-8">
-        <mat-card class="table-card">
-          <mat-card-content>
-            <table mat-table [dataSource]="assetsDataSource" class="w-100">
-              <ng-container matColumnDef="tickerFormatado">
-                <th mat-header-cell *matHeaderCellDef>Ticker</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editTicker">
-                    {{ element.tickerFormatado }}
-                    <span style="display: none">
-                      Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
-                        element.tickerFormatado
-                      }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
-                        typeof element.tickerFormatado
-                      }}
-                    </span>
-                  </ng-container>
-                  <ng-template #editTicker>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.tickerFormatado"
-                        name="ticker_{{ element.tickerFormatado }}_assets"
-                        required
-                        [disabled]="true"
-                        title="Ticker não editável"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef><b>TOTAL</b></td>
-              </ng-container>
-              <ng-container matColumnDef="descricaoFormatada">
-                <th mat-header-cell *matHeaderCellDef>Nome</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editDescricao">
-                    {{ element.descricaoFormatada }}
-                  </ng-container>
-                  <ng-template #editDescricao>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        [(ngModel)]="element.descricaoFormatada"
-                        name="descricao_{{ element.tickerFormatado }}_assets"
-                        required
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="quantidadeFormatada">
-                <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editQuantidade">
-                    {{ element.quantidadeFormatada | quantidadeFormat }}
-                  </ng-container>
-                  <ng-template #editQuantidade>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.quantidadeFormatada"
-                        name="quantidade_{{ element.tickerFormatado }}_assets"
-                        required
-                        min="0"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoMedioFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Médio</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editPrecoMedio">
-                    {{ element.precoMedioFormatado | currency: 'BRL' }}
-                  </ng-container>
-                  <ng-template #editPrecoMedio>
-                    <mat-form-field appearance="outline" class="edit-input-field">
-                      <input
-                        matInput
-                        type="number"
-                        [(ngModel)]="element.precoMedioFormatado"
-                        name="precoMedio_{{ element.tickerFormatado }}_assets"
-                        required
-                        min="0"
-                        step="0.01"
-                      />
-                    </mat-form-field>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="precoAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Preço Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.precoAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <ng-container matColumnDef="valorInvestidoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Investido</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorInvestidoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorInvestidoAssets() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="valorAtualFormatado">
-                <th mat-header-cell *matHeaderCellDef>Valor Atual</th>
-                <td mat-cell *matCellDef="let element">
-                  {{ element.valorAtualFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  {{ getTotalValorAtualAssets() | currency: 'BRL' }}
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="lucroPrejuizoFormatado">
-                <th mat-header-cell *matHeaderCellDef>Lucro/Prejuízo</th>
-                <td
-                  mat-cell
-                  *matCellDef="let element"
-                  [ngClass]="{
-                    'text-success': element.lucroPrejuizoFormatado >= 0,
-                    'text-danger': element.lucroPrejuizoFormatado < 0,
-                  }"
-                >
-                  {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
-                </td>
-                <td mat-footer-cell *matFooterCellDef>
-                  <span
-                    [ngClass]="getTotalLucroPrejuizoAssets() >= 0 ? 'text-success' : 'text-danger'"
-                  >
-                    {{ getTotalLucroPrejuizoAssets() | currency: 'BRL' }}
-                  </span>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Ações</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="!isEditing(element, 'assets'); else editActions">
-                    <button
-                      mat-icon-button
-                      color="primary"
-                      (click)="startEdit(element, 'assets')"
-                      matTooltip="Editar asset"
-                      aria-label="Editar asset"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="warn"
-                      (click)="openDeleteDialog(element, 'assets')"
-                      matTooltip="Excluir asset"
-                      aria-label="Excluir asset"
-                      *ngIf="element.tickerFormatado"
-                      [attr.data-ticker]="element.tickerFormatado"
-                    >
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                    <span
-                      *ngIf="!element.tickerFormatado"
-                      class="text-danger"
-                      matTooltip="Ticker inválido"
-                    >
-                      Ação indisponível
-                    </span>
-                  </ng-container>
-                  <ng-template #editActions>
-                    <button
-                      mat-icon-button
-                      color="accent"
-                      (click)="saveEdit(element, 'assets')"
-                      [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
-                      matTooltip="Salvar edição"
-                      aria-label="Salvar edição do asset"
-                    >
-                      <mat-icon>save</mat-icon>
-                    </button>
-                    <button
-                      mat-icon-button
-                      color="basic"
-                      (click)="cancelEdit()"
-                      matTooltip="Cancelar edição"
-                      aria-label="Cancelar edição do asset"
-                    >
-                      <mat-icon>cancel</mat-icon>
-                    </button>
-                  </ng-template>
-                </td>
-                <td mat-footer-cell *matFooterCellDef></td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="assetsColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: assetsColumns"></tr>
-              <tr mat-footer-row *matFooterRowDef="assetsColumns"></tr>
-            </table>
-          </mat-card-content>
-        </mat-card>
-      </div>
-      <div class="col-12 col-md-4">
-        <mat-card class="chart-card">
-          <mat-card-content class="d-flex justify-content-center">
-            <div
-              #chart5
-              id="chart5"
-              role="img"
-              aria-label="Gráfico de distribuição de assets"
-            ></div>
-            <p *ngIf="!(assetsChart$ | async)?.series?.length" class="no-data-text">
-              Nenhum dado disponível para assets
-            </p>
-          </mat-card-content>
-        </mat-card>
+  <section class="assets-section mb-4" aria-labelledby="assets-card-title">
+    <div class="card-group">
+      <div class="row">
+        <div class="col-12">
+          <mat-card class="table-card">
+            <mat-card-header>
+              <mat-card-title id="assets-card-title"><mat-icon [matTooltip]="'intl_assets.tooltip.table' | translate">public</mat-icon> {{ 'intl_assets.title' | translate }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="row">
+                <div class="col-12 col-md-8">
+                  <div *ngIf="!isLoading && (assetsDataSource.data.length || 0) === 0" class="empty-state">
+                    <p>{{ 'intl_assets.empty' | translate }}</p>
+                  </div>
+                  <table mat-table [dataSource]="assetsDataSource" class="w-100" matSort #assetsSort="matSort">
+                    <ng-container matColumnDef="tickerFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.ticker' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'assets'); else editTicker">
+                          {{ element.tickerFormatado }}
+                          <span style="display: none">
+                            Debug: editingRowTicker={{ editingRowTicker }}, element.ticker={{
+                              element.tickerFormatado
+                            }}, type_editingRowTicker={{ typeof editingRowTicker }}, type_elementTicker={{
+                              typeof element.tickerFormatado
+                            }}
+                          </span>
+                        </ng-container>
+                        <ng-template #editTicker>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              [(ngModel)]="element.tickerFormatado"
+                              name="ticker_{{ element.tickerFormatado }}_assets"
+                              required
+                              [disabled]="true"
+                              title="Ticker não editável"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef><b>{{ 'common.total' | translate }}</b></td>
+                    </ng-container>
+                    <ng-container matColumnDef="descricaoFormatada">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.name' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'assets'); else editDescricao">
+                          {{ element.descricaoFormatada }}
+                        </ng-container>
+                        <ng-template #editDescricao>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              [(ngModel)]="element.descricaoFormatada"
+                              name="descricao_{{ element.tickerFormatado }}_assets"
+                              required
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="quantidadeFormatada">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.quantity' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'assets'); else editQuantidade">
+                          {{ element.quantidadeFormatada | quantidadeFormat }}
+                        </ng-container>
+                        <ng-template #editQuantidade>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.quantidadeFormatada"
+                              name="quantidade_{{ element.tickerFormatado }}_assets"
+                              required
+                              min="0"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="precoMedioFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.average_price' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'assets'); else editPrecoMedio">
+                          {{ element.precoMedioFormatado | currency: 'BRL' }}
+                        </ng-container>
+                        <ng-template #editPrecoMedio>
+                          <mat-form-field appearance="outline" class="edit-input-field">
+                            <input
+                              matInput
+                              type="number"
+                              [(ngModel)]="element.precoMedioFormatado"
+                              name="precoMedio_{{ element.tickerFormatado }}_assets"
+                              required
+                              min="0"
+                              step="0.01"
+                            />
+                          </mat-form-field>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="precoAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_price' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.precoAtualFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorInvestidoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.invested_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.valorInvestidoFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        {{ getTotalValorInvestidoAssets() | currency: 'BRL' }}
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="valorAtualFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.current_value' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        {{ element.valorAtualFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        {{ getTotalValorAtualAssets() | currency: 'BRL' }}
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="lucroPrejuizoFormatado">
+                      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'common.profit_loss' | translate }}</th>
+                      <td
+                        mat-cell
+                        *matCellDef="let element"
+                        [ngClass]="{
+                          'text-success': element.lucroPrejuizoFormatado >= 0,
+                          'text-danger': element.lucroPrejuizoFormatado < 0,
+                        }"
+                      >
+                        {{ element.lucroPrejuizoFormatado | currency: 'BRL' }}
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef>
+                        <span
+                          [ngClass]="getTotalLucroPrejuizoAssets() >= 0 ? 'text-success' : 'text-danger'"
+                        >
+                          {{ getTotalLucroPrejuizoAssets() | currency: 'BRL' }}
+                        </span>
+                      </td>
+                    </ng-container>
+                    <ng-container matColumnDef="actions">
+                      <th mat-header-cell *matHeaderCellDef>{{ 'common.actions' | translate }}</th>
+                      <td mat-cell *matCellDef="let element">
+                        <ng-container *ngIf="!isEditing(element, 'assets'); else editActions">
+                          <button
+                            mat-icon-button
+                            color="primary"
+                            (click)="startEdit(element, 'assets')"
+                            [matTooltip]="'intl_assets.tooltip.edit' | translate"
+                            [attr.aria-label]="'intl_assets.tooltip.edit' | translate"
+                            *ngIf="element.tickerFormatado"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>edit</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="warn"
+                            (click)="openDeleteDialog(element, 'assets')"
+                            [matTooltip]="'intl_assets.tooltip.delete' | translate"
+                            [attr.aria-label]="'intl_assets.tooltip.delete' | translate"
+                            *ngIf="element.tickerFormatado"
+                            [attr.data-ticker]="element.tickerFormatado"
+                          >
+                            <mat-icon>delete</mat-icon>
+                          </button>
+                          <span
+                            *ngIf="!element.tickerFormatado"
+                            class="text-danger"
+                            [matTooltip]="'common.tooltip.invalid_ticker' | translate"
+                          >
+                            {{ 'common.action_unavailable' | translate }}
+                          </span>
+                        </ng-container>
+                        <ng-template #editActions>
+                          <button
+                            mat-icon-button
+                            color="accent"
+                            (click)="saveEdit(element, 'assets')"
+                            [disabled]="!element.quantidadeFormatada || !element.precoMedioFormatado"
+                            [matTooltip]="'common.tooltip.save_edit' | translate"
+                            [attr.aria-label]="'intl_assets.aria.save_edit' | translate"
+                          >
+                            <mat-icon>save</mat-icon>
+                          </button>
+                          <button
+                            mat-icon-button
+                            color="basic"
+                            (click)="cancelEdit()"
+                            [matTooltip]="'common.tooltip.cancel_edit' | translate"
+                            [attr.aria-label]="'intl_assets.aria.cancel_edit' | translate"
+                          >
+                            <mat-icon>cancel</mat-icon>
+                          </button>
+                        </ng-template>
+                      </td>
+                      <td mat-footer-cell *matFooterCellDef></td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="assetsColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: assetsColumns"></tr>
+                    <tr mat-footer-row *matFooterRowDef="assetsColumns"></tr>
+                  </table>
+                  <mat-paginator #assetsPaginator [length]="assetsDataSource.data.length || 0" [pageSize]="10" [pageSizeOptions]="[5,10,25]" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="chart-card h-100">
+                    <div
+                      #chart5
+                      id="chart5"
+                      role="img"
+                      [attr.aria-label]="'charts.assets_distribution_aria' | translate"
+                    ></div>
+                    <div class="custom-legend" *ngIf="(assetsChart$ | async)?.series?.length">
+                      <div class="legend-item" *ngFor="let label of (assetsChart$ | async)?.labels; let i = index">
+                        <span class="legend-color" [style.background-color]="(assetsChart$ | async)?.colors?.[i]"></span>
+                        <span class="legend-text">{{ label }}</span>
+                      </div>
+                    </div>
+                    <p *ngIf="!(assetsChart$ | async)?.series?.length" class="no-data-text">
+                      {{ 'intl_assets.no_data' | translate }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
       </div>
     </div>
   </section>

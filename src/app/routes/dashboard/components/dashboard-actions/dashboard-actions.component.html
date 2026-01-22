@@ -1,0 +1,58 @@
+<ng-container *ngIf="showCard; else embedded">
+  <mat-card class="actions-card h-100">
+    <mat-card-header>
+      <mat-card-title class="text-center w-100 pt-2"><mat-icon>bolt</mat-icon></mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="d-flex flex-column justify-content-center align-items-center gap-3 py-4">
+      <button mat-flat-button color="primary" class="action-btn" (click)="addTransaction.emit()">
+        <mat-icon class="mr-2">add</mat-icon>
+        {{ 'dashboard.actions.new_transaction' | translate }}
+      </button>
+      
+      <div class="w-75 d-flex gap-2">
+        <button mat-stroked-button color="primary" class="flex-grow-1" (click)="importTransactions.emit()" [disabled]="isUpdating">
+          <mat-icon class="mr-2">upload_file</mat-icon>
+          {{ 'dashboard.actions.import' | translate }}
+        </button>
+        
+        <button mat-stroked-button color="accent" class="flex-grow-1" (click)="refreshData.emit()" [disabled]="isUpdating">
+          <mat-icon class="mr-2">refresh</mat-icon>
+          {{ 'dashboard.actions.refresh' | translate }}
+        </button>
+      </div>
+      
+      <div class="text-center mt-2" *ngIf="isUpdating">
+        <mat-spinner diameter="24" class="d-inline-block" />
+        <small class="d-block text-muted mt-1">{{ 'dashboard.actions.updating' | translate }}</small>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</ng-container>
+<ng-template #embedded>
+  <div class="actions-card h-100">
+    <div class="text-center w-100 pt-2"></div>
+    <div class="d-flex flex-column justify-content-center align-items-center gap-3 py-4">
+      <button mat-flat-button color="primary" class="action-btn" (click)="addTransaction.emit()">
+        <mat-icon class="mr-2">add</mat-icon>
+        {{ 'dashboard.actions.new_transaction' | translate }}
+      </button>
+      
+      <div class="w-75 d-flex gap-2">
+        <button mat-stroked-button color="primary" class="flex-grow-1" (click)="importTransactions.emit()" [disabled]="isUpdating">
+          <mat-icon class="mr-2">upload_file</mat-icon>
+          {{ 'dashboard.actions.import' | translate }}
+        </button>
+        
+        <button mat-stroked-button color="accent" class="flex-grow-1" (click)="refreshData.emit()" [disabled]="isUpdating">
+          <mat-icon class="mr-2">refresh</mat-icon>
+          {{ 'dashboard.actions.refresh' | translate }}
+        </button>
+      </div>
+      
+      <div class="text-center mt-2" *ngIf="isUpdating">
+        <mat-spinner diameter="24" class="d-inline-block" />
+        <small class="d-block text-muted mt-1">{{ 'dashboard.actions.updating' | translate }}</small>
+      </div>
+    </div>
+  </div>
+</ng-template>

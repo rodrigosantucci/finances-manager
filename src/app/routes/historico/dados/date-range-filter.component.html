@@ -1,0 +1,31 @@
+<div class="date-filters">
+  <mat-form-field appearance="outline" class="date-field">
+    <mat-label>{{ 'historico_filters.data_range' | translate }}</mat-label>
+    <mat-date-range-input [rangePicker]="pickerRange" (dateChange)="onDateRangeChange($event)">
+      <input
+        matStartDate
+        [(ngModel)]="startDate"
+        (focus)="pickerRange.open()"
+        (click)="pickerRange.open()"
+        [attr.aria-label]="'historico_filters.start_label' | translate"
+      />
+      <input
+        matEndDate
+        [(ngModel)]="endDate"
+        (focus)="pickerRange.open()"
+        (click)="pickerRange.open()"
+        [attr.aria-label]="'historico_filters.end_label' | translate"
+      />
+    </mat-date-range-input>
+    <mat-datepicker-toggle matSuffix [for]="pickerRange" />
+    <mat-date-range-picker #pickerRange />
+  </mat-form-field>
+  <button
+    mat-stroked-button
+    color="primary"
+    class="apply-date-filter-btn"
+    (click)="onApply()"
+    [attr.aria-label]="'common.search' | translate">
+    <mat-icon>search</mat-icon>
+  </button>
+</div>

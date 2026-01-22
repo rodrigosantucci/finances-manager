@@ -14,6 +14,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatStepper } from '@angular/material/stepper';
 import { TransacaoService, Transacao } from './transaction.service';
 import { HttpClientModule } from '@angular/common/http';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-transaction-dialog',
@@ -34,6 +35,7 @@ import { HttpClientModule } from '@angular/common/http';
     MatSnackBarModule,
     HttpClientModule,
     MatStepperModule,
+    TranslateModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
@@ -89,7 +91,8 @@ export class TransactionDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { patrimonioId?: number; usuarioId?: number },
     @Inject(TransacaoService) private transactionService: TransacaoService,
     private snackBar: MatSnackBar,
-    private currencyPipe: CurrencyPipe
+    private currencyPipe: CurrencyPipe,
+    private translate: TranslateService
   ) {
     this.formGroupDadosIniciais = this.fb.group({
       transactionType: ['', Validators.required],
@@ -182,7 +185,7 @@ export class TransactionDialogComponent implements OnInit {
       console.log('Form Value:', formValue);
 
       if (!formValue.assetType) {
-        this.snackBar.open('Tipo de ativo não selecionado.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('transaction.messages.asset_type_not_selected'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -209,7 +212,7 @@ export class TransactionDialogComponent implements OnInit {
 
       const selectedAssetType = this.assetTypes.find(type => type.value === formValue.assetType);
       if (!selectedAssetType) {
-        this.snackBar.open('Tipo de ativo inválido.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('transaction.messages.invalid_asset_type'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -244,7 +247,7 @@ export class TransactionDialogComponent implements OnInit {
 
       this.transactionService.createTransacao(transacao).subscribe({
         next: (createTransacao: Transacao) => {
-          this.snackBar.open('Transação criada com sucesso!', 'Fechar', {
+          this.snackBar.open(this.translate.instant('transaction.messages.created_success'), this.translate.instant('close'), {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
@@ -253,7 +256,7 @@ export class TransactionDialogComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Erro ao criar transação:', error);
-          this.snackBar.open(error.message || 'Erro ao criar transação', 'Fechar', {
+          this.snackBar.open(error.message || this.translate.instant('transaction.messages.create_error'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -261,7 +264,7 @@ export class TransactionDialogComponent implements OnInit {
         },
       });
     } else {
-      this.snackBar.open('Por favor, preencha todos os campos obrigatórios ou corrija os erros.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('transaction.messages.fill_required_or_fix_errors'), this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });

@@ -1,15 +1,15 @@
-<page-header class="bg-dark text-light" title="Ferramentas" />
+<page-header class="bg-dark text-light" title="utilities.tools.title" />
 <mat-card class="mt-4">
   <mat-card-content>
-    <mat-tab-group>
-      <mat-tab label="Calculadora de Preço Teto">
-        <app-ceiling-price-calculator></app-ceiling-price-calculator>
+    <mat-tab-group [selectedIndex]="selectedTabIndex">
+      <mat-tab [label]="'utilities.tools.ceiling_price_calc' | translate">
+        <app-ceiling-price-calculator />
       </mat-tab>
-      <mat-tab label="Distribuidor de Aportes">
-        <app-contribution-allocator></app-contribution-allocator>
+      <mat-tab [label]="'utilities.tools.contribution_allocator' | translate">
+        <app-contribution-allocator />
       </mat-tab>
-      <mat-tab label="Simulador de Investimentos">
-        <app-investment-simulator></app-investment-simulator>
+      <mat-tab [label]="'utilities.tools.investment_simulator' | translate">
+        <app-investment-simulator />
       </mat-tab>
     </mat-tab-group>
   </mat-card-content>

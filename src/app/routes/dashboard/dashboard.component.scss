@@ -1,7 +1,7 @@
 /* Ajustes gerais para responsividade */
 :root {
   /* Tema Claro */
-  --table-row-light: #ffffff; /* Branco para linhas claras */
+  --table-row-light: #fff; /* Branco para linhas claras */
   --table-row-dark: #f1f5f9; /* Cinza claro para linhas um pouco mais escuras */
   --table-footer-bg-light: #cbd5e1; /* Cinza mais escuro para o rodapé */
   --table-row-hover-light: #e2e8f0; /* Cinza claro para fundo do hover */
@@ -24,15 +24,14 @@
 /* Animação para o hover */
 @keyframes hover-pulse {
   0% {
-    transform: scale(1);
     box-shadow: none;
   }
+
   50% {
-    transform: scale(1.005);
     box-shadow: 0 2px 8px var(--table-shadow-light);
   }
+
   100% {
-    transform: scale(1);
     box-shadow: none;
   }
 }
@@ -40,15 +39,14 @@
 [data-theme="dark"] {
   @keyframes hover-pulse {
     0% {
-      transform: scale(1);
       box-shadow: none;
     }
+
     50% {
-      transform: scale(1.005);
       box-shadow: 0 2px 8px var(--table-shadow-dark);
     }
+
     100% {
-      transform: scale(1);
       box-shadow: none;
     }
   }
@@ -56,20 +54,23 @@
 
 /* Garantir que o contêiner principal seja fluido */
 .dashboard-container {
+  box-sizing: border-box;
+  display: grid;
+  grid-auto-rows: min-content;
+  row-gap: 16px;
+  width: 100%;
+  min-height: 100dvh;
   padding: 16px;
   background: var(--background);
-  min-height: 100dvh;
-  width: 100%;
-  box-sizing: border-box; /* Evita problemas com padding */
 }
 
 /* Ajustar o loading-indicator para telas menores */
 .loading-indicator {
   display: flex;
   flex-direction: column;
+  gap: 10px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   margin: 24px 0;
 
   .mat-mdc-progress-spinner {
@@ -78,9 +79,9 @@
   }
 
   p {
+    margin: 0;
     font-size: 13px;
     color: #6b7280;
-    margin: 0;
   }
 }
 
@@ -88,25 +89,25 @@
 .error-container {
   display: flex;
   flex-direction: column;
+  gap: 12px;
   align-items: center;
   justify-content: center;
-  gap: 12px;
   padding: 12px;
+  margin: 12px 8px;
+  color: #d32f2f;
+  text-align: center;
   background-color: #fee2e2;
   border-radius: 4px;
-  margin: 12px 8px;
-  text-align: center;
-  color: #d32f2f;
 
   p {
-    font-size: 14px;
     margin: 0;
+    font-size: 14px;
   }
 
   button {
+    padding: 8px 16px;
     margin-top: 8px;
     font-size: 14px;
-    padding: 8px 16px;
   }
 }
 
@@ -119,9 +120,9 @@
 /* Ajustar botões para telas sensíveis ao toque */
 .button-controls {
   display: flex;
+  flex-wrap: wrap; /* Permite que botões quebrem linha em telas pequenas */
   gap: 8px;
   justify-content: flex-end;
-  flex-wrap: wrap; /* Permite que botões quebrem linha em telas pequenas */
 
   button.mat-icon-button {
     width: 40px;
@@ -129,9 +130,9 @@
     line-height: 40px;
 
     .mat-icon {
-      font-size: 22px;
       width: 22px;
       height: 22px;
+      font-size: 22px;
       line-height: 22px;
     }
   }
@@ -139,23 +140,28 @@
 
 /* Ajustar seção de resumo */
 .resumo-section {
-  padding: 1rem 0.5rem; /* Reduzir padding em telas menores */
+  padding: 1rem 0.5rem;
+}
+
+.summary-section {
+  padding: 0.5rem;
 }
 
 /* Ajustar cartões de resumo */
 .summary-card {
-  margin: 10px;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 8px rgba(179, 174, 174, 0.1);
+  height: 100%;
+  margin: 10px;
   border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(179, 174, 174, 0.1);
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
 
   .mat-mdc-card-content {
-    padding: 12px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 12px;
   }
 
   .button-controls {
@@ -168,9 +174,9 @@
       line-height: 36px;
 
       .mat-icon {
-        font-size: 20px;
         width: 20px;
         height: 20px;
+        font-size: 20px;
         line-height: 20px;
       }
     }
@@ -184,10 +190,10 @@
 
   .metric {
     .metric-label {
+      margin: 0;
       font-size: 13px;
       font-weight: 500;
       color: var(--text-primary);
-      margin: 0;
     }
 
     .metric-value {
@@ -199,90 +205,281 @@
         color: #d32f2f;
       }
 
+      margin: 4px 0 0;
       font-size: 15px;
       font-weight: 600;
       color: var(--text-secondary);
-      margin: 4px 0 0;
     }
+  }
+}
+
+.summary-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
+}
+
+.insights-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact-table {
+  th,
+  td {
+    padding: 6px 4px;
+    font-size: 12px;
+    vertical-align: middle;
   }
 }
 
 /* Ajustar títulos das seções */
 .section-title {
+  margin: 0 0 12px;
   font-size: 1.4rem;
   font-weight: 500;
-  margin-bottom: 12px;
   color: var(--text-secondary);
 }
 
 /* Ajustar cartões de gráficos */
 .chart-card {
-  height: auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  overflow: hidden;
-  margin-bottom: 16px;
+  justify-content: flex-start;
   width: 100%;
   max-width: 100%;
-  box-sizing: border-box;
+  min-height: 300px;
+  margin-bottom: 16px;
+  overflow: hidden;
 
   .mat-mdc-card-content {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 8px;
     align-items: center;
+    justify-content: center;
     width: 100%;
     padding: 12px;
-    box-sizing: border-box;
     overflow: hidden;
   }
 
-  #headerChart,
-  #chart1,
-  #chart2,
-  #chart3,
-  #chart4,
-  #chart5 {
+  [id="headerChart"],
+  [id="chart1"],
+  [id="chart2"],
+  [id="chart3"],
+  [id="chart4"],
+  [id="chart5"] {
     width: 100%;
     min-width: 0; /* Remove a largura mínima fixa para maior fluidez */
-    height: auto; /* Permite que a altura se ajuste automaticamente */
+    height: auto; /* headerChart segue fluido */
     margin: 0 auto;
     overflow: hidden;
   }
 
+  [id="chart1"],
+  [id="chart2"],
+  [id="chart3"],
+  [id="chart4"],
+  [id="chart5"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px; /* padroniza altura dos gráficos pie */
+  }
+
   /* Estilizar a legenda do ApexCharts */
   .apexcharts-legend {
-    width: 100%;
-    max-width: 100%;
-    padding: 8px 0;
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
     gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    max-height: 140px;
+    padding: 8px 0;
     margin-top: 8px;
+    overflow: hidden auto;
+  }
+
+  .apexcharts-canvas,
+  .apexcharts-svg,
+  .apexcharts-inner {
+    background: transparent !important;
+  }
+
+  .apexcharts-plot-background {
+    fill: transparent !important;
+  }
+
+  .table-card &,
+  .table-card & .mat-mdc-card-content {
+    background: transparent !important;
+  }
+
+  .table-card & .apexcharts-canvas,
+  .table-card & .apexcharts-svg,
+  .table-card & .apexcharts-inner {
+    background: transparent !important;
+  }
+
+  .table-card & .apexcharts-plot-background {
+    fill: transparent !important;
+  }
+
+  :host ::ng-deep .apexcharts-canvas,
+  :host ::ng-deep .apexcharts-svg,
+  :host ::ng-deep .apexcharts-inner {
+    background: transparent !important;
+  }
+
+  :host ::ng-deep .apexcharts-plot-background {
+    fill: transparent !important;
   }
 
   .apexcharts-legend-series {
     display: flex;
     align-items: center;
+    margin: 0 4px;
     font-size: 12px;
     color: var(--text-secondary);
-    margin: 0 4px;
-    white-space: nowrap;
+    word-break: break-word;
+    white-space: normal;
   }
 
   .apexcharts-legend-marker {
-    margin-right: 6px;
     width: 10px;
     height: 10px;
+    margin-right: 6px;
   }
 
   .apexcharts-legend-text {
     white-space: nowrap;
   }
+
+  .custom-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 8px 0 0;
+    margin-top: 8px;
+  }
+
+  .custom-legend .legend-item {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--mat-sys-on-surface);
+  }
+
+  .custom-legend .legend-color {
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 50%;
+  }
+}
+
+/* Agrupamento dos primeiros cards em um único container */
+.group-card {
+  height: 100%;
+
+  .mat-mdc-card-content {
+    display: block;
+    padding: 6px;
+  }
+
+  .summary-card {
+    margin: 0;
+  }
+
+  .mat-mdc-card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mat-mdc-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .header-title {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--mat-sys-on-background);
+  }
+}
+
+.group-grid {
+  display: grid;
+  grid-template-areas:
+    "actions"
+    "stats"
+    "monthly"
+    "allocation";
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+.group-grid .stats {
+  grid-area: stats;
+}
+
+.group-grid .actions {
+  grid-area: actions;
+}
+
+.group-grid .monthly {
+  grid-area: monthly;
+}
+
+.group-grid .allocation {
+  grid-area: allocation;
+}
+
+
+
+/* padding já definido no bloco anterior da .chart-card */
+
+#tradingview-widget,
+.tradingview-widget-container,
+.tradingview-widget-container__widget {
+  background: transparent !important;
+  border: none !important;
+}
+
+.tv-card {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+[id="evolutionChart"] {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+}
+
+[id="distributionChart"] {
+  width: 100%;
+  min-height: clamp(240px, 32vh, 380px);
+}
+
+
+.period-controls-global {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 /* Ajustar tabelas para responsividade */
@@ -292,13 +489,22 @@
 
 
   .mat-mdc-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     padding: 12px;
   }
 
   table {
     width: 100%;
-    border-collapse: collapse;
     min-width: 0; /* Remove a largura mínima para maior fluidez */
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th,
+    td {
+      vertical-align: middle;
+    }
   }
 
   /* Estilizar linhas da tabela com Angular Material */
@@ -307,13 +513,13 @@
       background-color: var(--table-header-bg-light) !important;
 
       .mat-mdc-header-cell {
-        color: var(--table-text-light);
+        box-sizing: border-box;
         padding: 10px 6px;
-        text-align: center;
         font-size: 13px;
         font-weight: 500;
-        border-bottom: 1px solid #e5e7eb;
-        box-sizing: border-box;
+        color: var(--table-text-light);
+        text-align: center;
+        vertical-align: middle;
       }
     }
 
@@ -326,55 +532,97 @@
     }
 
     .mat-mdc-row {
-      transition: all 0.3s ease !important;
       position: relative;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
+      height: 60px !important;
+      overflow: hidden !important;
+      align-items: center;
     }
 
     .mat-mdc-row:hover {
-      background-color: var(--table-row-hover-light) !important;
-      animation: hover-pulse 0.5s ease-in-out;
-      cursor: pointer;
-      box-shadow: 0 2px 8px var(--table-shadow-light) !important;
-      transform: scale(1.005) !important;
       z-index: 2;
+      cursor: default;
+      background-color: inherit !important;
+      box-shadow: none !important;
+      transform: none !important;
     }
 
     .mat-mdc-row:hover::after {
       content: '';
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background-color: var(--table-overlay-light) !important;
-      z-index: 1 !important;
-      pointer-events: none !important;
-      transition: background-color 0.3s ease !important;
+      display: none !important;
+      background-color: transparent !important;
     }
 
     .mat-mdc-footer-row {
-      background-color: var(--table-footer-bg-light) !important;
       font-weight: 600;
+      background-color: var(--table-footer-bg-light) !important;
 
       .mat-mdc-footer-cell {
-        border-top: 2px solid #cbd5e1;
+        box-sizing: border-box;
         padding: 8px 6px;
         font-size: 12px;
         color: var(--table-text-light);
         text-align: center;
-        box-sizing: border-box;
+        vertical-align: middle;
+        border-top: 2px solid #cbd5e1;
       }
     }
 
     .mat-mdc-cell {
-      color: var(--table-text-light);
-      text-align: center;
-      padding: 8px 6px;
-      font-size: 12px;
-      border-bottom: 1px solid #e5e7eb;
       position: relative;
       z-index: 3;
       box-sizing: border-box;
+      padding: 10px 6px;
+      font-size: 12px;
+      color: var(--table-text-light);
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 1px solid #e5e7eb;
+      overflow: hidden;
+    }
+
+    .mdc-data-table__cell,
+    .mdc-data-table__header-cell {
+      vertical-align: middle;
+    }
+
+    /* Normalizar conteúdo interno das células e cabeçalhos para alinhamento vertical */
+    .mat-mdc-header-cell > *,
+    .mat-mdc-cell > *,
+    .mat-mdc-footer-cell > * {
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      vertical-align: middle;
+    }
+
+    /* Garantir centralização dos headers com sort */
+    .mat-sort-header-container {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Garantir mesma altura visual e alinhamento entre header e cells */
+    .mat-mdc-header-cell,
+    .mat-mdc-cell,
+    .mat-mdc-footer-cell {
+      line-height: 1.35;
+      vertical-align: middle;
+    }
+
+    /* Coluna de ações: centralizar ícones vertical e horizontalmente */
+    .mat-mdc-cell.mat-column-actions,
+    .mat-mdc-header-cell.mat-column-actions,
+    .mat-mdc-footer-cell.mat-column-actions {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .mat-mdc-cell.mat-column-actions > * {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
     }
 
     .text-success {
@@ -388,19 +636,19 @@
 }
 
 /* Ajustes para o tema escuro */
-[data-theme="dark"] {
+:root[data-theme="dark"] {
   ::ng-deep .mat-mdc-table {
     .mat-mdc-header-row {
       background-color: var(--table-header-bg-dark) !important;
 
       .mat-mdc-header-cell {
-        color: var(--table-text-dark);
-        border-bottom: 1px solid #4b5563;
+        box-sizing: border-box;
         padding: 10px 6px;
-        text-align: center;
         font-size: 13px;
         font-weight: 500;
-        box-sizing: border-box;
+        color: var(--table-text-dark);
+        text-align: center;
+        vertical-align: middle;
       }
     }
 
@@ -413,54 +661,57 @@
     }
 
     .mat-mdc-row {
-      transition: all 0.3s ease !important;
       position: relative;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease !important;
+      height: 60px !important;
+      overflow: hidden !important;
+      align-items: center;
     }
 
     .mat-mdc-row:hover {
-      background-color: var(--table-row-hover-dark) !important;
-      animation: hover-pulse 0.5s ease-in-out;
-      cursor: pointer;
-      box-shadow: 0 2px 8px var(--table-shadow-dark) !important;
-      transform: scale(1.005) !important;
       z-index: 2;
+      cursor: default;
+      background-color: inherit !important;
+      box-shadow: none !important;
+      transform: none !important;
     }
 
     .mat-mdc-row:hover::after {
       content: '';
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background-color: var(--table-overlay-dark) !important;
-      z-index: 1 !important;
-      pointer-events: none !important;
-      transition: background-color 0.3s ease !important;
+      display: none !important;
+      background-color: transparent !important;
     }
 
     .mat-mdc-footer-row {
-      background-color: var(--table-footer-bg-dark) !important;
       font-weight: 600;
+      background-color: var(--table-footer-bg-dark) !important;
 
       .mat-mdc-footer-cell {
-        border-top: 2px solid #1f2937;
+        box-sizing: border-box;
         padding: 8px 6px;
         font-size: 12px;
         color: var(--table-text-dark);
         text-align: center;
-        box-sizing: border-box;
+        border-top: 2px solid #1f2937;
       }
     }
 
     .mat-mdc-cell {
-      color: var(--table-text-dark);
-      border-bottom: 1px solid #4b5563;
-      padding: 8px 6px;
-      font-size: 12px;
       position: relative;
       z-index: 3;
       box-sizing: border-box;
+      padding: 10px 6px;
+      font-size: 12px;
+      color: var(--table-text-dark);
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 1px solid #4b5563;
+      overflow: hidden;
+    }
+
+    .mdc-data-table__cell,
+    .mdc-data-table__header-cell {
+      vertical-align: middle;
     }
 
     .text-success {
@@ -475,22 +726,92 @@
 
 /* Ajustar texto de "sem dados" */
 .no-data-text {
-  text-align: center;
-  color: #6b7280;
-  font-size: 13px;
   margin-top: 12px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+
   [data-theme="dark"] & {
     color: #9ca3af;
   }
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+}
+
+/* Padronização de botões com hover e transições */
+.dashboard-container .mat-mdc-button-base {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, color 0.2s ease;
+}
+
+.dashboard-container .mat-mdc-button-base:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.dashboard-container .mat-mdc-stroked-button:hover {
+  background-color: rgba(148, 163, 184, 0.12);
+}
+
+.dashboard-container .mat-mdc-raised-button:hover {
+  filter: brightness(1.05);
+}
+
+.dashboard-container .mat-mdc-icon-button:hover {
+  background-color: rgba(148, 163, 184, 0.12);
+}
+
+/* Espaçamento de textos em cards */
+.dashboard-container .mat-mdc-card-content p {
+  margin: 0;
+}
+
+.dashboard-container .mat-mdc-card-content .metric {
+  margin: 4px 0;
+}
+
+.dashboard-container .mat-mdc-card-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px 8px;
+}
+
+.dashboard-container .mat-mdc-card-header .mat-mdc-card-title {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+
+.dashboard-container .mat-mdc-card-header .mat-mdc-card-title .mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
+}
+
 /* Ajustar botões de ação */
 .action-buttons-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
   justify-content: flex-start;
-  flex-wrap: wrap;
 }
 
 /* Ajustar campos de formulário do Angular Material */
@@ -505,10 +826,29 @@
 
 ::ng-deep .edit-input-field {
   width: 100%;
+  height: 100%;
+  margin: 0 !important;
+}
+::ng-deep .edit-input-field .mat-mdc-form-field-flex {
+  height: 100% !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+::ng-deep .edit-input-field .mat-mdc-text-field-wrapper {
+  height: 100% !important;
+  padding: 0 !important;
+}
+::ng-deep .edit-input-field .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+::ng-deep .edit-input-field .mat-mdc-input-element {
+  height: 100% !important;
+  padding: 0 8px !important;
+  box-sizing: border-box;
 }
 
 /* Ajustes para telas pequenas */
-@media (max-width: 767.98px) {
+@media (width <= 767.98px) {
   .dashboard-container {
     padding: 12px;
   }
@@ -527,8 +867,8 @@
   }
 
   .chart-card {
-    margin: 8px 0;
     min-height: 250px;
+    margin: 8px 0;
   }
 
   .table-card {

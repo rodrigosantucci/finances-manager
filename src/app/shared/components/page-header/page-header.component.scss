@@ -2,8 +2,8 @@
   display: block;
   padding: 1rem;
   margin-bottom: 1rem;
-  color: rgba(255, 255, 255, .87);
-  background-color: #0074e9;
+  color: var(--mat-sys-on-primary);
+  background-color: var(--mat-sys-primary);
   border-radius: var(--mat-sys-corner-medium);
 
   .matero-breadcrumb {

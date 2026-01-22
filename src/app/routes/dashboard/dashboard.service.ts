@@ -196,7 +196,7 @@ export class DashboardService {
       this.patrimonioCompletoCache$ = this.getUsuarioIdObservable().pipe(
         switchMap(usuarioId => {
           if (usuarioId === undefined || usuarioId === null) {
-            console.error("User ID not available for fetching complete patrimony.");
+            console.error('User ID not available for fetching complete patrimony.');
             return of([]);
           }
           const url = `${this.apiUserPatrimonioPrefix}/${usuarioId}`;
@@ -292,7 +292,7 @@ export class DashboardService {
       this.patrimonioHistoricoCache$ = this.getUsuarioIdObservable().pipe(
         switchMap(authUserId => {
           if (authUserId === undefined || authUserId === null) {
-            console.error("User ID not available for fetching historical patrimony.");
+            console.error('User ID not available for fetching historical patrimony.');
             return of([]);
           }
           if (authUserId !== usuarioId) {
@@ -354,7 +354,7 @@ export class DashboardService {
     if (!patrimonioCompleto || patrimonioCompleto.length === 0) {
       return [];
     }
-    const categoryTotals: { [key: string]: number } = {};
+    const categoryTotals: Record<string, number> = {};
     patrimonioCompleto.forEach(ativo => {
       const category = ativo.category || 'outros';
       categoryTotals[category] = (categoryTotals[category] || 0) + (ativo.valorAtualFormatado || 0);

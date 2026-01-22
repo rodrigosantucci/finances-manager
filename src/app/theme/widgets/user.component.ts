@@ -30,14 +30,9 @@ import { DashboardService } from 'app/routes/dashboard/dashboard.service';
         <span>{{ 'profile' | translate }}</span>
       </button>
 
-      <button routerLink="/profile/settings" mat-menu-item>
-        <mat-icon>edit</mat-icon>
-        <span>{{ 'edit_profile' | translate }}</span>
-      </button>
-
       <button mat-menu-item (click)="openGuide()">
         <mat-icon>help</mat-icon>
-        <span>Ajuda Importação</span>
+        <span>{{ 'common.help_import' | translate }}</span>
       </button>
 
       <button mat-menu-item (click)="logout()">
@@ -65,7 +60,7 @@ export class UserComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(DashboardService);
 
   user!: User;
-  defaultAvatarPlaceholder: string = 'images/avatar.jpg';
+  defaultAvatarPlaceholder = 'images/avatar.jpg';
   avatarUrl: SafeUrl = this.defaultAvatarPlaceholder;
   private avatarObjectUrl: string | null = null;
 

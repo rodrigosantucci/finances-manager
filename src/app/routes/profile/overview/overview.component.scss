@@ -1,55 +1,113 @@
-/* overview.component.scss */
-
 :host {
-  display: block; // Garante que o componente Angular ocupe o espaço necessário
+  display: block;
 }
 
-.section-title {
-  margin-bottom: 10px;
-}
-
-
-.tradingview-widget-container {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  overflow: hidden;
+.tab-content {
+  padding: var(--gutter);
 }
 
 .tradingview-widget-container__widget {
   width: 100%;
   height: 100%;
-  border-radius: 10px;
+  border-radius: var(--mat-sys-corner-medium);
+  background: transparent !important;
 }
 
-// Estilos para o botão de recarregar e animação do ícone
 button[mat-icon-button] {
-  mat-icon {
-    &.spin-animation {
-      animation: spinAnimation 1s linear infinite;
-    }
-  }
-}
-
-// Animação de rotação
-@keyframes spinAnimation {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
+  mat-icon.spin-animation {
+    animation: spin 1s linear infinite;
   }
 }
 
 .profile-overview {
-  border: 1px solid #b9b9b9;
-  border-radius: 10px;
+  padding: var(--gutter);
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: var(--mat-sys-corner-medium);
+  background: transparent;
 }
 
-.tradingview-widget-container {
-  height: 450px;
+.theme-dark .profile-overview {
+  background-color: #0f0f0f !important;
+}
+
+.profile-overview mat-card,
+.profile-overview mat-card.mat-mdc-card,
+.profile-overview .mat-mdc-card.mdc-card,
+.profile-overview .mdc-card,
+.profile-overview .mat-mdc-card-outlined,
+.profile-overview .mdc-card--outlined,
+.profile-overview .chart-card,
+.profile-overview .table-card {
+  background-color: transparent !important;
+  border-radius: var(--mat-sys-corner-medium) !important;
+  box-shadow: none !important;
+}
+
+.profile-overview mat-card-content,
+.profile-overview .mat-mdc-card-content {
+  background: transparent !important;
+}
+.profile-overview app-profile-settings mat-card,
+.profile-overview app-profile-settings mat-card.mat-mdc-card,
+.profile-overview app-profile-settings .mat-mdc-card,
+.profile-overview app-profile-settings .mdc-card,
+.profile-overview app-profile-settings .mat-mdc-card-outlined,
+.profile-overview app-profile-settings .mdc-card--outlined {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.profile-overview app-ai-settings mat-card,
+.profile-overview app-ai-settings mat-card.mat-mdc-card,
+.profile-overview app-ai-settings .mat-mdc-card,
+.profile-overview app-ai-settings .mdc-card,
+.profile-overview app-ai-settings .mat-mdc-card-outlined,
+.profile-overview app-ai-settings .mdc-card--outlined {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.profile-overview .chart-card mat-card-content {
+  background: transparent !important;
+}
+.profile-overview .chart-card {
   width: 100%;
 }
+.profile-overview .table-card,
+.profile-overview .table-card.mat-mdc-card,
+.profile-overview .table-card.mdc-card,
+.profile-overview .table-card.mat-mdc-card-outlined,
+.profile-overview .table-card.mdc-card--outlined {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.tradingview-widget-container {
+  width: 100%;
+  height: 450px;
+  overflow: hidden;
+  background: transparent;
+  
+  iframe {
+    background: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+}
+.tradingview-widget-container,
+.tradingview-widget-container__widget {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  box-sizing: border-box;
+}
+.theme-dark .profile-overview .tradingview-widget-container,
+.theme-dark .profile-overview .tradingview-widget-container__widget,
+.theme-dark .profile-overview .tradingview-widget-container iframe {
+  background: transparent !important;
+}
+
 .spin-animation {
   animation: spin 1s linear infinite;
 }
@@ -58,11 +116,136 @@ button[mat-icon-button] {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
-mat-card {
-  margin-bottom: 20px;
+.admin-controls {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-search-field {
+  width: 100%;
+  max-width: 320px;
+}
+
+.premium-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.premium-date-field {
+  width: 100%;
+  max-width: 200px;
+}
+
+.news-actions {
+  margin-top: 8px;
+}
+
+.futuristic-tabs {
+  .mat-tab-labels {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .mat-tab-label {
+    min-width: unset;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--mat-sys-on-surface-variant);
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: var(--mat-sys-primary);
+    }
+
+    &.mat-tab-label-active {
+      font-weight: 600;
+      color: var(--mat-sys-primary);
+    }
+  }
+
+  .mat-tab-header {
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--mat-sys-outline);
+  }
+
+  .mat-ink-bar {
+    height: 3px;
+    background-color: var(--mat-sys-primary);
+    border-radius: 2px;
+  }
+}
+
+table.mat-mdc-table {
+  width: 100%;
+}
+
+.user-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.user-table {
+  table-layout: fixed;
+}
+
+.user-table .mat-mdc-header-cell,
+.user-table .mat-mdc-cell {
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+ .mat-column-id { width: 64px; }
+ .mat-column-username { min-width: 120px; }
+ .mat-column-email { min-width: 200px; }
+ .mat-column-roles { min-width: 160px; }
+
+ .mat-column-lastLogin,
+ .mat-column-createdAt { min-width: 160px; }
+ .mat-column-premiumUntil { min-width: 140px; }
+ .mat-column-actions { width: 140px; }
+@media (width <= 900px) {
+  .user-table .mat-mdc-header-cell,
+  .user-table .mat-mdc-cell {
+    padding: 6px 10px;
+    font-size: 0.76rem;
+  }
+
+  .mat-column-email {
+    min-width: 180px;
+  }
+
+  .mat-column-roles {
+    min-width: 140px;
+  }
+}
+
+@media (width <= 600px) {
+  .user-table .mat-mdc-header-cell,
+  .user-table .mat-mdc-cell {
+    padding: 5px 8px;
+    font-size: 0.74rem;
+  }
+
+  .mat-column-email {
+    min-width: 160px;
+  }
+
+  .mat-column-roles {
+    min-width: 120px;
+  }
+
+  .mat-column-actions {
+    width: 128px;
+  }
 }

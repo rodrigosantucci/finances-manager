@@ -1,41 +1,40 @@
 /* Variáveis de tema atualizadas para maior contraste */
 :root {
-  /* Light Mode */
-  [data="light"] {
-    --background: #ffffff;
-    --text-primary: #1a1a1a;
-    --text-secondary: #4b5563;
-    --text-muted: #6b7280;
-    --primary: #f44336; /* Vermelho vibrante para botões */
-    --primary-hover-bg: #d32f2f; /* Vermelho mais escuro para hover */
-    --primary-text: #ffffff; /* Texto branco para contraste */
-    --disabled-bg: #e5e7eb;
-    --disabled-text: #9ca3af;
+  &[data-theme="light"] {
+    --background: var(--mat-sys-surface-container);
+    --text-primary: var(--mat-sys-on-background);
+    --text-secondary: var(--mat-sys-on-background);
+    --text-muted: var(--mat-sys-on-surface);
+    --primary: var(--mat-sys-primary);
+    --primary-hover-bg: color-mix(in oklab, var(--mat-sys-primary) 85%, white);
+    --primary-text: var(--mat-sys-on-primary);
+    --disabled-bg: var(--mat-sys-surface-variant);
+    --disabled-text: var(--mat-sys-on-surface);
   }
-  /* Dark Mode */
-  [data="dark"] {
-    --background: #1f1f1f;
-    --text-primary: #f9fafb;
-    --text-secondary: #d1d5db;
-    --text-muted: #9ca3af;
-    --primary: #ef5350; /* Vermelho claro para contraste no dark */
-    --primary-hover-bg: #f97066; /* Vermelho mais claro para hover */
-    --primary-text: #ffffff; /* Texto branco para contraste */
-    --disabled-bg: #374151;
-    --disabled-text: #6b7280;
+
+  &[data-theme="dark"] {
+    --background: var(--mat-sys-surface-container);
+    --text-primary: var(--mat-sys-on-background);
+    --text-secondary: var(--mat-sys-on-background);
+    --text-muted: var(--mat-sys-on-surface);
+    --primary: var(--mat-sys-primary);
+    --primary-hover-bg: color-mix(in oklab, var(--mat-sys-primary) 85%, black);
+    --primary-text: var(--mat-sys-on-primary);
+    --disabled-bg: var(--mat-sys-surface-variant);
+    --disabled-text: var(--mat-sys-on-surface);
   }
 }
 
 /* Estilos para o contêiner principal */
 #container {
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  justify-content: space-between; /* Alinha horizontalmente */
-  align-items: center; /* Centraliza verticalmente */
   gap: 12px;
-  padding: 16px;
+  align-items: center; /* Centraliza verticalmente */
+  justify-content: space-between; /* Alinha horizontalmente */
   width: 100%;
-  box-sizing: border-box;
+  padding: 16px;
   margin-bottom: 16px;
 }
 
@@ -70,25 +69,25 @@
 /* Estilos para os botões de ação */
 #widget-actions {
   display: flex;
-  flex-direction: row;
-  justify-content: center; /* Alinha botões à direita */
-  align-items: center; /* Centraliza verticalmente */
-  gap: 8px;
   flex-shrink: 0; /* Evita encolhimento dos botões */
+  flex-direction: row;
+  gap: 8px;
+  align-items: center; /* Centraliza verticalmente */
+  justify-content: center; /* Alinha botões à direita */
 }
 
 #widget-actions a[mat-mini-fab] {
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--primary); /* Cor de fundo do botão */
+  width: 40px;
+  height: 40px;
+  padding: 0;
   color: var(--primary-text); /* Cor do ícone */
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  background-color: var(--primary); /* Cor de fundo do botão */
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 #widget-actions a[mat-mini-fab]:hover {
@@ -97,39 +96,84 @@
 }
 
 #widget-actions a[mat-mini-fab]:disabled {
-  background-color: var(--disabled-bg);
   color: var(--disabled-text);
   cursor: not-allowed;
+  background-color: var(--disabled-bg);
 }
 
 #widget-actions mat-icon {
-  font-size: 20px;
   width: 20px;
   height: 20px;
+  margin: 0;
+  font-size: 20px;
   line-height: 20px;
 }
 
 /* Estilos gerais para mat-card */
 mat-card {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 100%;
   margin: 16px 0;
   background: var(--background);
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 mat-card-content {
   padding: 16px;
 }
 
+.tradingview-widget-container,
+.tradingview-widget-container__widget,
+.magazine-widget {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: var(--background) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Garantir que o conteúdo do iframe herde o fundo do card */
+.tradingview-widget-container iframe,
+.magazine-widget iframe {
+  display: block;
+  background: var(--background) !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Aplicar regras também aos elementos injetados pelo widget (quebrar encapsulamento) */
+:host ::ng-deep .tradingview-widget-container,
+:host ::ng-deep .tradingview-widget-container__widget,
+:host ::ng-deep .magazine-widget {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background: var(--background) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .tradingview-widget-container iframe,
+:host ::ng-deep .magazine-widget iframe {
+  display: block;
+  background: var(--background) !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Media Queries para telas menores */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   #container {
     flex-direction: column; /* Empilha elementos verticalmente */
-    justify-content: center; /* Centraliza horizontalmente */
-    align-items: stretch; /* Estica elementos para ocupar a largura */
     gap: 10px;
+    align-items: stretch; /* Estica elementos para ocupar a largura */
+    justify-content: center; /* Centraliza horizontalmente */
     padding: 12px;
   }
 
@@ -138,8 +182,8 @@ mat-card-content {
   }
 
   #widget-actions {
-    justify-content: center; /* Centraliza botões */
     gap: 10px;
+    justify-content: center; /* Centraliza botões */
   }
 
   #widget-actions a[mat-mini-fab] {
@@ -149,9 +193,9 @@ mat-card-content {
   }
 
   #widget-actions mat-icon {
-    font-size: 18px;
     width: 18px;
     height: 18px;
+    font-size: 18px;
     line-height: 18px;
   }
 
@@ -168,11 +212,11 @@ mat-card-content {
   }
 }
 
-@media (max-width: 576px) {
+@media (width <= 576px) {
   #container {
     flex-direction: row;
-    justify-content: space-between; /* Mantém alinhamento horizontal */
     align-items: center; /* Centraliza verticalmente */
+    justify-content: space-between; /* Mantém alinhamento horizontal */
     padding: 8px;
   }
 
@@ -193,9 +237,9 @@ mat-card-content {
   }
 
   #widget-actions mat-icon {
-    font-size: 16px;
     width: 16px;
     height: 16px;
+    font-size: 16px;
     line-height: 16px;
   }
 
@@ -215,8 +259,8 @@ mat-card-content {
 
 
 .section-title {
+  margin-bottom: 12px;
   font-size: 1.4rem;
   font-weight: 500;
-  margin-bottom: 12px;
   color: var(--text-secondary);
 }

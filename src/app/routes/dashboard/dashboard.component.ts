@@ -10,14 +10,19 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { AsyncPipe, NgIf, CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Observable, take, catchError, of, map, filter, finalize, forkJoin, Subject, debounceTime } from 'rxjs';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatListModule } from '@angular/material/list';
+import { Observable, take, catchError, of, map, filter, finalize, forkJoin, Subject, debounceTime, combineLatest } from 'rxjs';
 import { DashboardService, PatrimonioDistribuicaoVO, AtivoVO, PatrimonioHistoricoVO } from './dashboard.service';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -33,8 +38,16 @@ import { QuantidadeFormatPipe } from '@shared/pipes/quantidade-format.pipe';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PageHeaderComponent } from '@shared';
+
 import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.component';
+import { DashboardStatsComponent } from './components/dashboard-stats/dashboard-stats.component';
+import { DashboardActionsComponent } from './components/dashboard-actions/dashboard-actions.component';
+import { DashboardChartsComponent } from './components/dashboard-charts/dashboard-charts.component';
+import { DashboardMonthlySummaryComponent } from './components/dashboard-monthly-summary/dashboard-monthly-summary.component';
+import { DashboardAllocationComponent } from './components/dashboard-allocation/dashboard-allocation.component';
+import { PeriodFilterService, Period } from './services/period-filter.service';
+import { PageHeaderComponent } from '@shared';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,8 +56,6 @@ import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    AsyncPipe,
-    NgIf,
     CommonModule,
     MatCardModule,
     MatTableModule,
@@ -52,14 +63,24 @@ import { TransactionSummaryDialogComponent } from './transaction-summary-dialog.
     MatIconModule,
     MatDialogModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MtxAlertModule,
     QuantidadeFormatPipe,
     CurrencyPipe,
-    DecimalPipe,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatTooltipModule,
     PageHeaderComponent,
+    TranslateModule,
+    DashboardStatsComponent,
+    DashboardActionsComponent,
+    DashboardChartsComponent,
+    DashboardMonthlySummaryComponent,
+    DashboardAllocationComponent,
+    MatListModule,
   ],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -73,6 +94,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly renderer = inject(Renderer2);
   private readonly el = inject(ElementRef);
   private readonly authService = inject(AuthService);
+  private readonly periodFilter = inject(PeriodFilterService);
+  private readonly translate = inject(TranslateService);
 
   constructor(private router: Router) {}
 
@@ -106,6 +129,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   fundosDataSource = new MatTableDataSource<AtivoVO>([]);
   caixaDataSource = new MatTableDataSource<AtivoVO>([]);
   assetsDataSource = new MatTableDataSource<AtivoVO>([]);
+  dividendCalendar: {
+    company: string;
+    logoUrl: string;
+    amount: number;
+    paymentDate: string;
+  }[] = [
+    {
+      company: 'PETR4',
+      logoUrl: 'assets/logo-nobg.png',
+      amount: 0.85,
+      paymentDate: '29/06/2029',
+    },
+    {
+      company: 'ITSA4',
+      logoUrl: 'assets/logo-nobg.png',
+      amount: 0.35,
+      paymentDate: '15/07/2029',
+    },
+    {
+      company: 'VALE3',
+      logoUrl: 'assets/logo-nobg.png',
+      amount: 1.2,
+      paymentDate: '10/08/2029',
+    },
+  ];
+  topPositionsDataSource = new MatTableDataSource<{
+    ticker: string;
+    categoria: string;
+    valorAtual: number;
+  }>([]);
 
   headerChart$!: Observable<ApexOptions>;
   patrimoniochart$!: Observable<ApexOptions>;
@@ -155,6 +208,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     'lucroPrejuizoFormatado',
     'actions',
   ];
+  topPositionsColumns: string[] = ['ticker', 'categoria', 'valorAtual'];
 
   chartInstance0: ApexCharts | undefined;
   chartInstance1: ApexCharts | undefined;
@@ -170,6 +224,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chart4') chartElement4!: ElementRef<HTMLDivElement>;
   @ViewChild('chart5') chartElement5!: ElementRef<HTMLDivElement>;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('acoesPaginator') acoesPaginator: any;
+  @ViewChild('fundosPaginator') fundosPaginator: any;
+  @ViewChild('caixaPaginator') caixaPaginator: any;
+  @ViewChild('assetsPaginator') assetsPaginator: any;
+  @ViewChild('distribuicaoPaginator') distribuicaoPaginator: any;
+  @ViewChild('acoesSort') acoesSort: any;
+  @ViewChild('fundosSort') fundosSort: any;
+  @ViewChild('caixaSort') caixaSort: any;
+  @ViewChild('assetsSort') assetsSort: any;
+  @ViewChild('distribuicaoSort') distribuicaoSort: any;
 
   isLoading = true;
   hasError = false;
@@ -179,7 +243,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   editingRowTicker: string | null = null;
   currentEditedAtivo: AtivoVO | null = null;
   originalAtivoBeforeEdit: AtivoVO | null = null;
-  selectedPeriod: string = '1M'; // Default period
+  selectedPeriod: Period = '3M';
   private periodChangeSubject = new Subject<string>();
 
   protected currentUserId: number | null = null;
@@ -205,7 +269,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (usuarioId === undefined || usuarioId === null) {
       console.error('ID do usuário não disponível para atualizar cotações.');
-      this.snackBar.open('ID do usuário não disponível para atualizar cotações.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.user_id_unavailable_update_quotes'), this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });
@@ -218,7 +282,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.patrimonioService.getUserTickers(usuarioId).subscribe({
       next: tickers => {
         if (tickers.length === 0) {
-          this.snackBar.open('Nenhum ticker encontrado no patrimônio.', 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.no_tickers_found'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -230,7 +294,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         // Faz a requisição para atualizar as cotações com base nos tickers
         this.cotacaoService.atualizarDados(tickers).subscribe({
           next: cotacoes => {
-            this.snackBar.open('Dados atualizados com sucesso!', 'Fechar', {
+            this.snackBar.open(this.translate.instant('dashboard.messages.update_success'), this.translate.instant('close'), {
               duration: 3000,
               panelClass: ['success-snackbar'],
             });
@@ -255,7 +319,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
           error: error => {
             console.error('Erro ao atualizar cotações:', error);
-            this.snackBar.open(error.message || 'Erro ao atualizar cotações', 'Fechar', {
+            this.snackBar.open(error.message || this.translate.instant('dashboard.errors.update_quotes_failed'), this.translate.instant('close'), {
               duration: 5000,
               panelClass: ['error-snackbar'],
             });
@@ -266,7 +330,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: error => {
         console.error('Erro ao buscar tickers:', error);
-        this.snackBar.open(error.message || 'Erro ao buscar tickers', 'Fechar', {
+        this.snackBar.open(error.message || this.translate.instant('dashboard.errors.fetch_tickers_failed'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -279,32 +343,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   // Novo método para inicializar todos os gráficos
   private initAllCharts(): void {
     setTimeout(() => {
-      this.headerChart$?.subscribe({
-        next: options => {
-          if (this.chartElement0 && this.chartElement0.nativeElement) {
-            this.initChart(this.chartElement0, options, 'headerChart');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de cabeçalho:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.patrimoniochart$?.subscribe({
-        next: options => {
-          if (this.chartElement1 && this.chartElement1.nativeElement) {
-            this.initChart(this.chartElement1, options, 'chart1');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de patrimônio:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
+      // HeaderChart e Chart1 (Patrimônio) agora são gerenciados pelo DashboardChartsComponent
+      
       this.acoesChart$?.subscribe({
         next: options => {
           if (this.chartElement2 && this.chartElement2.nativeElement) {
@@ -381,13 +421,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.error('ID do usuário não disponível para carregar dados e configurar gráficos.');
           this.hasError = true;
           this.isLoading = false;
-          this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.user_id_unavailable'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
         }
         this.cdr.markForCheck();
       });
+
+    this.settings.notify.subscribe(() => {
+      this.tema = this.settings.getThemeColor() as string;
+      this.applyThemeToCharts();
+    });
   }
 
 
@@ -431,6 +476,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     setTimeout(() => {
+      this.attachTableFeatures();
       this.headerChart$?.subscribe({
         next: options => {
           if (this.chartElement0 && this.chartElement0.nativeElement) {
@@ -514,6 +560,99 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 100);
   }
 
+  private attachTableFeatures(): void {
+    if (this.acoesDataSource) {
+      this.acoesDataSource.paginator = this.acoesPaginator;
+      this.acoesDataSource.sort = this.acoesSort;
+      this.acoesDataSource.sortingDataAccessor = (item, property) => {
+        const numericProps = [
+          'quantidadeFormatada',
+          'precoMedioFormatado',
+          'precoAtualFormatado',
+          'valorInvestidoFormatado',
+          'valorAtualFormatado',
+          'lucroPrejuizoFormatado',
+        ];
+        const value = (item as any)?.[property];
+        if (numericProps.includes(property)) {
+          const num = typeof value === 'string' ? this.dashboardSrv.parseFormattedString(value) : (value ?? 0);
+          return isNaN(num as number) ? 0 : (num as number);
+        }
+        return typeof value === 'string' ? value.toLowerCase() : (value ?? '');
+      };
+    }
+    if (this.fundosDataSource) {
+      this.fundosDataSource.paginator = this.fundosPaginator;
+      this.fundosDataSource.sort = this.fundosSort;
+      this.fundosDataSource.sortingDataAccessor = (item, property) => {
+        const numericProps = [
+          'quantidadeFormatada',
+          'precoMedioFormatado',
+          'precoAtualFormatado',
+          'valorInvestidoFormatado',
+          'valorAtualFormatado',
+          'lucroPrejuizoFormatado',
+        ];
+        const value = (item as any)?.[property];
+        if (numericProps.includes(property)) {
+          const num = typeof value === 'string' ? this.dashboardSrv.parseFormattedString(value) : (value ?? 0);
+          return isNaN(num as number) ? 0 : (num as number);
+        }
+        return typeof value === 'string' ? value.toLowerCase() : (value ?? '');
+      };
+    }
+    if (this.caixaDataSource) {
+      this.caixaDataSource.paginator = this.caixaPaginator;
+      this.caixaDataSource.sort = this.caixaSort;
+      this.caixaDataSource.sortingDataAccessor = (item, property) => {
+        const numericProps = [
+          'valorInvestidoFormatado',
+          'precoAtualFormatado',
+          'valorAtualFormatado',
+          'lucroPrejuizoFormatado',
+        ];
+        const value = (item as any)?.[property];
+        if (numericProps.includes(property)) {
+          const num = typeof value === 'string' ? this.dashboardSrv.parseFormattedString(value) : (value ?? 0);
+          return isNaN(num as number) ? 0 : (num as number);
+        }
+        return typeof value === 'string' ? value.toLowerCase() : (value ?? '');
+      };
+    }
+    if (this.assetsDataSource) {
+      this.assetsDataSource.paginator = this.assetsPaginator;
+      this.assetsDataSource.sort = this.assetsSort;
+      this.assetsDataSource.sortingDataAccessor = (item, property) => {
+        const numericProps = [
+          'quantidadeFormatada',
+          'precoMedioFormatado',
+          'precoAtualFormatado',
+          'valorInvestidoFormatado',
+          'valorAtualFormatado',
+          'lucroPrejuizoFormatado',
+        ];
+        const value = (item as any)?.[property];
+        if (numericProps.includes(property)) {
+          const num = typeof value === 'string' ? this.dashboardSrv.parseFormattedString(value) : (value ?? 0);
+          return isNaN(num as number) ? 0 : (num as number);
+        }
+        return typeof value === 'string' ? value.toLowerCase() : (value ?? '');
+      };
+    }
+    if (this.distribuicaoDataSource) {
+      this.distribuicaoDataSource.paginator = this.distribuicaoPaginator;
+      this.distribuicaoDataSource.sort = this.distribuicaoSort;
+      this.distribuicaoDataSource.sortingDataAccessor = (item, property) => {
+        const numericProps = ['percentual', 'valorTotal'];
+        const value = (item as any)?.[property];
+        if (numericProps.includes(property)) {
+          const num = typeof value === 'string' ? this.dashboardSrv.parseFormattedString(value) : (value ?? 0);
+          return isNaN(num as number) ? 0 : (num as number);
+        }
+        return typeof value === 'string' ? value.toLowerCase() : (value ?? '');
+      };
+    }
+  }
   ngOnDestroy() {
     this.destroyChart(this.chartInstance1, 'chart1');
     this.destroyChart(this.chartInstance2, 'chart2');
@@ -560,7 +699,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.fundos = fundos;
       this.caixa = caixa;
       this.assets = assets;
-      
+      this.updateTopPositions();
       this.cdr.markForCheck();
       return true;
     }
@@ -585,7 +724,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!loadedFromStorage) {
         this.isLoading = false;
       }
-      this.snackBar.open(`Erro ao carregar ${context}.`, 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.load_failed_context', { context }), this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });
@@ -638,6 +777,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         this.caixa = caixa;
         this.assets = assets;
 
+        this.updateTopPositions();
         this.cdr.markForCheck();
       });
   }
@@ -652,132 +792,159 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     let startDate: Date;
 
     switch (period) {
-      case '1M':
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
-        break;
       case '3M':
-        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        startDate = new Date(new Date(now).setMonth(now.getMonth() - 3));
         break;
       case '6M':
-        startDate = new Date(now.setMonth(now.getMonth() - 6));
+        startDate = new Date(new Date(now).setMonth(now.getMonth() - 6));
         break;
       case '1Y':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        startDate = new Date(new Date(now).setFullYear(now.getFullYear() - 1));
         break;
       case '5Y':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 5));
+        startDate = new Date(new Date(now).setFullYear(now.getFullYear() - 5));
         break;
       case '10Y':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 10));
+        startDate = new Date(new Date(now).setFullYear(now.getFullYear() - 10));
         break;
       case '20Y':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 20));
+        startDate = new Date(new Date(now).setFullYear(now.getFullYear() - 20));
         break;
       default:
         return data; // Return all data if period is invalid
     }
 
-    console.warn('Filtering data from:', startDate, data);
+    const toDate = (item: PatrimonioHistoricoVO): Date => {
+      const parts = item.dataRegistro.split('/');
+      return parts.length === 3
+        ? new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+        : new Date(item.dataRegistro);
+    };
 
-    return data.filter(item => new Date(item.dataRegistro) >= startDate);
+    const filtered = data.filter(item => toDate(item) >= startDate);
+
+    if (filtered.length === 0) {
+      const counts: Record<string, number> = {
+        '3M': 3,
+        '6M': 6,
+        '1Y': 12,
+        '5Y': 60,
+        '10Y': 120,
+        '20Y': 240,
+      };
+      const count = counts[period] ?? 1;
+      const sorted = [...data].sort((a, b) => toDate(a).getTime() - toDate(b).getTime());
+      return sorted.slice(Math.max(sorted.length - count, 0));
+    }
+
+    return filtered;
   }
 
   setupCharts(userId: number): void {
-    this.headerChart$ = this.dashboardSrv.getPatrimonioHistorico(userId).pipe(
-
-      map(data => {
-        const labels = data.map(item => {
+    this.headerChart$ = combineLatest([
+      this.dashboardSrv.getPatrimonioHistorico(userId),
+      this.periodFilter.period$,
+    ]).pipe(
+      map(([data, period]) => {
+        const filtered = this.filterDataByPeriod(data, period);
+        const labels = filtered.map(item => {
           const [day, month, year] = item.dataRegistro.split('/');
           return `${month}/${year}`;
         });
-
-      const seriesData = data.map(item => item.valorTotal);
-      const theme = this.tema === 'dark' ? 'dark' : 'light';
-      const colors = ['#008FFB'];
-
-      const options: ApexOptions = {
-        series: [
-          {
-            name: 'Patrimônio Total',
-            data: seriesData,
+        const seriesData = filtered.map(item => item.valorTotal);
+        const theme = this.tema === 'dark' ? 'dark' : 'light';
+        const css = getComputedStyle(document.documentElement);
+        const onSurface = css.getPropertyValue('--mat-sys-on-surface')?.trim() || (this.tema === 'dark' ? '#d1d5db' : '#4b5563');
+        const primary = css.getPropertyValue('--mat-sys-primary')?.trim() || '#008FFB';
+        const colors = [primary];
+        const options: ApexOptions = {
+          series: [
+            {
+              name: 'Patrimônio Total',
+              data: seriesData,
+            },
+          ],
+          chart: {
+            width: 1000,
+            height: 300,
+            type: 'area',
+            background: 'transparent',
+            toolbar: {
+              show: true,
+            },
+            zoom: {
+              enabled: true,
+            },
+            animations: {
+              enabled: true,
+              speed: 800,
+            },
+            fontFamily: 'Roboto, sans-serif',
           },
-        ],
-        chart: {
-          width: 1000,
-          height: 300,
-          type: 'area', // Alterado de 'area' para 'line' para maior clareza, ambos funcionam.
-          toolbar: {
-            show: true,
+          colors,
+          dataLabels: {
+            enabled: false,
           },
-          zoom: {
+          stroke: {
+            curve: 'smooth',
+            width: 3,
+          },
+          fill: {
+            type: 'solid',
+            opacity: 0.3,
+          },
+          tooltip: {
             enabled: true,
-          },
-          animations: {
-            enabled: true,
-            speed: 800,
-          },
-          dropShadow: {
-            enabled: true,
-            color: '#000',
-            top: 18,
-            left: 7,
-            blur: 10,
-            opacity: 0.2,
-          },
-          fontFamily: 'Roboto, sans-serif',
-        },
-        colors: colors,
-        dataLabels: {
-          enabled: false,
-        },
-        stroke: {
-          curve: 'smooth',
-        },
-        tooltip: {
-          enabled: true,
-          theme: theme,
-          x: {
-            formatter: (val: any, opts: any) => {
-              return labels[opts.dataPointIndex];
+            theme,
+            x: {
+              formatter: (val: any, opts: any) => {
+                return labels[opts.dataPointIndex];
+              },
+            },
+            y: {
+              formatter: (val: any) => {
+                return new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(val);
+              },
             },
           },
-          y: {
-            formatter: (val: any) => {
-              return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              }).format(val);
+          xaxis: {
+            categories: labels,
+            labels: {
+              style: {
+                colors: onSurface,
+              },
             },
           },
-        },
-        xaxis: {
-          categories: labels,
-        },
-        yaxis: {
-          labels: {
-            formatter: val =>
-              new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              }).format(val),
+          yaxis: {
+            labels: {
+              formatter: val =>
+                new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(val),
+              style: {
+                colors: onSurface,
+              },
+            },
           },
-        },
-      };
-
-      return options;
-    }),
-    catchError(err => {
-      console.error('Erro ao buscar histórico de patrimônio:', err);
-      this.hasError = true;
-      this.isLoading = false;
-      this.cdr.markForCheck();
-      return of({ series: [] } as ApexOptions);
-    }),
-    finalize(() => {
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    })
-  );
+        };
+        return options;
+      }),
+      catchError(err => {
+        console.error('Erro ao buscar histórico de patrimônio:', err);
+        this.hasError = true;
+        this.isLoading = false;
+        this.cdr.markForCheck();
+        return of({ series: [] } as ApexOptions);
+      }),
+      finalize(() => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      })
+    );
 
     this.patrimoniochart$ = this.dashboardSrv.getDistribuicaoPatrimonio().pipe(
       catchError(error => {
@@ -804,10 +971,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             series,
             labels,
           });
-          return this.getChartOptions([], [], 'Distribuição de Patrimônio', true);
+          return this.getChartOptions([], [], '', true);
         }
 
-        return this.getChartOptions(series, labels, 'Distribuição de Patrimônio', true);
+        return this.getChartOptions(series, labels, '', true);
       })
     );
 
@@ -827,9 +994,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             series,
             labels,
           });
-          return this.getChartOptions([], [], 'Patrimônio em Ações', false);
+          return this.getChartOptions([], [], '', false);
         }
-        return this.getChartOptions(series, labels, 'Patrimônio em Ações', false);
+        return this.getChartOptions(series, labels, '', false);
       })
     );
 
@@ -849,31 +1016,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             series,
             labels,
           });
-          return this.getChartOptions([], [], 'Patrimônio em Fundos', false);
+          return this.getChartOptions([], [], '', false);
         }
-        return this.getChartOptions(series, labels, 'Patrimônio em Fundos', false);
+        return this.getChartOptions(series, labels, '', false);
       })
     );
 
     this.caixaChart$ = this.caixaDataSource.connect().pipe(
       map((caixa: AtivoVO[]) => {
         const validCaixa = caixa.filter(
-          c =>
-            this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 &&
-            c.tickerFormatado &&
-            c.tickerFormatado.trim() !== ''
+          c => this.parseAndValidateNumber(c.valorAtualFormatado) >= 0 && c.descricaoFormatada && c.descricaoFormatada.trim() !== ''
         );
         const series = validCaixa.map(c => this.parseAndValidateNumber(c.valorAtualFormatado));
-        const labels = validCaixa.map(c => c.tickerFormatado);
+        const labels = validCaixa.map(c => c.descricaoFormatada);
 
         if (series.length !== labels.length) {
           console.error('Erro: series e labels têm tamanhos diferentes para #chart4', {
             series,
             labels,
           });
-          return this.getChartOptions([], [], 'Patrimônio em Caixa', false);
+          return this.getChartOptions([], [], '', false);
         }
-        return this.getChartOptions(series, labels, 'Patrimônio em Caixa', false);
+        return this.getChartOptions(series, labels, '', false);
       })
     );
 
@@ -893,9 +1057,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             series,
             labels,
           });
-          return this.getChartOptions([], [], 'Outros Ativos', false);
+          return this.getChartOptions([], [], '', false);
         }
-        return this.getChartOptions(series, labels, 'Patrimônio em Assets Internacionais', false);
+        return this.getChartOptions(series, labels, '', false);
       })
     );
   }
@@ -1005,6 +1169,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  getMonthlyPatrimonioInicial(): number {
+    const data = this.filterDataByPeriod(this.patrimonioHistoricoDataSource.data, this.selectedPeriod);
+    if (!data || data.length === 0) {
+      return 0;
+    }
+    return data[0].valorTotal;
+  }
+
+  getMonthlyPatrimonioAtual(): number {
+    const data = this.filterDataByPeriod(this.patrimonioHistoricoDataSource.data, this.selectedPeriod);
+    if (!data || data.length === 0) {
+      return 0;
+    }
+    return data[data.length - 1].valorTotal;
+  }
+
+  onPeriodChange(p: Period) {
+    this.selectedPeriod = p;
+    this.periodFilter.setPeriod(p);
+    this.cdr.markForCheck();
+  }
+
   getPercentualRF(): number {
     const totalValorAtualGeral =
       this.getTotalValorAtualAcoes() +
@@ -1042,6 +1228,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
     const percentual = totalValorAtualGeral > 0 ? (btc / totalValorAtualGeral) * 100 : 0;
     return Math.round(percentual);
+  }
+
+  getTotalValorBitcoin(): number {
+    return this.assetsDataSource.data
+      .filter(asset => asset.tickerFormatado?.toUpperCase() === 'BTC/USD')
+      .reduce((sum, asset) => sum + this.getNumericValue(asset.valorAtualFormatado), 0);
   }
 
   public acoes: AtivoVO[] = [];
@@ -1104,8 +1296,30 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.fundosDataSource.data = fundos;
       this.caixaDataSource.data = caixa;
       this.assetsDataSource.data = assets;
+      this.updateTopPositions();
       this.cdr.markForCheck();
     });
+  }
+
+  private updateTopPositions(): void {
+    const allAssets = [
+      ...this.acoesDataSource.data.map(a => ({ item: a, categoria: 'Ações' })),
+      ...this.fundosDataSource.data.map(f => ({ item: f, categoria: 'Fundos' })),
+      ...this.caixaDataSource.data.map(c => ({ item: c, categoria: 'Caixa' })),
+      ...this.assetsDataSource.data.map(as => ({ item: as, categoria: 'Assets' })),
+    ];
+
+    const mapped = allAssets
+      .map(entry => ({
+        ticker: entry.item.tickerFormatado,
+        categoria: entry.categoria,
+        valorAtual: this.getNumericValue(entry.item.valorAtualFormatado),
+      }))
+      .filter(p => p.ticker && p.ticker.trim() !== '' && p.valorAtual > 0)
+      .sort((a, b) => b.valorAtual - a.valorAtual)
+      .slice(0, 5);
+
+    this.topPositionsDataSource.data = mapped;
   }
 
  private getChartOptions(
@@ -1113,13 +1327,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     labels: string[],
     title: string,
     isPercentage: boolean,
-    isLineChart: boolean = false
+    isLineChart = false
   ): ApexOptions {
     const isDarkTheme = this.tema === 'dark';
-    const textPrimary = isDarkTheme ? '#f9fafb' : '#11161d';
-    const textSecondary = isDarkTheme ? '#d1d5db' : '#4b5563';
-    const textMuted = isDarkTheme ? '#9ca3af' : '#6b7280';
-    const chartBackground = isDarkTheme ? '#131216' : '#fbf8fd';
+    const css = getComputedStyle(document.documentElement);
+    const textPrimary = css.getPropertyValue('--mat-sys-on-background')?.trim() || (isDarkTheme ? '#f9fafb' : '#11161d');
+    const textSecondary = css.getPropertyValue('--mat-sys-on-surface')?.trim() || (isDarkTheme ? '#d1d5db' : '#4b5563');
+    const textMuted = css.getPropertyValue('--mat-sys-outline')?.trim() || (isDarkTheme ? '#9ca3af' : '#6b7280');
+    const surfaceContainer = css.getPropertyValue('--mat-sys-surface-container')?.trim() || (isDarkTheme ? '#1e1e1e' : '#f3f3f3');
 
     const chartColors = [
       '#d32f2f', // Red
@@ -1150,7 +1365,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const options: ApexOptions = {
       chart: {
         type: isLineChart ? 'line' : 'pie',
-        height: '400px',
+        height: isLineChart ? 360 : 400,
         width: '100%',
         animations: {
           enabled: true,
@@ -1158,13 +1373,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           animateGradually: { enabled: true, delay: 150 },
           dynamicAnimation: { enabled: true, speed: 350 },
         },
-        dropShadow: {
-          enabled: true,
-          top: 2,
-          left: 2,
-          blur: 4,
-          opacity: isDarkTheme ? 0.3 : 0.2,
-        },
+        dropShadow: isLineChart
+          ? {
+              enabled: true,
+              top: 2,
+              left: 2,
+              blur: 4,
+              opacity: isDarkTheme ? 0.3 : 0.2,
+            }
+          : {
+              enabled: false,
+            },
         toolbar: {
           show: true,
           tools: {
@@ -1178,12 +1397,43 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         },
         sparkline: { enabled: false },
-        background: chartBackground,
+        background: 'transparent',
       },
       series: chartSeries,
       colors: chartColors,
+      dataLabels: {
+        enabled: !isLineChart,
+        style: {
+          fontSize: '12px',
+          fontFamily: 'Roboto, sans-serif',
+        },
+        formatter: (val: number, opts: any) => {
+          if (!hasData || isLineChart) return '';
+          const value =
+            Array.isArray(opts?.w?.globals?.series) && typeof opts.seriesIndex === 'number'
+              ? opts.w.globals.series[opts.seriesIndex] || 0
+              : val || 0;
+          const totals = Array.isArray(opts?.w?.globals?.seriesTotals) ? opts.w.globals.seriesTotals : [];
+          const total = totals.reduce((sum: number, v: number) => sum + (isNaN(v) ? 0 : v), 0);
+          const percent = total > 0 ? (value / total) * 100 : 0;
+          return `${percent.toFixed(1)}%`;
+        },
+      },
+      plotOptions: isLineChart
+        ? undefined
+        : {
+            pie: {
+              expandOnClick: false,
+              customScale: 1.0,
+              offsetX: 0,
+              offsetY: 0,
+              dataLabels: {
+                offset: 0,
+              },
+            },
+          },
       legend: {
-        show: true,
+        show: isLineChart,
         position: 'bottom',
         horizontalAlign: 'center',
         fontSize: '12px',
@@ -1194,7 +1444,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           useSeriesColors: false,
         },
         markers: {
-          shape: isLineChart ? 'circle' : 'circle',
+          shape: 'circle',
           size: isLineChart ? 0 : 10,
           strokeWidth: 0,
           fillColors: chartColors,
@@ -1243,6 +1493,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
       },
       tooltip: {
+        theme: isDarkTheme ? 'dark' : 'light',
         style: {
           fontSize: '10px',
           fontFamily: 'Roboto, sans-serif',
@@ -1253,8 +1504,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
       },
       stroke: {
-        width: isLineChart ? 3 : 2,
-        colors: isLineChart ? undefined : [chartBackground],
+        width: isLineChart ? 3 : 0,
+        colors: isLineChart ? undefined : [surfaceContainer],
         curve: isLineChart ? 'smooth' : undefined,
       },
     };
@@ -1305,7 +1556,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       options.markers = {
         size: 4,
         colors: chartColors,
-        strokeColors: chartBackground,
+        strokeColors: surfaceContainer,
         strokeWidth: 2,
         hover: {
           size: 6,
@@ -1313,6 +1564,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     } else {
       options.labels = chartLabels;
+      options.fill = { opacity: 1 };
     }
 
     options.responsive = [
@@ -1321,7 +1573,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         options: {
           chart: {
             width: '100%',
-            height: isLineChart ? 300 : 300,
+            height: isLineChart ? 300 : 400,
           },
           legend: {
             fontSize: '10px',
@@ -1351,7 +1603,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         options: {
           chart: {
             width: '100%',
-            height: isLineChart ? 300 : 300,
+            height: isLineChart ? 300 : 400,
           },
           legend: {
             fontSize: '9px',
@@ -1390,6 +1642,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       console.error(`Elemento ${chartId} não encontrado no DOM.`);
       return;
     }
+
+    options.chart = { ...(options.chart || {}), background: 'transparent' };
 
     let instance: ApexCharts | undefined;
     switch (chartId) {
@@ -1445,13 +1699,33 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private applyThemeToCharts(): void {
+    const isDarkTheme = this.tema === 'dark';
+    const css = getComputedStyle(document.documentElement);
+    const textPrimary = css.getPropertyValue('--mat-sys-on-background')?.trim() || (isDarkTheme ? '#f9fafb' : '#11161d');
+    const textSecondary = css.getPropertyValue('--mat-sys-on-surface')?.trim() || (isDarkTheme ? '#d1d5db' : '#4b5563');
+    const tooltipTheme = isDarkTheme ? 'dark' : 'light';
+    const commonOptions: ApexOptions = {
+      chart: { background: 'transparent' },
+      legend: { labels: { colors: textSecondary } },
+      title: { style: { color: textPrimary } },
+      tooltip: { theme: tooltipTheme as any },
+    };
+    this.chartInstance0?.updateOptions(commonOptions as any, true, true);
+    this.chartInstance1?.updateOptions(commonOptions as any, true, true);
+    this.chartInstance2?.updateOptions(commonOptions as any, true, true);
+    this.chartInstance3?.updateOptions(commonOptions as any, true, true);
+    this.chartInstance4?.updateOptions(commonOptions as any, true, true);
+    this.chartInstance5?.updateOptions(commonOptions as any, true, true);
+  }
+
   openTransactionDialog(): void {
     const dialogRef = this.dialog.open(TransactionDialogComponent, {
       width: '600px',
       disableClose: true,
       autoFocus: true,
       data: {
-        title: 'Nova Transação',
+        title: this.translate.instant('transaction.title'),
         action: 'create',
         transaction: null,
         usuarioId: this.currentUserId,
@@ -1480,7 +1754,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
         if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
           console.error('Categoria inválida na transação:', category);
-          this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.invalid_category', { category }), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -1494,7 +1768,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           .pipe(
             catchError(error => {
               console.error('Erro ao adicionar transação:', error);
-              this.snackBar.open(error.message || 'Erro ao registrar transação.', 'Fechar', {
+              this.snackBar.open(error.message || this.translate.instant('dashboard.errors.register_transaction_failed'), this.translate.instant('close'), {
                 duration: 5000,
 
                 panelClass: ['error-snackbar'],
@@ -1504,7 +1778,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           )
           .subscribe(response => {
             if (response !== null) {
-              this.snackBar.open('Transação registrada com sucesso!', 'Fechar', {
+              this.snackBar.open(this.translate.instant('dashboard.messages.transaction_registered_success'), this.translate.instant('close'), {
                 duration: 3000,
                 panelClass: ['success-snackbar'],
               });
@@ -1513,7 +1787,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
       } else if (!this.currentUserId) {
         console.error('ID do usuário não disponível para registrar transação.');
-        this.snackBar.open('Erro: ID do usuário não disponível.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('dashboard.errors.user_id_unavailable'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -1526,13 +1800,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.cancelEdit();
     }
 
-    if (!element.tickerFormatado || element.tickerFormatado.trim() === '') {
+    if (category !== 'caixa' && (!element.tickerFormatado || element.tickerFormatado.trim() === '')) {
       console.error('startEdit: Invalid or missing ticker for element.', {
         element,
         category,
         ticker: element.tickerFormatado,
       });
-      this.snackBar.open(`Erro: Ticker inválido para ativo na categoria ${category}.`, 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.invalid_ticker_for_category', { category }), this.translate.instant('close'), {
         duration: 6000,
         panelClass: ['error-snackbar'],
       });
@@ -1541,7 +1815,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
       console.error('startEdit: Invalid category:', category);
-      this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.invalid_category', { category }), this.translate.instant('close'), {
         duration: 6000,
         panelClass: ['error-snackbar'],
       });
@@ -1577,8 +1851,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         count: duplicateTickers.length,
       });
       this.snackBar.open(
-        `Aviso: Ticker ${element.tickerFormatado} duplicado na categoria ${category}.`,
-        'Fechar',
+        this.translate.instant('dashboard.warnings.duplicate_ticker_in_category', { ticker: element.tickerFormatado, category }),
+        this.translate.instant('close'),
         {
           duration: 6000,
           panelClass: ['warning-snackbar'],
@@ -1650,7 +1924,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         currentUserId: this.currentUserId,
         category,
       });
-      this.snackBar.open('Erro ao salvar: dados ou categoria inválidos.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.save_invalid_data_or_category'), this.translate.instant('close'), {
         duration: 6000,
         panelClass: ['error-snackbar'],
       });
@@ -1664,7 +1938,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       console.error('saveEdit: Ticker do ativo não definido.', {
         currentEditedAtivo: this.currentEditedAtivo,
       });
-      this.snackBar.open('Erro ao salvar: Ticker do ativo não definido.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.save_ticker_not_defined'), this.translate.instant('close'), {
         duration: 6000,
         panelClass: ['error-snackbar'],
       });
@@ -1691,7 +1965,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             statusText: error.statusText,
             errorDetails: error.error,
           });
-          this.snackBar.open(error.message || 'Erro ao salvar ativo.', 'Fechar', {
+          this.snackBar.open(error.message || this.translate.instant('dashboard.errors.save_asset_failed'), this.translate.instant('close'), {
             duration: 6000,
             panelClass: ['error-snackbar'],
           });
@@ -1703,7 +1977,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe(result => {
         if (result !== null) {
-          this.snackBar.open('Ativo atualizado com sucesso!', 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.messages.asset_updated_success'), this.translate.instant('close'), {
             duration: 3000,
             panelClass: ['success-snackbar'],
           });
@@ -1718,7 +1992,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   openDeleteDialog(element: AtivoVO, category: string): void {
     if (!['fundos', 'acoes', 'assets', 'caixa'].includes(category)) {
       console.error(`Categoria inválida para exclusão: ${category}`);
-      this.snackBar.open(`Erro: Categoria inválida (${category}).`, 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.invalid_category', { category }), this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });
@@ -1728,10 +2002,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '350px',
       data: {
-        title: 'Confirmar Exclusão',
-        message: `Tem certeza que deseja excluir o ativo ${element.tickerFormatado}?`,
-        confirmText: 'Excluir',
-        cancelText: 'Cancelar',
+        title: this.translate.instant('dashboard.dialogs.confirm_delete_title'),
+        message: this.translate.instant('dashboard.dialogs.confirm_delete_message', { ticker: element.tickerFormatado }),
+        confirmText: this.translate.instant('delete'),
+        cancelText: this.translate.instant('common.cancel'),
       },
     });
 
@@ -1745,7 +2019,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 `Erro ao excluir ativo ${element.tickerFormatado} da categoria ${category}:`,
                 error
               );
-              this.snackBar.open(error.message || 'Erro ao excluir ativo.', 'Fechar', {
+              this.snackBar.open(error.message || this.translate.instant('dashboard.errors.delete_asset_failed'), this.translate.instant('close'), {
                 duration: 5000,
                 panelClass: ['error-snackbar'],
               });
@@ -1757,7 +2031,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           )
           .subscribe((deleteResult: any) => {
             if (deleteResult !== null) {
-              this.snackBar.open('Ativo excluído com sucesso!', 'Fechar', {
+              this.snackBar.open(this.translate.instant('dashboard.messages.asset_deleted_success'), this.translate.instant('close'), {
                 duration: 3000,
                 panelClass: ['success-snackbar'],
               });
@@ -1766,7 +2040,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           });
       } else if (!this.currentUserId) {
         console.error('ID do usuário não disponível para excluir ativo.');
-        this.snackBar.open('Erro: ID do usuário não disponível para exclusão.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('dashboard.errors.user_id_unavailable_delete'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -1798,7 +2072,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!input.files || input.files.length === 0) {
       console.error('Nenhum arquivo selecionado.');
-      this.snackBar.open('Nenhum arquivo selecionado.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.no_file_selected'), this.translate.instant('close'), {
         duration: 3000,
         panelClass: ['error-snackbar'],
       });
@@ -1811,7 +2085,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!file.name.endsWith('.json')) {
       console.error('Arquivo com extensão inválida. Esperado: .json');
-      this.snackBar.open('Por favor, selecione um arquivo JSON.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.select_json_file'), this.translate.instant('close'), {
         duration: 3000,
         panelClass: ['error-snackbar'],
       });
@@ -1830,7 +2104,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           console.log('Arquivo JSON lido e parseado com sucesso.', jsonData);
         } catch (e: any) {
           console.error('Erro ao parsear arquivo JSON:', e);
-          this.snackBar.open(`Erro ao ler o arquivo JSON: ${e.message}`, 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.read_json_failed', { message: e.message }), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -1841,7 +2115,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('Dados JSON para validação:', jsonData);
         if (!this.validateTransactionJson(jsonData)) {
           console.error('Validação do formato JSON falhou.');
-          this.snackBar.open('Formato de arquivo JSON inválido.', 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.invalid_json_format'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -1852,7 +2126,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('Verificando ID do usuário:', this.currentUserId);
         if (!this.currentUserId) {
           console.error('ID do usuário não disponível para enviar transação.');
-          this.snackBar.open('ID do usuário não disponível.', 'Fechar', {
+          this.snackBar.open(this.translate.instant('dashboard.errors.user_id_unavailable_for_upload'), this.translate.instant('close'), {
             duration: 5000,
             panelClass: ['error-snackbar'],
           });
@@ -1866,8 +2140,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             catchError(error => {
               console.error('Erro ao enviar transação:', error);
               const errorMessage =
-                error.error?.message || 'Erro desconhecido ao importar transação.';
-              this.snackBar.open(`Erro no upload: ${errorMessage}`, 'Fechar', {
+                error.error?.message || this.translate.instant('dashboard.errors.unknown_import_error');
+              this.snackBar.open(this.translate.instant('dashboard.errors.upload_failed_with_message', { message: errorMessage }), this.translate.instant('close'), {
                 duration: 5000,
                 panelClass: ['error-snackbar'],
               });
@@ -1921,8 +2195,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 // this.onUpdateDados();
               } else {
                 this.snackBar.open(
-                  'Transação importada com sucesso, mas o resumo não pôde ser exibido. Verifique o console para mais detalhes.',
-                  'Fechar',
+                  this.translate.instant('dashboard.messages.import_success_but_summary_failed'),
+                  this.translate.instant('close'),
                   {
                     duration: 5000,
                     panelClass: ['warning-snackbar'],
@@ -1935,7 +2209,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
       fileReader.onerror = e => {
         console.error('Erro ao ler o arquivo:', e);
-        this.snackBar.open('Erro ao ler o arquivo.', 'Fechar', {
+        this.snackBar.open(this.translate.instant('dashboard.errors.file_read_failed'), this.translate.instant('close'), {
           duration: 5000,
           panelClass: ['error-snackbar'],
         });
@@ -1944,7 +2218,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       fileReader.readAsText(file);
     } catch (error) {
       console.error('Erro no processamento do arquivo:', error);
-      this.snackBar.open('Erro ao processar o arquivo.', 'Fechar', {
+      this.snackBar.open(this.translate.instant('dashboard.errors.file_process_failed'), this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar'],
       });

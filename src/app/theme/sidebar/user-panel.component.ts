@@ -36,7 +36,7 @@ export class UserPanelComponent implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
 
   user!: User;
-  defaultAvatarPlaceholder: string = 'images/avatar.jpg';
+  defaultAvatarPlaceholder = 'images/avatar.jpg';
   avatarUrl: SafeUrl = this.defaultAvatarPlaceholder;
   private avatarObjectUrl: string | null = null;
 

@@ -19,9 +19,12 @@ import { SettingsService } from '@core';
 import { catchError, finalize, take, switchMap, map } from 'rxjs/operators';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { forkJoin, of, Subscription, EMPTY, Observable } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LocalStorageService } from '@shared';
 
 // Define interfaces for type safety
 interface AnaliseResponse {
+  id?: number;
   data: string; // Data da análise
   nota: number;
   ai_provider: string;
@@ -46,7 +49,8 @@ interface AnaliseResponse {
     MatExpansionModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatTooltipModule
+    MatTooltipModule,
+    TranslateModule
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })
@@ -55,11 +59,34 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly settings = inject(SettingsService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly translate = inject(TranslateService);
+  private readonly localStorage = inject(LocalStorageService);
   private notifySubscription = Subscription.EMPTY;
   private chart?: ApexCharts;
 
   @ViewChild('chartElement', { static: false }) chartElement?: ElementRef;
 
+  selectedTabIndex = 0;
+
+  selectTab(index: number) {
+    this.selectedTabIndex = index;
+    if (index === 2) {
+      setTimeout(() => this.initChart(), 100);
+    }
+  }
+
+  private hasValidAIConfig(): boolean {
+    const provider = this.localStorage.get('ai.provider') as string | null;
+    const gemini = this.localStorage.get('ai.geminiKey') as string | null;
+    const openai = this.localStorage.get('ai.openaiKey') as string | null;
+    if (provider === 'gemini') {
+      return !!gemini && gemini.length >= 20;
+    }
+    if (provider === 'openai') {
+      return !!openai && openai.length >= 20;
+    }
+    return !!gemini || !!openai;
+  }
   // Variáveis para armazenar a análise ATUALMENTE selecionada
   fundamentos: AnaliseResponse | null = null;
   tecnica: AnaliseResponse | null = null;
@@ -354,6 +381,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onTabChange(index: number) {
+    this.selectedTabIndex = index;
     if (index === 2) {
       setTimeout(() => this.initChart(), 100);
     }
@@ -426,9 +454,16 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateFundamentos() {
     if (!this.currentUserId || this.isLoading) return;
+    if (!this.hasValidAIConfig()) {
+      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
 
     this.isLoading = true;
-    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+    this.snackBar.open(this.translate.instant('assistant.messages.generating_analysis'), this.translate.instant('close'), {
       duration: 5000,
       panelClass: ['info-snackbar']
     });
@@ -440,7 +475,8 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (err) => {
           console.error('Erro ao gerar análise de fundamentos:', err);
-          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+          const key = err?.status === 401 || err?.status === 403 ? 'assistant.ai.errors.invalid_or_expired_keys' : 'assistant.errors.generate_failed';
+          this.snackBar.open(this.translate.instant(key), this.translate.instant('close'), {
              duration: 5000,
              panelClass: ['error-snackbar']
           });
@@ -451,9 +487,16 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generateTecnica() {
     if (!this.currentUserId || this.isLoading) return;
+    if (!this.hasValidAIConfig()) {
+      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
 
     this.isLoading = true;
-    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+    this.snackBar.open(this.translate.instant('assistant.messages.generating_analysis'), this.translate.instant('close'), {
       duration: 5000,
       panelClass: ['info-snackbar']
     });
@@ -465,7 +508,8 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (err) => {
           console.error('Erro ao gerar análise técnica:', err);
-          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+          const key = err?.status === 401 || err?.status === 403 ? 'assistant.ai.errors.invalid_or_expired_keys' : 'assistant.errors.generate_failed';
+          this.snackBar.open(this.translate.instant(key), this.translate.instant('close'), {
              duration: 5000,
              panelClass: ['error-snackbar']
           });
@@ -476,9 +520,16 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
 
   generatePessoais() {
     if (!this.currentUserId || this.isLoading) return;
+    if (!this.hasValidAIConfig()) {
+      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
 
     this.isLoading = true;
-    this.snackBar.open('A análise está sendo gerada por favor, aguarde e atualize a pagina', 'Fechar', {
+    this.snackBar.open(this.translate.instant('assistant.messages.generating_analysis'), this.translate.instant('close'), {
       duration: 5000,
       panelClass: ['info-snackbar']
     });
@@ -490,7 +541,8 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (err) => {
           console.error('Erro ao gerar análise pessoal:', err);
-          this.snackBar.open('Erro ao gerar análise. Tente novamente.', 'Fechar', {
+          const key = err?.status === 401 || err?.status === 403 ? 'assistant.ai.errors.invalid_or_expired_keys' : 'assistant.errors.generate_failed';
+          this.snackBar.open(this.translate.instant(key), this.translate.instant('close'), {
              duration: 5000,
              panelClass: ['error-snackbar']
           });
@@ -506,5 +558,52 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       stars.push(i <= clampedNota ? 'star' : 'star_border');
     }
     return stars;
+  }
+
+  deleteAnalise(tipo: 'fundamentos' | 'tecnica' | 'pessoais', analise: AnaliseResponse, event?: Event): void {
+    event?.stopPropagation();
+    if (this.isLoading) return;
+    if (!this.currentUserId) return;
+
+    const id = analise.id;
+    this.isLoading = true;
+
+    const delete$ = id
+      ? this.assistantService.deleteAnalyticsById(id)
+      : this.assistantService.deleteAnalyticsByUserAndType(this.currentUserId, tipo);
+
+    delete$
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: () => {
+          this.snackBar.open(this.translate.instant('assistant.messages.delete_success'), this.translate.instant('close'), { duration: 3000 });
+          if (tipo === 'fundamentos') {
+            this.allFundamentos = this.allFundamentos.filter(a => (a.id ?? -1) !== (id ?? -1) && a.data !== analise.data);
+            if (this.selectedFundamentosDate === analise.data) {
+              const first = this.allFundamentos[0] || null;
+              this.fundamentos = first;
+              this.selectedFundamentosDate = first?.data || null;
+            }
+          } else if (tipo === 'tecnica') {
+            this.allTecnica = this.allTecnica.filter(a => (a.id ?? -1) !== (id ?? -1) && a.data !== analise.data);
+            if (this.selectedTecnicaDate === analise.data) {
+              const first = this.allTecnica[0] || null;
+              this.tecnica = first;
+              this.selectedTecnicaDate = first?.data || null;
+            }
+          } else {
+            this.allPessoais = this.allPessoais.filter(a => (a.id ?? -1) !== (id ?? -1) && a.data !== analise.data);
+            if (this.selectedPessoaisDate === analise.data) {
+              const first = this.allPessoais[0] || null;
+              this.pessoais = first;
+              this.selectedPessoaisDate = first?.data || null;
+              this.updateChartSeries();
+            }
+          }
+        },
+        error: () => {
+          this.snackBar.open(this.translate.instant('assistant.errors.delete_failed'), this.translate.instant('close'), { duration: 4000, panelClass: ['error-snackbar'] });
+        }
+      });
   }
 }

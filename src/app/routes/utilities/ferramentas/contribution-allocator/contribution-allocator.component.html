@@ -3,67 +3,67 @@
   </header>
   <form id="allocatorForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
-      <label for="totalAmount">Valor Total a Aportar (R$)</label>
+      <label for="totalAmount">{{ 'utilities.contribution_allocator.total_amount_label' | translate }}</label>
       <input id="totalAmount" [(ngModel)]="totalAmount" name="totalAmount" placeholder="Ex: 10.000,00" data-type="currency" required>
     </div>
     <div class="form-group">
-      <label>Distribuição das Categorias (%):</label>
+      <p class="form-label">{{ 'utilities.contribution_allocator.categories_distribution_label' | translate }}</p>
       <div class="chart-container">
         <canvas #allocationChartCanvas id="allocationChart"></canvas>
-        <div class="chart-instructions">Arraste o gráfico ou use os sliders para ajustar a porcentagem</div>
+        <div class="chart-instructions">{{ 'utilities.contribution_allocator.instructions' | translate }}</div>
       </div>
       <div class="slider-container">
         <div class="slider-group">
-          <label for="sliderStocks">Ações:</label>
+          <label for="sliderStocks">{{ 'utilities.contribution_allocator.stocks_label' | translate }}</label>
           <input type="range" id="sliderStocks" [(ngModel)]="sliders.stocks" name="sliderStocks" min="0" max="100" step="0.1" (input)="onSliderInput('stocks', 0)">
           <span class="slider-value" id="sliderStocksValue">{{ formatPercentage(sliders.stocks) }}</span>
         </div>
         <div class="slider-group">
-          <label for="sliderFunds">Fundos:</label>
+          <label for="sliderFunds">{{ 'utilities.contribution_allocator.funds_label' | translate }}</label>
           <input type="range" id="sliderFunds" [(ngModel)]="sliders.funds" name="sliderFunds" min="0" max="100" step="0.1" (input)="onSliderInput('funds', 1)">
           <span class="slider-value" id="sliderFundsValue">{{ formatPercentage(sliders.funds) }}</span>
         </div>
         <div class="slider-group">
-          <label for="sliderTreasury">Títulos Públicos:</label>
+          <label for="sliderTreasury">{{ 'utilities.contribution_allocator.treasury_label' | translate }}</label>
           <input type="range" id="sliderTreasury" [(ngModel)]="sliders.treasury" name="sliderTreasury" min="0" max="100" step="0.1" (input)="onSliderInput('treasury', 2)">
           <span class="slider-value" id="sliderTreasuryValue">{{ formatPercentage(sliders.treasury) }}</span>
         </div>
         <div class="slider-group">
-          <label for="sliderIntl">Assets Internacionais:</label>
+          <label for="sliderIntl">{{ 'utilities.contribution_allocator.intl_label' | translate }}</label>
           <input type="range" id="sliderIntl" [(ngModel)]="sliders.intl" name="sliderIntl" min="0" max="100" step="0.1" (input)="onSliderInput('intl', 3)">
           <span class="slider-value" id="sliderIntlValue">{{ formatPercentage(sliders.intl) }}</span>
         </div>
       </div>
-      <div id="mainCategoryError" class="error-message">A soma das categorias deve ser exatamente 100%.</div>
+      <div id="mainCategoryError" class="error-message">{{ 'utilities.contribution_allocator.sum_must_be_100' | translate }}</div>
     </div>
     <div class="button-container">
-      <button type="submit" class="calculate-button" [disabled]="!totalAmount || !updateMainCategoryTotals()">Calcular</button>
+      <button type="submit" class="calculate-button" [disabled]="!totalAmount || !updateMainCategoryTotals()">{{ 'utilities.contribution_allocator.calculate' | translate }}</button>
     </div>
   </form>
   <section id="results" class="results-section" [ngClass]="{'hidden': !showResults}">
-    <h2>Distribuição do Aporte</h2>
+    <h2>{{ 'utilities.contribution_allocator.results_title' | translate }}</h2>
     <div class="result-item">
-      <p>Ações:</p>
+      <p>{{ 'utilities.contribution_allocator.result_stocks' | translate }}</p>
       <span>{{ results?.stocks | currency:'BRL' }}</span>
     </div>
     <div class="result-item">
-      <p>Fundos:</p>
+      <p>{{ 'utilities.contribution_allocator.result_funds' | translate }}</p>
       <span>{{ results?.funds | currency:'BRL' }}</span>
     </div>
     <div class="result-item">
-      <p>Títulos Públicos:</p>
+      <p>{{ 'utilities.contribution_allocator.result_treasury' | translate }}</p>
       <span>{{ results?.treasury | currency:'BRL' }}</span>
     </div>
     <div class="result-item">
-      <p>Assets Internacionais:</p>
+      <p>{{ 'utilities.contribution_allocator.result_intl' | translate }}</p>
       <span>{{ results?.intl | currency:'BRL' }}</span>
     </div>
     <div class="chart-container">
       <canvas #resultsChartCanvas id="resultsChart" [ngClass]="{'hidden': !showResults}"></canvas>
     </div>
     <div class="download-buttons">
-      <button class="download-button" (click)="downloadPng()">Baixar PNG</button>
-      <button class="download-button" (click)="downloadPdf()">Baixar PDF</button>
+      <button class="download-button" (click)="downloadPng()">{{ 'utilities.contribution_allocator.download_png' | translate }}</button>
+      <button class="download-button" (click)="downloadPdf()">{{ 'utilities.contribution_allocator.download_pdf' | translate }}</button>
     </div>
   </section>
 </div>
