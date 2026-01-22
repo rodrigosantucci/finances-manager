@@ -168,13 +168,6 @@
                   <tr mat-row *matRowDef="let row; columns: patrimonioColumns"></tr>
                   <tr mat-footer-row *matFooterRowDef="patrimonioColumns"></tr>
                 </table>
-                <mat-paginator
-                  #distribuicaoPaginator
-                  class="no-range-label no-nav-buttons"
-                  [length]="distribuicaoDataSource.data.length || 0"
-                  [pageSize]="10"
-                  [hidePageSize]="true"
-                />
               </div>
               <div class="col-12 col-md-4">
                 <div class="chart-card h-100">

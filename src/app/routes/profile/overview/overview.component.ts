@@ -20,6 +20,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDateFnsModule } from '@angular/material-date-fns-adapter';
 
 @Component({
   selector: 'app-profile-overview',
@@ -41,7 +42,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    MatDateFnsModule
   ],
 })
 export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -52,8 +54,6 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   private readonly settings = inject(SettingsService);
   private readonly http = inject(HttpClient);
 
-  private tradingViewScript: HTMLScriptElement | null = null;
-  public isLoading = false; // Propriedade para controlar o estado de carregamento
   public usersDataSource = new MatTableDataSource<any>([]);
   public displayedColumns: string[] = ['id', 'username', 'email', 'roles', 'lastLogin', 'createdAt', 'premiumUntil', 'premium', 'actions'];
   public editingUser: any | null = null;
@@ -87,26 +87,6 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngAfterViewInit() {
-    // Carrega o widget inicialmente após a view estar pronta e apenas no navegador
-    if (isPlatformBrowser(this.platformId)) {
-    //  console.log('Initial TradingView Widget Load starting...');
-      // Adiciona um pequeno delay para garantir que o DOM esteja completamente renderizado
-      setTimeout(() => {
-        this.loadTradingViewWidget()
-          .then(() => {
-        //    console.log('Initial TradingView Widget script loaded successfully.');
-          })
-          .catch(error => {
-            console.error('Error loading initial TradingView widget:', error);
-            // Tenta novamente após um delay em caso de erro
-            setTimeout(() => {
-              this.loadTradingViewWidget().catch(retryError => {
-                console.error('Retry failed for TradingView widget:', retryError);
-              });
-            }, 1000);
-          });
-      }, 100);
-    }
     if (this.isAdmin) {
       this.usersDataSource.paginator = this.paginator;
       this.usersDataSource.sort = this.sort;
@@ -114,9 +94,6 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngOnDestroy() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.destroyTradingViewWidget();
-    }
     // Sua lógica de OnDestroy existente (ex: cancelar subscrição de tema) pode permanecer aqui.
   }
 
@@ -135,32 +112,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
    * Método público para acionar o recarregamento do widget do TradingView.
    * Gerencia o estado de 'isLoading' para feedback visual (ex: ícone girando).
    */
-  public async triggerWidgetRefresh(): Promise<void> {
-    if (this.isLoading) {
-    //  console.log('Refresh already in progress.');
-      return;
-    }
-    if (!isPlatformBrowser(this.platformId)) {
-      console.warn('Widget refresh skipped: not in browser environment.');
-      return;
-    }
-
-    this.isLoading = true;
-   // console.log('Attempting to refresh TradingView Widget...');
-    try {
-      await this.loadTradingViewWidget(); // Aguarda o carregamento do script
-   //   console.log('TradingView widget refresh initiated (script load successful).');
-    } catch (error) {
-      console.error('Error during widget refresh:', error);
-    } finally {
-      // Adiciona um pequeno delay antes de resetar isLoading para dar tempo à renderização visual do widget,
-      // melhorando a percepção do usuário de que a ação foi concluída.
-      setTimeout(() => {
-        this.isLoading = false;
-    //    console.log('isLoading flag reset.');
-      }, 750); // Ajuste este valor conforme necessário
-    }
-  }
+  
 
   public formatRoles(roles: any): string {
     if (roles === undefined || roles === null) return '';
@@ -215,7 +167,11 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     const id = user.id;
     this.http.post<void>(`/api/usuarios/${id}/assinatura/premium/ativar`, {}).subscribe({
       next: () => {
-        this.loadCurrentUser();
+        if (this.isAdmin) {
+          this.loadAllUsers();
+        } else {
+          this.loadCurrentUser();
+        }
       },
       error: err => {
         console.error('Erro ao ativar premium', err);
@@ -228,7 +184,11 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     const id = user.id;
     this.http.post<void>(`/api/usuarios/${id}/assinatura/premium/desativar`, {}).subscribe({
       next: () => {
-        this.loadCurrentUser();
+        if (this.isAdmin) {
+          this.loadAllUsers();
+        } else {
+          this.loadCurrentUser();
+        }
       },
       error: err => {
         console.error('Erro ao desativar premium', err);
@@ -257,12 +217,37 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
       next: () => {
         this.premiumActivationId = null;
         this.premiumUntilInput = null;
-        this.loadCurrentUser();
+        if (body.premiumUntil) {
+          this.usersDataSource.data = this.usersDataSource.data.map(u => u.id === id ? { ...u, premiumUntil: new Date(body.premiumUntil) } : u);
+        }
+        if (this.isAdmin) {
+          this.loadAllUsers();
+        } else {
+          this.loadCurrentUser();
+        }
       },
       error: err => {
         console.error('Erro ao ativar premium', err);
       },
     });
+  }
+
+  private normalizeUser(u: any): any {
+    const parse = (v: any): Date | null => {
+      if (!v) return null;
+      if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+      if (typeof v === 'string' || typeof v === 'number') {
+        const d = new Date(v);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      return null;
+    };
+    return {
+      ...u,
+      createdAt: parse(u?.createdAt),
+      lastLogin: parse(u?.lastLogin),
+      premiumUntil: parse(u?.premiumUntil),
+    };
   }
  
   public deleteUser(user: any): void {
@@ -296,7 +281,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     }
     this.http.get<any>(`/api/usuarios/${id}`).subscribe({
       next: user => {
-        this.usersDataSource.data = user ? [user] : [];
+        const normalized = user ? [this.normalizeUser(user)] : [];
+        this.usersDataSource.data = normalized;
         this.totalUsers = this.usersDataSource.data.length;
         this.loadingUsers = false;
         if (this.paginator) {
@@ -316,7 +302,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     this.loadingUsers = true;
     this.http.get<any[]>(`/api/usuarios`).subscribe({
       next: users => {
-        this.usersDataSource.data = Array.isArray(users) ? users : [];
+        const normalized = Array.isArray(users) ? users.map(u => this.normalizeUser(u)) : [];
+        this.usersDataSource.data = normalized;
         this.totalUsers = this.usersDataSource.data.length;
         this.loadingUsers = false;
         if (this.paginator) {
@@ -348,87 +335,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
    * Carrega o script do TradingView e o anexa ao DOM.
    * Retorna uma Promise que resolve quando o script é carregado ou rejeita em caso de erro.
    */
-  private loadTradingViewWidget(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Aguarda até que o container esteja disponível no DOM
-      const waitForContainer = () => {
-        const container = document.querySelector('.tradingview-widget-container');
-        
-        if (!container) {
-          // Se o container não estiver disponível, aguarda um pouco e tenta novamente
-          setTimeout(waitForContainer, 50);
-          return;
-        }
-        
-        // Container encontrado, procede com o carregamento do widget
-        this.initializeWidget(container, resolve, reject);
-      };
-      
-      waitForContainer();
-    });
-  }
   
-  private initializeWidget(container: Element, resolve: () => void, reject: (error: any) => void): void {
-     // Remove qualquer instância anterior do widget
-     this.destroyTradingViewWidget();
 
-    const currentTheme = this.settings.getThemeColor();
- //    console.log('Tema detectado para o TradingView:', currentTheme);
-
-     const containerWidth = (container as HTMLElement)?.clientWidth || (container as HTMLElement)?.getBoundingClientRect()?.width || 0;
-      const widgetConfig = {
-       feedMode: 'all_symbols',
-        isTransparent: currentTheme === 'dark',
-       displayMode: 'adaptive',
-       width: containerWidth > 0 ? String(Math.round(containerWidth)) : '100%',
-       height: '450',
-       colorTheme: currentTheme,
-       locale: 'br'
-     };
-
-     this.tradingViewScript = this.renderer.createElement('script');
-     this.renderer.setAttribute(this.tradingViewScript, 'type', 'text/javascript');
-     this.renderer.setAttribute(this.tradingViewScript, 'src', 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js');
-     this.renderer.setAttribute(this.tradingViewScript, 'async', 'true');
-
-     if (this.tradingViewScript) {
-       this.tradingViewScript.innerHTML = JSON.stringify(widgetConfig);
-
-       this.tradingViewScript.onload = () => {
-    //     console.log('TradingView script loaded successfully.');
-         resolve();
-       };
-       this.tradingViewScript.onerror = (errorEvent) => {
-         console.error('TradingView script failed to load.', errorEvent);
-         reject(errorEvent); // Rejeita a Promise com o evento de erro
-       };
-
-       this.renderer.appendChild(container, this.tradingViewScript);
-     } else {
-       // Este caso é improvável se createElement funcionar, mas é uma salvaguarda.
-       reject(new Error('Failed to create TradingView script element.'));
-     }
-   }
-
-  private destroyTradingViewWidget(): void {
-    // Remove o elemento script
-    if (this.tradingViewScript && this.tradingViewScript.parentNode) {
-      this.renderer.removeChild(this.tradingViewScript.parentNode, this.tradingViewScript);
-      this.tradingViewScript = null;
-    }
-    // Remove também o iframe que o TradingView pode ter criado dentro do container
-    const container = document.querySelector('.tradingview-widget-container');
-    if (container) {
-        const iframe = container.querySelector('iframe'); // O widget geralmente é um iframe
-        if (iframe && iframe.parentNode) {
-            iframe.parentNode.removeChild(iframe);
-        }
-    }
-  }
-
-  @HostListener('window:resize')
-  onWindowResize(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    this.triggerWidgetRefresh();
-  }
+  
 }

@@ -135,12 +135,41 @@ button[mat-icon-button] {
 .premium-inputs {
   display: flex;
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .premium-date-field {
   width: 100%;
-  max-width: 200px;
+  min-width: 200px;
+  max-width: 280px;
+  flex: 1 1 240px;
+}
+
+.premium-until-edit {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.premium-until-field {
+  width: 100%;
+  min-width: 240px;
+  max-width: 320px;
+  flex: 1 1 260px;
+}
+
+.premium-until-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.premium-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
 }
 
 .news-actions {
@@ -205,14 +234,27 @@ table.mat-mdc-table {
   word-break: break-word;
   overflow-wrap: anywhere;
 }
- .mat-column-id { width: 64px; }
+ 
+ .user-table .mat-mdc-row {
+   height: auto;
+ }
+ 
+ .user-table .mat-mdc-cell {
+   align-items: flex-start;
+   overflow: visible;
+ }
+ 
+ .mat-column-premium {
+   min-width: 240px;
+ }
+ .mat-column-premiumUntil { min-width: 280px; }
  .mat-column-username { min-width: 120px; }
  .mat-column-email { min-width: 200px; }
  .mat-column-roles { min-width: 160px; }
 
  .mat-column-lastLogin,
  .mat-column-createdAt { min-width: 160px; }
- .mat-column-premiumUntil { min-width: 140px; }
+ .mat-column-premiumUntil { min-width: 220px; }
  .mat-column-actions { width: 140px; }
 @media (width <= 900px) {
   .user-table .mat-mdc-header-cell,
@@ -231,6 +273,11 @@ table.mat-mdc-table {
 }
 
 @media (width <= 600px) {
+  .premium-until-edit {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .user-table .mat-mdc-header-cell,
   .user-table .mat-mdc-cell {
     padding: 5px 8px;

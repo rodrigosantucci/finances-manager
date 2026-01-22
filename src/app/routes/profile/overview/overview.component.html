@@ -10,27 +10,6 @@
         <app-ai-settings />
       </div>
     </mat-tab>
-    <mat-tab label="News">
-      <div class="tab-content">
-        <div class="chart-card">
-          <mat-card-content>
-            <div class="tradingview-widget-container"></div>
-            <div class="action-buttons-group justify-content-center news-actions">
-              <button
-                mat-icon-button
-                (click)="triggerWidgetRefresh()"
-                [disabled]="isLoading"
-                aria-label="Recarregar widget de News"
-                matTooltip="Recarregar News"
-                matTooltipPosition="above"
-              >
-                <mat-icon [class.spin-animation]="isLoading">refresh</mat-icon>
-              </button>
-            </div>
-          </mat-card-content>
-        </div>
-      </div>
-    </mat-tab>
     <mat-tab *ngIf="isAdmin" label="Administrador">
       <div class="tab-content">
         <mat-card class="table-card">
@@ -80,26 +59,43 @@
               </ng-container>
               <ng-container matColumnDef="premiumUntil">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Premium expira</th>
-                <td mat-cell *matCellDef="let user">{{ user.premiumUntil || '—' }}</td>
+                <td mat-cell *matCellDef="let user">
+                  <ng-container *ngIf="premiumActivationId !== user.id; else premiumUntilEditTpl">
+                    {{ user.premiumUntil ? (user.premiumUntil | date:'dd/MM/yyyy') : '—' }}
+                  </ng-container>
+                  <ng-template #premiumUntilEditTpl>
+                    <div class="premium-until-edit">
+                      <mat-form-field appearance="outline" class="premium-until-field">
+                        <input matInput [matDatepicker]="pickerPremiumUntil" [value]="premiumUntilInput" (dateChange)="premiumUntilInput = $event.value" />
+                        <mat-datepicker-toggle matSuffix [for]="pickerPremiumUntil"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerPremiumUntil></mat-datepicker>
+                      </mat-form-field>
+                      <div class="premium-until-actions">
+                        <button mat-icon-button color="primary" (click)="confirmActivatePremium(user)" matTooltip="Salvar" aria-label="Salvar">
+                          <mat-icon>save</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="cancelActivatePremium()" matTooltip="Cancelar" aria-label="Cancelar">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-template>
+                </td>
               </ng-container>
               <ng-container matColumnDef="premium">
                 <th mat-header-cell *matHeaderCellDef>Premium</th>
                 <td mat-cell *matCellDef="let user">
-                  <ng-container *ngIf="premiumActivationId !== user.id; else premiumInputTpl">
-                    <button mat-stroked-button color="primary" (click)="startActivatePremium(user)">Ativar Premium</button>
-                    <button mat-stroked-button color="warn" (click)="deactivatePremium(user)">Desativar Premium</button>
-                  </ng-container>
-                  <ng-template #premiumInputTpl>
-                    <div class="premium-inputs">
-                      <mat-form-field appearance="outline" class="premium-date-field">
-                        <mat-label>Expira em</mat-label>
-                        <input matInput [matDatepicker]="pickerPremium" [value]="premiumUntilInput" (dateChange)="premiumUntilInput = $event.value" />
-                        <mat-datepicker #pickerPremium></mat-datepicker>
-                      </mat-form-field>
-                      <button mat-stroked-button color="primary" (click)="confirmActivatePremium(user)">Confirmar</button>
-                      <button mat-stroked-button (click)="cancelActivatePremium()">Cancelar</button>
+                  <ng-container *ngIf="premiumActivationId !== user.id; else premiumEditingTpl">
+                    <div class="premium-actions">
+                      <button mat-icon-button color="primary" (click)="startActivatePremium(user)" matTooltip="Ativar Premium" aria-label="Ativar Premium">
+                        <mat-icon>verified</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deactivatePremium(user)" matTooltip="Desativar Premium" aria-label="Desativar Premium">
+                        <mat-icon>block</mat-icon>
+                      </button>
                     </div>
-                  </ng-template>
+                  </ng-container>
+                  <ng-template #premiumEditingTpl></ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="actions">
@@ -115,7 +111,7 @@
                     <mat-icon>close</mat-icon>
                   </button>
                   <button mat-icon-button matTooltip="Resetar senha" aria-label="Resetar senha" (click)="resetPassword(user)">
-                    <mat-icon>lock_reset</mat-icon>
+                    <mat-icon>vpn_key</mat-icon>
                   </button>
                   <button *ngIf="editingUser?.id !== user.id" mat-icon-button color="warn" aria-label="Excluir" (click)="deleteUser(user)">
                     <mat-icon>delete</mat-icon>

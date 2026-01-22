@@ -640,7 +640,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     }
     if (this.distribuicaoDataSource) {
-      this.distribuicaoDataSource.paginator = this.distribuicaoPaginator;
       this.distribuicaoDataSource.sort = this.distribuicaoSort;
       this.distribuicaoDataSource.sortingDataAccessor = (item, property) => {
         const numericProps = ['percentual', 'valorTotal'];
