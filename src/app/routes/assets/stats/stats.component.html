@@ -19,12 +19,12 @@
         </div>
 
         <div id="widget-actions">
-          <a href="javascript:void(0);" mat-mini-fab (click)="loadTradingViewWidgets()" [matTooltip]="'common.search' | translate">
+          <button mat-mini-fab (click)="loadTradingViewWidgets()" [matTooltip]="'common.search' | translate" aria-label="Buscar">
             <mat-icon>search</mat-icon>
-          </a>
-          <a href="javascript:void(0);" mat-mini-fab (click)="clearWidgets()" [matTooltip]="'common.clean' | translate">
+          </button>
+          <button mat-mini-fab (click)="clearWidgets()" [matTooltip]="'common.clean' | translate" aria-label="Limpar">
             <mat-icon>clear</mat-icon>
-          </a>
+          </button>
         </div>
       </div>
 

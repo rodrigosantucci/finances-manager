@@ -7,9 +7,10 @@
         <mat-tab [label]="'assistant.tabs.fundamentals' | translate">
           <div class="tab-content">
             <div class="actions-header">
-              <button mat-raised-button color="primary" (click)="generateFundamentos()" [disabled]="isLoading">
+              <button mat-raised-button color="primary" (click)="generateFundamentos()" [disabled]="isLoading || !hasValidAIConfig()">
                 <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_fundamentals' | translate }}
               </button>
+              <p class="no-key-warning" *ngIf="!hasValidAIConfig()">Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.</p>
             </div>
             <div *ngIf="fundamentos || allFundamentos.length > 0; else noDataFundamentos">
               <div class="report-header">
@@ -115,9 +116,10 @@
         <mat-tab [label]="'assistant.tabs.technical' | translate">
            <div class="tab-content">
             <div class="actions-header">
-              <button mat-raised-button color="primary" (click)="generateTecnica()" [disabled]="isLoading">
+              <button mat-raised-button color="primary" (click)="generateTecnica()" [disabled]="isLoading || !hasValidAIConfig()">
                 <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_technical' | translate }}
               </button>
+              <p class="no-key-warning" *ngIf="!hasValidAIConfig()">Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.</p>
             </div>
             <div *ngIf="tecnica || allTecnica.length > 0; else noDataTecnica">
               <div class="report-header">
@@ -218,9 +220,10 @@
         <mat-tab [label]="'assistant.tabs.personal_goals' | translate">
           <div class="tab-content">
             <div class="actions-header">
-              <button mat-raised-button color="primary" (click)="generatePessoais()" [disabled]="isLoading">
+              <button mat-raised-button color="primary" (click)="generatePessoais()" [disabled]="isLoading || !hasValidAIConfig()">
                 <mat-icon>auto_awesome</mat-icon> {{ 'assistant.actions.generate_personal' | translate }}
               </button>
+              <p class="no-key-warning" *ngIf="!hasValidAIConfig()">Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.</p>
             </div>
             <div *ngIf="pessoais || allPessoais.length > 0; else noDataPessoais">
               <div class="report-header">

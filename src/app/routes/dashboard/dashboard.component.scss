@@ -388,11 +388,16 @@
 
 /* Agrupamento dos primeiros cards em um único container */
 .group-card {
-  height: 100%;
+  height: auto;
+  min-height: fit-content;
 
   .mat-mdc-card-content {
     display: block;
-    padding: 6px;
+    padding: 0px 20px 0px 20px;
+    min-width: 0;
+    overflow: visible;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   .summary-card {
@@ -482,6 +487,34 @@
   width: 100%;
 }
 
+@media (width <= 900px) {
+  .header-title {
+    font-size: 1.05rem;
+  }
+}
+
+@media (width <= 600px) {
+  .header-title {
+    font-size: 1rem;
+  }
+  .summary-card .metrics {
+    gap: 8px;
+  }
+  .summary-card .metric .metric-label {
+    font-size: 12px;
+  }
+  .summary-card .metric .metric-value {
+    font-size: 14px;
+  }
+  .period-controls-global .mat-button-toggle-group {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .period-controls-global .mat-button-toggle {
+    padding: 4px 6px;
+    font-size: 0.8rem;
+  }
+}
 /* Ajustar tabelas para responsividade */
 .table-card {
   height: 100%;

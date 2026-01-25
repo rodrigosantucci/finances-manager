@@ -19,6 +19,7 @@ import { SettingsService } from '@core';
 import { catchError, finalize, take, switchMap, map } from 'rxjs/operators';
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import { forkJoin, of, Subscription, EMPTY, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LocalStorageService } from '@shared';
 
@@ -61,6 +62,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly snackBar = inject(MatSnackBar);
   private readonly translate = inject(TranslateService);
   private readonly localStorage = inject(LocalStorageService);
+  private readonly http = inject(HttpClient);
   private notifySubscription = Subscription.EMPTY;
   private chart?: ApexCharts;
 
@@ -75,17 +77,9 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private hasValidAIConfig(): boolean {
-    const provider = this.localStorage.get('ai.provider') as string | null;
-    const gemini = this.localStorage.get('ai.geminiKey') as string | null;
-    const openai = this.localStorage.get('ai.openaiKey') as string | null;
-    if (provider === 'gemini') {
-      return !!gemini && gemini.length >= 20;
-    }
-    if (provider === 'openai') {
-      return !!openai && openai.length >= 20;
-    }
-    return !!gemini || !!openai;
+  aiKeysAvailable = false;
+  hasValidAIConfig(): boolean {
+    return this.aiKeysAvailable;
   }
   // Variáveis para armazenar a análise ATUALMENTE selecionada
   fundamentos: AnaliseResponse | null = null;
@@ -235,6 +229,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
           if (user?.id) {
             this.currentUserId = user.id;
             this.updateThemeStyles();
+            this.refreshAIKeysAvailability();
             // Carrega as listas completas e o conteúdo inicial
             return this.loadAllAnalyses();
           }
@@ -250,6 +245,24 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
           console.error('Erro na inicialização do assistente:', err);
         }
       });
+  }
+
+  private refreshAIKeysAvailability(): void {
+    if (!this.currentUserId) {
+      this.aiKeysAvailable = false;
+      return;
+    }
+    this.http.get<{openai: boolean | string, gemini: boolean | string}>(`/api/usuarios/${this.currentUserId}/llm/keys`).pipe(
+      catchError(() => of({ openai: false, gemini: false }))
+    ).subscribe(res => {
+      const openaiValid = typeof res.openai === 'boolean' ? res.openai : (!!res.openai && /^sk-[A-Za-z0-9-]{20,}$/.test(String(res.openai)));
+      const geminiValid = typeof res.gemini === 'boolean' ? res.gemini : (!!res.gemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(String(res.gemini)));
+      const lsOpenai = (this.localStorage.get('ai.key.openai') as string | null) ?? (this.localStorage.get('ai.openaiKey') as string | null);
+      const lsGemini = (this.localStorage.get('ai.key.gemini') as string | null) ?? (this.localStorage.get('ai.geminiKey') as string | null);
+      const lsOpenaiValid = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
+      const lsGeminiValid = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
+      this.aiKeysAvailable = !!openaiValid || !!geminiValid || lsOpenaiValid || lsGeminiValid;
+    });
   }
 
   // MÉTODO ATUALIZADO: Carrega a lista COMPLETA de todas as análises E define o conteúdo inicial.
@@ -455,7 +468,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   generateFundamentos() {
     if (!this.currentUserId || this.isLoading) return;
     if (!this.hasValidAIConfig()) {
-      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+      this.snackBar.open('Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.', this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar']
       });
@@ -488,7 +501,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   generateTecnica() {
     if (!this.currentUserId || this.isLoading) return;
     if (!this.hasValidAIConfig()) {
-      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+      this.snackBar.open('Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.', this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar']
       });
@@ -521,7 +534,7 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
   generatePessoais() {
     if (!this.currentUserId || this.isLoading) return;
     if (!this.hasValidAIConfig()) {
-      this.snackBar.open(this.translate.instant('assistant.ai.errors.configuration_missing'), this.translate.instant('close'), {
+      this.snackBar.open('Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.', this.translate.instant('close'), {
         duration: 5000,
         panelClass: ['error-snackbar']
       });

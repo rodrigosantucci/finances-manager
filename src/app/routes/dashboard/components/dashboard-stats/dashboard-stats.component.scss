@@ -19,8 +19,8 @@
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
   margin-top: 10px;
 }
 
@@ -46,4 +46,26 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-top: 8px;
+}
+
+@media (width <= 900px) {
+  .allocation-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width <= 600px) {
+  .allocation-metrics {
+    grid-template-columns: 1fr;
+  }
+  .metrics {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .metric .metric-label {
+    font-size: 13px;
+  }
+  .metric .metric-value {
+    font-size: 14px;
+  }
 }

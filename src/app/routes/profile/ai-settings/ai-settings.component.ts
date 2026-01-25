@@ -1,20 +1,23 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { TranslateModule } from '@ngx-translate/core';
-import { SettingsService, AIAccessSettings, AIProvider } from '../settings/settings.service';
+import { SettingsService, AIProvider } from '../settings/settings.service';
 import { AuthService } from '@core/authentication';
 import { MtxAlertModule } from '@ng-matero/extensions/alert';
 import { MtxLoaderModule } from '@ng-matero/extensions/loader';
 import { MtxSelectModule } from '@ng-matero/extensions/select';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { LocalStorageService } from '@shared';
 import { of } from 'rxjs';
-import { distinctUntilChanged, map, catchError } from 'rxjs/operators';
+import { distinctUntilChanged, catchError, switchMap } from 'rxjs/operators';
 import { ControlsOf } from '@shared/interfaces';
 
 @Component({
@@ -31,6 +34,8 @@ import { ControlsOf } from '@shared/interfaces';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
     TranslateModule,
     MtxAlertModule,
     MtxLoaderModule,
@@ -43,80 +48,44 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
   private readonly settingsService = inject(SettingsService);
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly storage = inject(LocalStorageService);
 
   aiForm!: FormGroup<ControlsOf<{
-    provider: AIProvider | null;
-    geminiApiKey: string;
     openaiApiKey: string;
-    aiBackendEndpoint: string;
+    geminiApiKey: string;
   }>>;
-
-  aiProviderOptions: AIProvider[] = ['gemini', 'openai'];
   userId: number | null = null;
-  llmKeys: { gemini?: string; openai?: string } = {};
+  llmKeys: { gemini?: boolean; openai?: boolean } = {};
   hasValidGemini = false;
   hasValidOpenAI = false;
   isLoginLoading = false;
+  showGeminiKey = false;
+  showOpenAIKey = false;
   private messageHandler = (event: MessageEvent) => this.onPopupMessage(event);
   private oauthPopup: Window | null = null;
 
   ngOnInit(): void {
     this.aiForm = this.fb.group<ControlsOf<{
-      provider: AIProvider | null;
-      geminiApiKey: string;
       openaiApiKey: string;
-      aiBackendEndpoint: string;
+      geminiApiKey: string;
     }>>({
-      provider: this.fb.control(null as AIProvider | null),
-      geminiApiKey: this.fb.control('', { nonNullable: true }),
       openaiApiKey: this.fb.control('', { nonNullable: true }),
-      aiBackendEndpoint: this.fb.control('', { nonNullable: true, validators: [Validators.pattern(/^https?:\/\/.+/)] }),
+      geminiApiKey: this.fb.control('', { nonNullable: true }),
     });
 
-    const providerCtrl = this.aiForm.get('provider');
     const geminiCtrl = this.aiForm.get('geminiApiKey');
     const openaiCtrl = this.aiForm.get('openaiApiKey');
-    const endpointCtrl = this.aiForm.get('aiBackendEndpoint');
+    // endpoint removido
 
-    providerCtrl?.valueChanges.pipe(distinctUntilChanged()).subscribe((prov: AIProvider | null) => {
-      if (prov === 'gemini') {
-        geminiCtrl?.setValidators([Validators.required, Validators.minLength(20), Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
-        openaiCtrl?.clearValidators();
-        openaiCtrl?.setValue(openaiCtrl?.value || '');
-      } else if (prov === 'openai') {
-        openaiCtrl?.setValidators([Validators.required, Validators.minLength(20), Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
-        geminiCtrl?.clearValidators();
-        geminiCtrl?.setValue(geminiCtrl?.value || '');
-      } else {
-        geminiCtrl?.clearValidators();
-        openaiCtrl?.clearValidators();
-      }
-      geminiCtrl?.updateValueAndValidity({ emitEvent: false });
-      openaiCtrl?.updateValueAndValidity({ emitEvent: false });
-    });
+    geminiCtrl?.setValidators([Validators.minLength(20), Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
+    openaiCtrl?.setValidators([Validators.minLength(20), Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
 
-    endpointCtrl?.setAsyncValidators([
-      (control: AbstractControl) => {
-        const val = (control.value as string) || '';
-        if (!val || !/^https?:\/\/.+/.test(val)) {
-          return of(null);
-        }
-        const base = val.replace(/\/+$/, '');
-        return this.http.get(`${base}/q/openapi`, { observe: 'response' }).pipe(
-          map((res: HttpResponse<any>) => (res.status === 200 ? null : { invalidEndpoint: true })),
-          catchError(() => of({ invalidEndpoint: true }))
-        );
-      }
-    ]);
+    // validação de endpoint removida
 
-    const ai = this.settingsService.getAISettings();
     this.aiForm.patchValue({
-      provider: ai.provider ?? null,
-      geminiApiKey: ai.geminiApiKey ?? '',
-      openaiApiKey: ai.openaiApiKey ?? '',
-      aiBackendEndpoint: ai.aiBackendEndpoint ?? '',
+      openaiApiKey: '',
+      geminiApiKey: '',
     });
-    providerCtrl?.updateValueAndValidity({ emitEvent: true });
 
     const u = this.auth.getCurrentUserValue?.() ?? null;
     this.userId = (u && (u.id as number | null)) ?? null;
@@ -130,6 +99,13 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
 
   getAIKeyErrorMessage(controlName: 'geminiApiKey' | 'openaiApiKey'): string {
     const control = this.aiForm.get(controlName);
+    const val = control?.value || '';
+    const masked = typeof val === 'string' && val.includes('...');
+
+    if (masked) {
+      return ''; // Não exibe mensagem de erro se a chave estiver mascarada
+    }
+
     if (!control || !control.touched) {
       return '';
     }
@@ -145,33 +121,81 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  getErrorMessage(controlName: string): string {
-    const control = this.aiForm.get(controlName);
-    if (!control || !control.touched) {
-      return '';
-    }
-    if (control.hasError('pattern')) {
-      return 'Por favor, insira uma URL válida.';
-    }
-    if (control.hasError('invalidEndpoint')) {
-      return 'Endpoint inválido ou indisponível.';
-    }
-    return '';
-  }
+  // endpoint removido: não há mensagens de erro associadas
 
   onSubmit(): void {
     this.aiForm.markAllAsTouched();
     if (this.aiForm.invalid) {
       return;
     }
-    const aiSettings: AIAccessSettings = {
-      provider: this.aiForm.get('provider')?.value ?? null,
-      geminiApiKey: this.aiForm.get('geminiApiKey')?.value ?? null,
-      openaiApiKey: this.aiForm.get('openaiApiKey')?.value ?? null,
-      aiBackendEndpoint: this.aiForm.get('aiBackendEndpoint')?.value ?? null,
+    const openai = this.aiForm.get('openaiApiKey')?.value?.trim() || '';
+    const gemini = this.aiForm.get('geminiApiKey')?.value?.trim() || '';
+    const requests: any[] = [];
+    if (this.userId && openai && /^sk-[A-Za-z0-9-]{20,}$/.test(openai)) {
+      const body = { provider: 'openai', apiKey: openai };
+      if (this.llmKeys.openai) {
+        requests.push(this.http.put(`/api/usuarios/${this.userId}/llm/keys`, body));
+      } else {
+        requests.push(this.http.post(`/api/usuarios/${this.userId}/llm/keys`, body));
+      }
+    }
+    if (this.userId && gemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(gemini)) {
+      const body = { provider: 'gemini', apiKey: gemini };
+      if (this.llmKeys.gemini) {
+        requests.push(this.http.put(`/api/usuarios/${this.userId}/llm/keys`, body));
+      } else {
+        requests.push(this.http.post(`/api/usuarios/${this.userId}/llm/keys`, body));
+      }
+    }
+    if (requests.length === 0) {
+      alert('Preencha ao menos uma chave válida para salvar.');
+      return;
+    }
+    const saveLocalKeys = () => {
+      if (openai) {
+        this.storage.set('ai.key.openai', openai);
+      }
+      if (gemini) {
+        this.storage.set('ai.key.gemini', gemini);
+      }
     };
-    this.settingsService.updateAISettings(aiSettings);
-    alert('Configurações de AI salvas com sucesso!');
+    const clearForm = () => this.aiForm.patchValue({ openaiApiKey: '', geminiApiKey: '' });
+    const successFlow = () => {
+      saveLocalKeys();
+      clearForm();
+      this.fetchLlmKeys();
+      alert('Chaves de AI atualizadas com sucesso.');
+    };
+    const errorFlow = (msg?: string) => {
+      saveLocalKeys();
+      this.fetchLlmKeys();
+      alert(msg || 'Falha ao salvar no servidor. As chaves foram armazenadas localmente para uso temporário.');
+    };
+    if (requests.length === 1) {
+      requests[0].subscribe({
+        next: () => successFlow(),
+        error: (err: HttpErrorResponse) => {
+          const msg = typeof err?.error === 'string' ? err.error : (err?.message || 'Falha ao salvar no servidor.');
+          errorFlow(msg);
+        }
+      });
+    } else {
+      requests[0].pipe(switchMap(() => requests[1])).subscribe({
+        next: () => successFlow(),
+        error: (err: HttpErrorResponse) => {
+          const msg = typeof err?.error === 'string' ? err.error : (err?.message || 'Falha ao salvar no servidor.');
+          errorFlow(msg);
+        }
+      });
+    }
+  }
+
+  toggleKeyVisibility(provider: 'gemini' | 'openai') {
+    if (provider === 'gemini') {
+      this.showGeminiKey = !this.showGeminiKey;
+    } else {
+      this.showOpenAIKey = !this.showOpenAIKey;
+    }
   }
 
   openGeminiPortal(): void {
@@ -184,29 +208,78 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
 
   private fetchLlmKeys(): void {
     if (!this.userId) {
-      this.hasValidGemini = false;
-      this.hasValidOpenAI = false;
+      const lsOpenai = (this.storage.get('ai.key.openai') as string | null) ?? (this.storage.get('ai.openaiKey') as string | null);
+      const lsGemini = (this.storage.get('ai.key.gemini') as string | null) ?? (this.storage.get('ai.geminiKey') as string | null);
+      this.hasValidOpenAI = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
+      this.hasValidGemini = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
+      this.aiForm.patchValue({
+        openaiApiKey: lsOpenai || '',
+        geminiApiKey: lsGemini || ''
+      });
       return;
     }
     this.http.get<any>(`/api/usuarios/${this.userId}/llm/keys`).pipe(
       catchError(() => of(null))
     ).subscribe(keys => {
       const k = keys || {};
-      this.llmKeys = { gemini: k?.gemini || '', openai: k?.openai || '' };
-      this.hasValidGemini = this.validateKey('gemini', this.llmKeys.gemini || '');
-      this.hasValidOpenAI = this.validateKey('openai', this.llmKeys.openai || '');
-      if (this.hasValidGemini && !this.hasValidOpenAI) {
-        this.aiForm.get('provider')?.setValue('gemini');
-        this.aiForm.get('geminiApiKey')?.setValue(this.llmKeys.gemini || '');
-      } else if (this.hasValidOpenAI && !this.hasValidGemini) {
-        this.aiForm.get('provider')?.setValue('openai');
-        this.aiForm.get('openaiApiKey')?.setValue(this.llmKeys.openai || '');
+      const geminiVal = k?.gemini;
+      const openaiVal = k?.openai;
+      const geminiMasked = k?.geminiKeyMasked as string | null;
+      const openaiMasked = k?.openaiKeyMasked as string | null;
+      const lsOpenai = (this.storage.get('ai.key.openai') as string | null) ?? (this.storage.get('ai.openaiKey') as string | null);
+      const lsGemini = (this.storage.get('ai.key.gemini') as string | null) ?? (this.storage.get('ai.geminiKey') as string | null);
+      const lsOpenaiValid = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
+      const lsGeminiValid = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
+      const backendGeminiValid = typeof geminiVal === 'boolean' ? geminiVal : this.validateKey('gemini', geminiVal || '');
+      const backendOpenaiValid = typeof openaiVal === 'boolean' ? openaiVal : this.validateKey('openai', openaiVal || '');
+      this.llmKeys = { gemini: backendGeminiValid || lsGeminiValid, openai: backendOpenaiValid || lsOpenaiValid };
+      this.hasValidGemini = this.llmKeys.gemini || false;
+      this.hasValidOpenAI = this.llmKeys.openai || false;
+      const nextOpenai = (typeof openaiMasked === 'string' && openaiMasked) ? openaiMasked : (typeof openaiVal === 'string' ? openaiVal : (lsOpenai || ''));
+      const nextGemini = (typeof geminiMasked === 'string' && geminiMasked) ? geminiMasked : (typeof geminiVal === 'string' ? geminiVal : (lsGemini || ''));
+      this.aiForm.patchValue({ openaiApiKey: nextOpenai, geminiApiKey: nextGemini });
+      const openaiCtrl = this.aiForm.get('openaiApiKey');
+      const geminiCtrl = this.aiForm.get('geminiApiKey');
+      const isMasked = (v: string) => typeof v === 'string' && v.includes('...');
+
+      if (openaiCtrl) {
+        if (isMasked(nextOpenai)) {
+          openaiCtrl.clearValidators();
+        } else {
+          openaiCtrl.setValidators([Validators.minLength(20), Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
+        }
+        openaiCtrl.updateValueAndValidity();
       }
+
+      if (geminiCtrl) {
+        if (isMasked(nextGemini)) {
+          geminiCtrl.clearValidators();
+        } else {
+          geminiCtrl.setValidators([Validators.minLength(20), Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
+        }
+        geminiCtrl.updateValueAndValidity();
+      }
+
+      // As linhas abaixo (markAsUntouched/Touched) não são mais necessárias
+      // pois a validade será controlada pelos validadores dinâmicos e pela função isInvalid.
+      // if (backendOpenaiValid || isMasked(nextOpenai) || !openaiInvalid) {
+      //   openaiCtrl?.markAsUntouched();
+      // } else {
+      //   openaiCtrl?.markAsTouched();
+      // }
+      // if (backendGeminiValid || isMasked(nextGemini) || !geminiInvalid) {
+      //   geminiCtrl?.markAsUntouched();
+      // } else {
+      //   geminiCtrl?.markAsTouched();
+      // }
     });
   }
 
   private validateKey(provider: AIProvider, key: string): boolean {
     if (!key || typeof key !== 'string') return false;
+    // A validação de chaves mascaradas não deve ocorrer aqui,
+    // pois esta função é para validar chaves reais.
+    if (key.includes('...')) return true; // Considera mascarado como válido para evitar erros
     if (provider === 'gemini') {
       return /^AIza[0-9A-Za-z-_]{20,40}$/.test(key);
     }
@@ -216,44 +289,28 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  loginWithProvider(provider: AIProvider): void {
-    const endpoint = (this.aiForm.get('aiBackendEndpoint')?.value || '').trim();
-    const base = endpoint ? String(endpoint).replace(/\/+$/, '') : '';
-    const url = base ? `${base}/llm/oauth/${provider}?native=true` : `/api/llm/oauth/${provider}?native=true`;
-    this.oauthPopup = window.open(url, 'llm-oauth', 'width=600,height=700');
-    this.isLoginLoading = true;
-  }
+  loginWithProvider(provider: AIProvider): void {}
 
   private onPopupMessage(event: MessageEvent): void {
     try {
       const data = event.data || {};
       if (!data || data.type !== 'llm-auth') return;
-      const provider: AIProvider = data.provider;
-      const apiKey: string = data.apiKey;
-      if (!provider || !apiKey) return;
-      if (!this.validateKey(provider, apiKey)) return;
-      if (provider === 'gemini') {
-        this.aiForm.get('provider')?.setValue('gemini');
-        this.aiForm.get('geminiApiKey')?.setValue(apiKey);
-      } else if (provider === 'openai') {
-        this.aiForm.get('provider')?.setValue('openai');
-        this.aiForm.get('openaiApiKey')?.setValue(apiKey);
-      }
-      this.settingsService.updateAISettings({
-        provider: this.aiForm.get('provider')?.value ?? null,
-        geminiApiKey: this.aiForm.get('geminiApiKey')?.value ?? null,
-        openaiApiKey: this.aiForm.get('openaiApiKey')?.value ?? null,
-        aiBackendEndpoint: this.aiForm.get('aiBackendEndpoint')?.value ?? null,
-      });
-      alert('Autenticação concluída e chave API recebida.');
-      if (this.oauthPopup && !this.oauthPopup.closed) {
-        this.oauthPopup.close();
-      }
-      this.fetchLlmKeys();
       this.isLoginLoading = false;
     } catch {
-      // silenciar erros do postMessage
       this.isLoginLoading = false;
     }
   }
+
+ 
+
+  isInvalid(controlName: 'geminiApiKey' | 'openaiApiKey'): boolean {
+    const control = this.aiForm.get(controlName);
+    const val = control?.value || '';
+    const masked = typeof val === 'string' && val.includes('...');
+    if (masked) return false;
+    if (controlName === 'openaiApiKey' && this.hasValidOpenAI) return false;
+    if (controlName === 'geminiApiKey' && this.hasValidGemini) return false;
+    return !!val && !!control?.invalid;
+  }
+
 }

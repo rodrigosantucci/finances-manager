@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
 import { HttpClient } from '@angular/common/http';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDateFnsModule } from '@angular/material-date-fns-adapter';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-profile-overview',
@@ -150,7 +151,12 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   public saveEdit(): void {
     if (!this.editingUser || !this.editingUser.id) return;
     const id = this.editingUser.id;
-    this.http.put<any>(`/api/usuarios/${id}`, this.editingUser).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    const url = `${API_ROOT}/usuarios/${id}`;
+    const fd = new FormData();
+    fd.append('username', String(this.editingUser.username ?? ''));
+    fd.append('email', String(this.editingUser.email ?? ''));
+    this.http.put<any>(url, fd).subscribe({
       next: updated => {
         const data = this.usersDataSource.data.map(u => (u.id === id ? updated : u));
         this.usersDataSource.data = data;
@@ -165,7 +171,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   public activatePremium(user: any): void {
     if (!user?.id) return;
     const id = user.id;
-    this.http.post<void>(`/api/usuarios/${id}/assinatura/premium/ativar`, {}).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.post<void>(`${API_ROOT}/usuarios/${id}/assinatura/premium/ativar`, {}).subscribe({
       next: () => {
         if (this.isAdmin) {
           this.loadAllUsers();
@@ -182,7 +189,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
   public deactivatePremium(user: any): void {
     if (!user?.id) return;
     const id = user.id;
-    this.http.post<void>(`/api/usuarios/${id}/assinatura/premium/desativar`, {}).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.post<void>(`${API_ROOT}/usuarios/${id}/assinatura/premium/desativar`, {}).subscribe({
       next: () => {
         if (this.isAdmin) {
           this.loadAllUsers();
@@ -213,7 +221,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
     if (this.premiumUntilInput instanceof Date && !isNaN(this.premiumUntilInput.getTime())) {
       body.premiumUntil = this.premiumUntilInput.toISOString();
     }
-    this.http.post<void>(`/api/usuarios/${id}/assinatura/premium/ativar`, body).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.post<void>(`${API_ROOT}/usuarios/${id}/assinatura/premium/ativar`, body).subscribe({
       next: () => {
         this.premiumActivationId = null;
         this.premiumUntilInput = null;
@@ -234,26 +243,75 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
 
   private normalizeUser(u: any): any {
     const parse = (v: any): Date | null => {
-      if (!v) return null;
+      if (v === undefined || v === null) return null;
       if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
-      if (typeof v === 'string' || typeof v === 'number') {
-        const d = new Date(v);
+      if (typeof v === 'number') {
+        const ms = v < 1e12 ? v * 1000 : v; // epoch seconds → ms
+        const d = new Date(ms);
         return isNaN(d.getTime()) ? null : d;
+      }
+      if (typeof v === 'string') {
+        // ISO-like strings
+        if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+          const d = new Date(v);
+          return isNaN(d.getTime()) ? null : d;
+        }
+        // dd/MM/yyyy [HH:mm[:ss]]
+        const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+        if (m) {
+          const dd = Number(m[1]), mm = Number(m[2]) - 1, yyyy = Number(m[3]);
+          const HH = Number(m[4] ?? 0), II = Number(m[5] ?? 0), SS = Number(m[6] ?? 0);
+          const d = new Date(yyyy, mm, dd, HH, II, SS);
+          return isNaN(d.getTime()) ? null : d;
+        }
+        // timestamp-like numeric string
+        const n = Number(v);
+        if (!isNaN(n)) return parse(n);
+        return null;
       }
       return null;
     };
+    const createdRaw =
+      u?.createdAt ??
+      u?.created_at ??
+      u?.created ??
+      u?.dataCadastro ??
+      u?.data_cadastro ??
+      u?.dtCadastro ??
+      u?.registrationDate;
+    const lastLoginRaw =
+      u?.lastLogin ??
+      u?.last_login ??
+      u?.ultimoLogin ??
+      u?.ultimo_login;
+    const premiumRaw = u?.premiumUntil ?? u?.premium_until;
     return {
       ...u,
-      createdAt: parse(u?.createdAt),
-      lastLogin: parse(u?.lastLogin),
-      premiumUntil: parse(u?.premiumUntil),
+      createdAt: parse(createdRaw),
+      lastLogin: parse(lastLoginRaw),
+      premiumUntil: parse(premiumRaw),
     };
+  }
+  
+  private updatePremiumStatuses(users: any[]): void {
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    users.forEach(u => {
+      const id = u?.id;
+      if (id === undefined || id === null) return;
+      this.http.get<{ premium: boolean; expiraEm: string }>(`${API_ROOT}/usuarios/${id}/assinatura/premium/status`).subscribe({
+        next: status => {
+          const exp = status?.expiraEm ? new Date(status.expiraEm) : null;
+          this.usersDataSource.data = this.usersDataSource.data.map(x => (x.id === id ? { ...x, premiumUntil: exp } : x));
+        },
+      });
+    });
   }
  
   public deleteUser(user: any): void {
     if (!user || !user.id) return;
     const id = user.id;
-    this.http.delete<void>(`/api/usuarios/${id}`).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.delete<void>(`${API_ROOT}/usuarios/${id}`).subscribe({
       next: () => {
         this.usersDataSource.data = this.usersDataSource.data.filter(u => u.id !== id);
         this.totalUsers = this.usersDataSource.data.length;
@@ -279,7 +337,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
       this.loadingUsers = false;
       return;
     }
-    this.http.get<any>(`/api/usuarios/${id}`).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.get<any>(`${API_ROOT}/usuarios/${id}`).subscribe({
       next: user => {
         const normalized = user ? [this.normalizeUser(user)] : [];
         this.usersDataSource.data = normalized;
@@ -289,6 +348,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
           this.paginator.pageSize = this.pageSize;
           this.paginator.firstPage();
         }
+        if (normalized.length) this.updatePremiumStatuses(normalized);
       },
       error: () => {
         this.usersDataSource.data = [];
@@ -300,7 +360,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
 
   private loadAllUsers(): void {
     this.loadingUsers = true;
-    this.http.get<any[]>(`/api/usuarios`).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.get<any[]>(`${API_ROOT}/usuarios`).subscribe({
       next: users => {
         const normalized = Array.isArray(users) ? users.map(u => this.normalizeUser(u)) : [];
         this.usersDataSource.data = normalized;
@@ -310,6 +371,7 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
           this.paginator.pageSize = this.pageSize;
           this.paginator.firstPage();
         }
+        if (normalized.length) this.updatePremiumStatuses(normalized);
       },
       error: () => {
         this.usersDataSource.data = [];
@@ -321,7 +383,8 @@ export class ProfileOverviewComponent implements OnInit, OnDestroy, AfterViewIni
 
   public resetPassword(user: any): void {
     if (!user?.id) return;
-    this.http.post<void>(`/api/usuarios/resetar-senha`, { id: user.id }).subscribe({
+    const API_ROOT = `${environment.baseUrl || ''}/api`;
+    this.http.post<void>(`${API_ROOT}/usuarios/resetar-senha`, { id: user.id }).subscribe({
       next: () => {
         console.log('Senha resetada para usuário', user.id);
       },

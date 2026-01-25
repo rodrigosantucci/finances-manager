@@ -34,6 +34,8 @@ export interface AIAccessSettings {
   geminiApiKey?: string | null;
   openaiApiKey?: string | null;
   aiBackendEndpoint?: string | null;
+  activeOpenAI?: boolean | null;
+  activeGemini?: boolean | null;
 }
 
 @Injectable({
@@ -103,22 +105,28 @@ export class SettingsService {
 
   getAISettings(): AIAccessSettings {
     const provider = this.storage.get('ai.provider') as AIProvider | null;
-    const geminiApiKey = this.storage.get('ai.geminiKey') as string | null;
-    const openaiApiKey = this.storage.get('ai.openaiKey') as string | null;
+    const geminiApiKey = (this.storage.get('ai.geminiKey') as string | null) ?? (this.storage.get('ai.key.gemini') as string | null);
+    const openaiApiKey = (this.storage.get('ai.openaiKey') as string | null) ?? (this.storage.get('ai.key.openai') as string | null);
     const aiBackendEndpoint = this.storage.get('ai.backendEndpoint') as string | null;
+    const activeOpenAI = !!this.storage.get('ai.active.openai');
+    const activeGemini = !!this.storage.get('ai.active.gemini');
     return {
       provider,
       geminiApiKey,
       openaiApiKey,
       aiBackendEndpoint,
+      activeOpenAI,
+      activeGemini,
     };
   }
 
   updateAISettings(settings: AIAccessSettings): boolean {
     this.storage.set('ai.provider', settings.provider ?? null);
-    this.storage.set('ai.geminiKey', settings.geminiApiKey ?? null);
-    this.storage.set('ai.openaiKey', settings.openaiApiKey ?? null);
+    this.storage.set('ai.key.gemini', settings.geminiApiKey ?? null);
+    this.storage.set('ai.key.openai', settings.openaiApiKey ?? null);
     this.storage.set('ai.backendEndpoint', settings.aiBackendEndpoint ?? null);
+    this.storage.set('ai.active.openai', settings.activeOpenAI ?? null);
+    this.storage.set('ai.active.gemini', settings.activeGemini ?? null);
     return true;
   }
 

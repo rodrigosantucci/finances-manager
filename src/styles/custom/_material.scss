@@ -226,6 +226,19 @@ button[mat-icon-button] .mat-icon {
   margin-right: auto !important;
 }
 
+.mat-mdc-mini-fab .mat-icon,
+.mat-mdc-fab .mat-icon {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+button[mat-mini-fab] .mat-icon,
+a[mat-mini-fab] .mat-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
 .mat-mdc-raised-button:not([disabled]) {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
@@ -269,6 +282,21 @@ button[mat-icon-button] .mat-icon {
   align-items: center;
   justify-content: center;
   margin-right: 0;
+}
+
+/* Garantir centralização horizontal dos conteúdos dos FABs */
+.mat-mdc-mini-fab,
+.mat-mdc-fab {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Centralizar o ícone dentro do contêiner interno dos FABs */
+.mat-mdc-mini-fab .mdc-fab__icon,
+.mat-mdc-fab .mdc-fab__icon {
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .action-buttons-group {

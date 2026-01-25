@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Renderer2, AfterViewInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -46,7 +46,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     TranslateModule,
   ],
 })
-export class AssetsStatsComponent implements OnInit, OnDestroy {
+export class AssetsStatsComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly dialog = inject(MatDialog);
   private readonly http = inject(HttpClient);
   private readonly renderer = inject(Renderer2);
@@ -66,6 +66,7 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
   private readonly userId = this.authService.getCurrentUserValue().id || 0; // Obtém o ID do usuário autenticado ou 0 se não estiver autenticado
 
   private destroy$ = new Subject<void>();
+  private overlayObserver: MutationObserver | null = null;
 
   userTickets: { name: string; symbol: string }[] = [];
   selectedTicker: string | null = null;
@@ -111,8 +112,73 @@ export class AssetsStatsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyTradingViewWidgets();
+    if (this.overlayObserver) {
+      this.overlayObserver.disconnect();
+      this.overlayObserver = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  ngAfterViewInit(): void {
+    const overlayRoot = document.querySelector('.cdk-overlay-container') || document.body || document.documentElement;
+    this.overlayObserver = new MutationObserver((mutations) => {
+      const tickerEl = document.getElementById('ticker-select') as HTMLElement | null;
+      // Preferir largura exata do controle ng-select/mtx-select dentro do ticker-select
+      const selectEl = (tickerEl?.querySelector('.ng-select') as HTMLElement | null)
+        || (tickerEl?.querySelector('mtx-select') as HTMLElement | null)
+        || tickerEl;
+      const triggerRect = selectEl?.getBoundingClientRect();
+      const triggerWidth = triggerRect?.width || 0;
+      mutations.forEach((m) => {
+        m.addedNodes.forEach((n) => {
+          if (!(n instanceof HTMLElement)) return;
+          const pane = n.classList.contains('cdk-overlay-pane') ? n : (n.querySelector?.('.cdk-overlay-pane') as HTMLElement | null);
+          let panel = (pane?.querySelector?.('.mtx-select-panel') as HTMLElement | null) || (pane?.querySelector?.('.ng-dropdown-panel') as HTMLElement | null);
+          // Suporte a ng-select: painel pode ser adicionado diretamente ao body sem cdk overlay
+          if (!panel && n.classList.contains('ng-dropdown-panel')) {
+            panel = n as HTMLElement;
+          }
+          if (panel && triggerWidth > 0) {
+            const viewport = Math.round(window.innerWidth);
+            const desiredWidth = Math.min(Math.round(triggerWidth), Math.round(viewport * 0.95));
+            if (pane) {
+              pane.style.setProperty('width', `${desiredWidth}px`, 'important');
+              pane.style.setProperty('max-width', '95vw', 'important');
+            }
+            panel.style.setProperty('width', pane ? '100%' : `${desiredWidth}px`, 'important');
+            panel.style.setProperty('max-width', '100%', 'important');
+            panel.style.setProperty('min-width', 'auto', 'important');
+            panel.style.setProperty('overflow-x', 'hidden', 'important');
+            // Ajustar left para não ultrapassar viewport
+            if (triggerRect) {
+              const desiredLeft = Math.max(0, Math.min(Math.round(triggerRect.left), viewport - desiredWidth - 8));
+              if (pane) {
+                pane.style.setProperty('left', `${desiredLeft}px`, 'important');
+              } else {
+                panel.style.setProperty('left', `${desiredLeft}px`, 'important');
+              }
+            }
+            // Reforçar ao sofrer mudanças de estilo
+            const enforce = () => {
+              if (pane) {
+                pane.style.setProperty('width', `${desiredWidth}px`, 'important');
+                pane.style.setProperty('max-width', '95vw', 'important');
+              }
+              panel.style.setProperty('width', pane ? '100%' : `${desiredWidth}px`, 'important');
+              panel.style.setProperty('max-width', '100%', 'important');
+              panel.style.setProperty('min-width', 'auto', 'important');
+              panel.style.setProperty('overflow-x', 'hidden', 'important');
+            };
+            const mo = new MutationObserver(() => enforce());
+            if (pane) mo.observe(pane, { attributes: true, attributeFilter: ['style'] });
+            mo.observe(panel, { attributes: true, attributeFilter: ['style'] });
+            enforce();
+          }
+        });
+      });
+    });
+    this.overlayObserver.observe(overlayRoot!, { childList: true, subtree: true });
   }
 
   loadUserTickets(): void {

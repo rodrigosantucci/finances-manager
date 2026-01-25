@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin: 10px;
+  margin: 0;
   border-radius: 8px;
 }
 
@@ -15,7 +15,7 @@
 
 .allocation-row {
   display: grid;
-  grid-template-columns: 1fr 4fr auto auto;
+  grid-template-columns: 1fr 4fr auto;
   gap: 12px;
   align-items: center;
 }
@@ -36,11 +36,12 @@ mat-card .allocation-row {
 
 .allocation-bar {
   position: relative;
-  width: 100%;
+  width: 85%;
   height: 10px;
   overflow: hidden;
   background-color: color-mix(in oklab, var(--mat-sys-primary-container) 40%, transparent);
   border-radius: 4px;
+  margin: 0 auto;
 }
 
 .allocation-fill {
@@ -68,10 +69,36 @@ mat-card .allocation-row {
   font-size: 13px;
   font-weight: 600;
   color: var(--mat-sys-on-background);
+  text-align: right;
 }
 
 .allocation-amount {
   font-size: 13px;
   font-weight: 600;
   color: var(--mat-sys-on-background);
+}
+
+@media (width <= 900px) {
+  .allocation-row {
+    grid-template-columns: 1fr 3fr auto;
+    gap: 8px;
+  }
+  .allocation-bar {
+    width: 90%;
+  }
+}
+
+@media (width <= 600px) {
+  .allocation-row {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+    align-items: start;
+  }
+  .allocation-bar {
+    height: 12px;
+    width: 100%;
+  }
+  .allocation-value {
+    text-align: right;
+  }
 }

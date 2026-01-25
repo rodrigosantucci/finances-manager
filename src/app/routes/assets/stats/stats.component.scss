@@ -76,7 +76,31 @@
   justify-content: center; /* Alinha botões à direita */
 }
 
-#widget-actions a[mat-mini-fab] {
+#widget-actions .mat-mdc-mini-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#widget-actions .mat-mdc-mini-fab .mdc-fab__icon,
+#widget-actions .mat-mdc-mini-fab .mat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+#widget-actions button[mat-mini-fab] .mat-icon,
+#widget-actions a[mat-mini-fab] .mat-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+#widget-actions a[mat-mini-fab],
+#widget-actions button[mat-mini-fab] {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,23 +114,26 @@
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-#widget-actions a[mat-mini-fab]:hover {
+#widget-actions a[mat-mini-fab]:hover,
+#widget-actions button[mat-mini-fab]:hover {
   background-color: var(--primary-hover-bg); /* Cor de hover */
   transform: scale(1.05); /* Leve aumento para feedback visual */
 }
 
-#widget-actions a[mat-mini-fab]:disabled {
+#widget-actions a[mat-mini-fab]:disabled,
+#widget-actions button[mat-mini-fab]:disabled {
   color: var(--disabled-text);
   cursor: not-allowed;
   background-color: var(--disabled-bg);
 }
 
 #widget-actions mat-icon {
-  width: 20px;
-  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   font-size: 20px;
-  line-height: 20px;
+  text-align: center;
 }
 
 /* Estilos gerais para mat-card */
@@ -121,6 +148,24 @@ mat-card {
 
 mat-card-content {
   padding: 16px;
+}
+
+:host ::ng-deep .cdk-overlay-pane .mtx-select-panel {
+  max-width: 95vw !important;
+  width: auto !important;
+  overflow-x: hidden !important;
+}
+
+:host ::ng-deep .cdk-overlay-pane .ng-dropdown-panel {
+  width: auto !important;
+  max-width: 95vw !important;
+  min-width: auto !important;
+  overflow-x: hidden !important;
+}
+
+:host ::ng-deep .cdk-overlay-pane .ng-dropdown-panel .ng-dropdown-panel-items {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .tradingview-widget-container,
@@ -186,17 +231,15 @@ mat-card-content {
     justify-content: center; /* Centraliza botões */
   }
 
-  #widget-actions a[mat-mini-fab] {
+  #widget-actions a[mat-mini-fab],
+  #widget-actions button[mat-mini-fab] {
     width: 36px;
     height: 36px;
     line-height: 36px;
   }
 
   #widget-actions mat-icon {
-    width: 18px;
-    height: 18px;
     font-size: 18px;
-    line-height: 18px;
   }
 
   mat-card {
@@ -230,17 +273,15 @@ mat-card-content {
     gap: 8px; /* Alinha botões à direita */
   }
 
-  #widget-actions a[mat-mini-fab] {
+  #widget-actions a[mat-mini-fab],
+  #widget-actions button[mat-mini-fab] {
     width: 32px;
     height: 32px;
     line-height: 32px;
   }
 
   #widget-actions mat-icon {
-    width: 16px;
-    height: 16px;
     font-size: 16px;
-    line-height: 16px;
   }
 
   mat-card {

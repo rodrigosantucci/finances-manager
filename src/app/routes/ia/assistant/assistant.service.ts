@@ -28,14 +28,16 @@ export class AssistantService {
   }
 
   private getAIHeaders(): HttpHeaders {
-    const provider = this.storage.get('ai.provider') as string | null;
-    const geminiKey = this.storage.get('ai.geminiKey') as string | null;
-    const openaiKey = this.storage.get('ai.openaiKey') as string | null;
+    const geminiKey = (this.storage.get('ai.key.gemini') as string | null) ?? (this.storage.get('ai.geminiKey') as string | null);
+    const openaiKey = (this.storage.get('ai.key.openai') as string | null) ?? (this.storage.get('ai.openaiKey') as string | null);
+    let provider: string | null = null;
     let key = '';
-    if (provider === 'gemini' && geminiKey) {
-      key = geminiKey;
-    } else if (provider === 'openai' && openaiKey) {
+    if (openaiKey) {
+      provider = 'openai';
       key = openaiKey;
+    } else if (geminiKey) {
+      provider = 'gemini';
+      key = geminiKey;
     }
     let headers = new HttpHeaders();
     if (provider) {
