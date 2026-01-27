@@ -1,0 +1,80 @@
+.smart-import-modal {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Ocupa 100% da largura disponível até o max-width */
+  max-width: 400px; /* Largura máxima do modal lateral */
+  height: 100vh; /* Altura total da viewport */
+  padding: 24px;
+  color: var(--mat-text-color); /* Cor do texto do tema */
+  background-color: var(--mat-app-background-color); /* Cor de fundo do tema */
+
+  /* Media query para telas menores */
+  @media (width <= 600px) {
+    max-width: 100%;
+    padding: 16px; /* Ajusta o padding para telas menores */
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+  }
+
+  .modal-content {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    .drop-area {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 300px;
+      padding: 40px;
+      cursor: pointer;
+      border: 2px dashed var(--mat-divider-color);
+      border-radius: 8px;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+
+      &:hover {
+        border-color: var(--mat-sys-primary);
+      }
+
+      &.dragging {
+        background-color: rgba(var(--mat-sys-primary-rgb), 0.1);
+        border-color: var(--mat-sys-primary);
+      }
+
+      mat-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 48px;
+        color: var(--mat-hint-text-color);
+      }
+
+      p {
+        margin: 0;
+        font-size: 1em;
+        color: var(--mat-text-color);
+      }
+
+      .formats-info, .size-info {
+        font-size: 0.8em;
+        color: var(--mat-hint-text-color);
+      }
+    }
+  }
+}

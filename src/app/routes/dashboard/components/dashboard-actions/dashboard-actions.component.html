@@ -8,9 +8,9 @@
         <button mat-icon-button color="primary" (click)="addTransaction.emit()" [matTooltip]="'dashboard.actions.new_transaction' | translate" aria-label="Nova transação">
           <mat-icon>add</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="importTransactions.emit()" [disabled]="isUpdating" [matTooltip]="'dashboard.actions.import' | translate" aria-label="Importar">
-          <mat-icon>upload_file</mat-icon>
-        </button>
+        <button mat-raised-button color="primary" (click)="openSmartImport()" [disabled]="!isSmartImportEnabled || isUpdating" [matTooltip]="smartImportTooltip || ('dashboard.actions.smart_import' | translate)" aria-label="Smart Import" class="smart-import-button">
+  <mat-icon>cloud_upload</mat-icon>
+</button>
         <button mat-icon-button color="accent" (click)="refreshData.emit()" [disabled]="isUpdating" [matTooltip]="'dashboard.actions.refresh' | translate" aria-label="Atualizar">
           <mat-icon>refresh</mat-icon>
         </button>
@@ -31,8 +31,8 @@
         <button mat-icon-button color="primary" (click)="addTransaction.emit()" [matTooltip]="'dashboard.actions.new_transaction' | translate" aria-label="Nova transação">
           <mat-icon>add</mat-icon>
         </button>
-        <button mat-icon-button color="primary" (click)="importTransactions.emit()" [disabled]="isUpdating" [matTooltip]="'dashboard.actions.import' | translate" aria-label="Importar">
-          <mat-icon>upload_file</mat-icon>
+        <button mat-raised-button color="primary" (click)="openSmartImport()" [disabled]="isUpdating" [matTooltip]="'dashboard.actions.smart_import' | translate" aria-label="Smart Import" class="smart-import-button">
+          <mat-icon>cloud_upload</mat-icon>
         </button>
         <button mat-icon-button color="accent" (click)="refreshData.emit()" [disabled]="isUpdating" [matTooltip]="'dashboard.actions.refresh' | translate" aria-label="Atualizar">
           <mat-icon>refresh</mat-icon>

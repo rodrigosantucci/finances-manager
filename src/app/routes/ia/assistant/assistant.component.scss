@@ -275,6 +275,10 @@ mat-card-content {
     width: 100%;
   }
 
+  .option-text {
+    flex: 1;
+  }
+
   .delete-option {
     color: var(--primary);
     background-color: rgba(var(--primary-rgb, 244, 67, 54), 0.2);

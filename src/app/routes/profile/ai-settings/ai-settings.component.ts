@@ -59,6 +59,7 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
   hasValidGemini = false;
   hasValidOpenAI = false;
   isLoginLoading = false;
+  formSubmitted: boolean = false;
   showGeminiKey = false;
   showOpenAIKey = false;
   private messageHandler = (event: MessageEvent) => this.onPopupMessage(event);
@@ -77,8 +78,9 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     const openaiCtrl = this.aiForm.get('openaiApiKey');
     // endpoint removido
 
-    geminiCtrl?.setValidators([Validators.minLength(20), Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
-    openaiCtrl?.setValidators([Validators.minLength(20), Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
+    geminiCtrl?.setValidators([Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
+
+    openaiCtrl?.setValidators([Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
 
     // validação de endpoint removida
 
@@ -112,9 +114,6 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     if (control.hasError('required')) {
       return 'API key é obrigatória.';
     }
-    if (control.hasError('minlength')) {
-      return 'Deve ter no mínimo 20 caracteres.';
-    }
     if (control.hasError('pattern')) {
       return 'Formato de API key inválido.';
     }
@@ -124,6 +123,7 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
   // endpoint removido: não há mensagens de erro associadas
 
   onSubmit(): void {
+    this.formSubmitted = true;
     this.aiForm.markAllAsTouched();
     if (this.aiForm.invalid) {
       return;
@@ -151,23 +151,13 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
       alert('Preencha ao menos uma chave válida para salvar.');
       return;
     }
-    const saveLocalKeys = () => {
-      if (openai) {
-        this.storage.set('ai.key.openai', openai);
-      }
-      if (gemini) {
-        this.storage.set('ai.key.gemini', gemini);
-      }
-    };
     const clearForm = () => this.aiForm.patchValue({ openaiApiKey: '', geminiApiKey: '' });
     const successFlow = () => {
-      saveLocalKeys();
       clearForm();
       this.fetchLlmKeys();
       alert('Chaves de AI atualizadas com sucesso.');
     };
     const errorFlow = (msg?: string) => {
-      saveLocalKeys();
       this.fetchLlmKeys();
       alert(msg || 'Falha ao salvar no servidor. As chaves foram armazenadas localmente para uso temporário.');
     };
@@ -198,6 +188,14 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     }
   }
 
+  clearKey(type: 'openai' | 'gemini'): void {
+    if (type === 'openai') {
+      this.aiForm.get('openaiApiKey')?.setValue('');
+    } else {
+      this.aiForm.get('geminiApiKey')?.setValue('');
+    }
+  }
+
   openGeminiPortal(): void {
     window.open('https://ai.google.dev/gemini-api/docs/api-key', '_blank');
   }
@@ -208,13 +206,11 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
 
   private fetchLlmKeys(): void {
     if (!this.userId) {
-      const lsOpenai = (this.storage.get('ai.key.openai') as string | null) ?? (this.storage.get('ai.openaiKey') as string | null);
-      const lsGemini = (this.storage.get('ai.key.gemini') as string | null) ?? (this.storage.get('ai.geminiKey') as string | null);
-      this.hasValidOpenAI = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
-      this.hasValidGemini = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
+      this.hasValidOpenAI = false;
+      this.hasValidGemini = false;
       this.aiForm.patchValue({
-        openaiApiKey: lsOpenai || '',
-        geminiApiKey: lsGemini || ''
+        openaiApiKey: '',
+        geminiApiKey: ''
       });
       return;
     }
@@ -226,39 +222,18 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
       const openaiVal = k?.openai;
       const geminiMasked = k?.geminiKeyMasked as string | null;
       const openaiMasked = k?.openaiKeyMasked as string | null;
-      const lsOpenai = (this.storage.get('ai.key.openai') as string | null) ?? (this.storage.get('ai.openaiKey') as string | null);
-      const lsGemini = (this.storage.get('ai.key.gemini') as string | null) ?? (this.storage.get('ai.geminiKey') as string | null);
-      const lsOpenaiValid = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
-      const lsGeminiValid = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
       const backendGeminiValid = typeof geminiVal === 'boolean' ? geminiVal : this.validateKey('gemini', geminiVal || '');
+      console.log(`fetchLlmKeys - backendGeminiValid: ${backendGeminiValid}`);
       const backendOpenaiValid = typeof openaiVal === 'boolean' ? openaiVal : this.validateKey('openai', openaiVal || '');
-      this.llmKeys = { gemini: backendGeminiValid || lsGeminiValid, openai: backendOpenaiValid || lsOpenaiValid };
+      this.llmKeys = { gemini: backendGeminiValid, openai: backendOpenaiValid };
       this.hasValidGemini = this.llmKeys.gemini || false;
+      console.log(`fetchLlmKeys - this.hasValidGemini (after assignment): ${this.hasValidGemini}`);
       this.hasValidOpenAI = this.llmKeys.openai || false;
-      const nextOpenai = (typeof openaiMasked === 'string' && openaiMasked) ? openaiMasked : (typeof openaiVal === 'string' ? openaiVal : (lsOpenai || ''));
-      const nextGemini = (typeof geminiMasked === 'string' && geminiMasked) ? geminiMasked : (typeof geminiVal === 'string' ? geminiVal : (lsGemini || ''));
+      const nextOpenai = (typeof openaiMasked === 'string' && openaiMasked) ? openaiMasked : (typeof openaiVal === 'string' ? openaiVal : '');
+      const nextGemini = (typeof geminiMasked === 'string' && geminiMasked) ? geminiMasked : (typeof geminiVal === 'string' ? geminiVal : '');
       this.aiForm.patchValue({ openaiApiKey: nextOpenai, geminiApiKey: nextGemini });
       const openaiCtrl = this.aiForm.get('openaiApiKey');
       const geminiCtrl = this.aiForm.get('geminiApiKey');
-      const isMasked = (v: string) => typeof v === 'string' && v.includes('...');
-
-      if (openaiCtrl) {
-        if (isMasked(nextOpenai)) {
-          openaiCtrl.clearValidators();
-        } else {
-          openaiCtrl.setValidators([Validators.minLength(20), Validators.pattern(/^sk-[A-Za-z0-9-]{20,}$/)]);
-        }
-        openaiCtrl.updateValueAndValidity();
-      }
-
-      if (geminiCtrl) {
-        if (isMasked(nextGemini)) {
-          geminiCtrl.clearValidators();
-        } else {
-          geminiCtrl.setValidators([Validators.minLength(20), Validators.pattern(/^AIza[0-9A-Za-z-_]{20,40}$/)]);
-        }
-        geminiCtrl.updateValueAndValidity();
-      }
 
       // As linhas abaixo (markAsUntouched/Touched) não são mais necessárias
       // pois a validade será controlada pelos validadores dinâmicos e pela função isInvalid.
@@ -276,18 +251,31 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
   }
 
   private validateKey(provider: AIProvider, key: string): boolean {
-    if (!key || typeof key !== 'string') return false;
+    console.log(`validateKey called for provider: ${provider}, key: ${key}`);
+    if (!key || typeof key !== 'string') {
+      console.log(`validateKey - Invalid key type or empty for ${provider}`);
+      return false;
+    }
     // A validação de chaves mascaradas não deve ocorrer aqui,
     // pois esta função é para validar chaves reais.
-    if (key.includes('...')) return true; // Considera mascarado como válido para evitar erros
+    if (key.includes('...')) {
+      console.log(`validateKey - Key for ${provider} is masked, returning true.`);
+      return true; // Considera mascarado como válido para evitar erros
+    }
     if (provider === 'gemini') {
-      return /^AIza[0-9A-Za-z-_]{20,40}$/.test(key);
+      const isValid = /^AIza[0-9A-Za-z-_]{20,40}$/.test(key);
+      console.log(`validateKey - Gemini key validation result: ${isValid}`);
+      return isValid;
     }
     if (provider === 'openai') {
-      return /^sk-[A-Za-z0-9-]{20,}$/.test(key);
+      const isValid = /^sk-[A-Za-z0-9-]{20,}$/.test(key);
+      console.log(`validateKey - OpenAI key validation result: ${isValid}`);
+      return isValid;
     }
+    console.log(`validateKey - Unknown provider: ${provider}, returning false.`);
     return false;
   }
+  // This function has been updated with console.log statements.
 
   loginWithProvider(provider: AIProvider): void {}
 
@@ -308,9 +296,7 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
     const val = control?.value || '';
     const masked = typeof val === 'string' && val.includes('...');
     if (masked) return false;
-    if (controlName === 'openaiApiKey' && this.hasValidOpenAI) return false;
-    if (controlName === 'geminiApiKey' && this.hasValidGemini) return false;
-    return !!val && !!control?.invalid;
+    return !!control?.invalid;
   }
 
 }

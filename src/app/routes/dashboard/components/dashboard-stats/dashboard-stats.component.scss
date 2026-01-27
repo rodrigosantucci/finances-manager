@@ -58,13 +58,16 @@
   .allocation-metrics {
     grid-template-columns: 1fr;
   }
+
   .metrics {
     grid-template-columns: 1fr;
     gap: 8px;
   }
+
   .metric .metric-label {
     font-size: 13px;
   }
+
   .metric .metric-value {
     font-size: 14px;
   }

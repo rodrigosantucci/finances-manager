@@ -28,7 +28,7 @@
                     </mat-select-trigger>
                     <mat-option *ngFor="let analise of allFundamentos" [value]="analise.data">
                       <span class="option-content">
-                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <div class="option-text">{{ analise.data | date: 'dd/MM/yyyy' }}</div>
                         <button mat-icon-button class="delete-option" (click)="deleteAnalise('fundamentos', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
                           <mat-icon>close</mat-icon>
                         </button>
@@ -137,7 +137,7 @@
                     </mat-select-trigger>
                     <mat-option *ngFor="let analise of allTecnica" [value]="analise.data">
                       <span class="option-content">
-                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <div class="option-text">{{ analise.data | date: 'dd/MM/yyyy' }}</div>
                         <button mat-icon-button class="delete-option" (click)="deleteAnalise('tecnica', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
                           <mat-icon>close</mat-icon>
                         </button>
@@ -241,7 +241,7 @@
                     </mat-select-trigger>
                     <mat-option *ngFor="let analise of allPessoais" [value]="analise.data">
                       <span class="option-content">
-                        {{ analise.data | date: 'dd/MM/yyyy' }}
+                        <div class="option-text">{{ analise.data | date: 'dd/MM/yyyy' }}</div>
                         <button mat-icon-button class="delete-option" (click)="deleteAnalise('pessoais', analise, $event)" [matTooltip]="'assistant.actions.delete_analysis' | translate" [attr.aria-label]="'assistant.actions.delete_analysis' | translate">
                           <mat-icon>close</mat-icon>
                         </button>

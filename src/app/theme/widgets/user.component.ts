@@ -30,10 +30,6 @@ import { DashboardService } from 'app/routes/dashboard/dashboard.service';
         <span>{{ 'profile' | translate }}</span>
       </button>
 
-      <button mat-menu-item (click)="openGuide()">
-        <mat-icon>help</mat-icon>
-        <span>{{ 'common.help_import' | translate }}</span>
-      </button>
 
       <button mat-menu-item (click)="logout()">
         <mat-icon>exit_to_app</mat-icon>

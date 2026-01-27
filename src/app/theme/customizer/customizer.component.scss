@@ -3,6 +3,14 @@
   right: 2rem;
   bottom: 2rem;
   z-index: 1;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+  }
 
   [dir='rtl'] & {
     right: auto;

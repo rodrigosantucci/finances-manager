@@ -1,10 +1,10 @@
 .search-dialog {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: var(--mat-toolbar-standard-height);
   min-height: var(--mat-toolbar-mobile-height);
-  position: relative;
 }
 
 .dialog-actions {
@@ -39,7 +39,9 @@
     flex: 0 0 auto;
     width: 100%;
     max-width: 1024px;
+
     --search-input-height: calc(var(--mat-toolbar-standard-height) * 0.58);
+
     height: var(--search-input-height);
     margin: 0 auto;
     
@@ -51,6 +53,7 @@
     
     .mat-mdc-text-field-wrapper {
       height: var(--search-input-height);
+
       /* Reduzir borders */
       .mdc-notched-outline {
         &__leading,
@@ -59,6 +62,7 @@
           border-width: 1px !important; /* Border mais fino */
         }
       }
+
       /* Border mais suave no focus */
       &.mdc-text-field--focused {
         .mdc-notched-outline {
@@ -79,13 +83,13 @@
       
       .mat-mdc-icon-button,
       .search-close-button {
+        box-sizing: border-box;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         width: var(--search-input-height) !important;
         height: var(--search-input-height) !important;
         padding: 0 !important;
-        box-sizing: border-box;
         background: transparent !important;
         border: none !important;
         outline: none !important;
@@ -115,12 +119,12 @@
 
 /* Painel de autocomplete em overlay (fora do container para evitar quebra de chaves) */
 :host ::ng-deep .mat-mdc-autocomplete-panel {
-  background: var(--mat-sys-surface);
+  max-height: 320px;
   color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface);
   border: 1px solid var(--mat-sys-outline);
   border-radius: var(--mat-sys-corner-medium);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
-  max-height: 320px;
 }
 
 @media (width <= 600px) {
@@ -132,8 +136,8 @@
 
 :host ::ng-deep .option-content {
   display: flex;
-  align-items: center;
   gap: 8px;
+  align-items: center;
 }
 
 :host ::ng-deep .option-label {

@@ -1,0 +1,25 @@
+<div class="smart-import-modal">
+  <div class="modal-header">
+    <h2>{{ 'dashboard.smart_import.title' | translate }}</h2>
+    <button mat-icon-button (click)="closeModal()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="modal-content">
+    <div
+      class="drop-area"
+      [class.dragging]="isDragging"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input type="file" #fileInput style="display: none;" (change)="onFileSelected($event)" [accept]="acceptedFileTypes.join(',')">
+      <mat-icon>cloud_upload</mat-icon>
+      <p>{{ 'dashboard.smart_import.drag_drop_message' | translate }}</p>
+      <p class="formats-info">{{ 'dashboard.smart_import.formats_accepted' | translate }}</p>
+      <p class="size-info">{{ 'dashboard.smart_import.max_size' | translate }}</p>
+      <p *ngIf="selectedFile">Arquivo selecionado: {{ selectedFile.name }}</p>
+    </div>
+  </div>
+</div>

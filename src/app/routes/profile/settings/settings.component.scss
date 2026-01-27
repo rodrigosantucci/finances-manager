@@ -71,6 +71,11 @@
     justify-content: center;
   }
 
+  form.form-field-full {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
   .avatar-section {
     display: flex;
     flex-direction: column;
@@ -83,8 +88,13 @@
     gap: 12px 16px;
   }
 
+  .input-cell {
+    display: flex;
+    justify-content: center;
+  }
+
   .inputs-grid mat-form-field {
-    width: 100%;
+    width: 80%;
   }
 }
 

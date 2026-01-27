@@ -9,8 +9,8 @@
 .tradingview-widget-container__widget {
   width: 100%;
   height: 100%;
-  border-radius: var(--mat-sys-corner-medium);
   background: transparent !important;
+  border-radius: var(--mat-sys-corner-medium);
 }
 
 button[mat-icon-button] {
@@ -21,9 +21,9 @@ button[mat-icon-button] {
 
 .profile-overview {
   padding: var(--gutter);
+  background: transparent;
   border: 1px solid var(--mat-sys-outline);
   border-radius: var(--mat-sys-corner-medium);
-  background: transparent;
 }
 
 .theme-dark .profile-overview {
@@ -47,6 +47,7 @@ button[mat-icon-button] {
 .profile-overview .mat-mdc-card-content {
   background: transparent !important;
 }
+
 .profile-overview app-profile-settings mat-card,
 .profile-overview app-profile-settings mat-card.mat-mdc-card,
 .profile-overview app-profile-settings .mat-mdc-card,
@@ -57,6 +58,7 @@ button[mat-icon-button] {
   border: none !important;
   box-shadow: none !important;
 }
+
 .profile-overview app-ai-settings mat-card,
 .profile-overview app-ai-settings mat-card.mat-mdc-card,
 .profile-overview app-ai-settings .mat-mdc-card,
@@ -67,12 +69,15 @@ button[mat-icon-button] {
   border: none !important;
   box-shadow: none !important;
 }
+
 .profile-overview .chart-card mat-card-content {
   background: transparent !important;
 }
+
 .profile-overview .chart-card {
   width: 100%;
 }
+
 .profile-overview .table-card,
 .profile-overview .table-card.mat-mdc-card,
 .profile-overview .table-card.mdc-card,
@@ -82,6 +87,7 @@ button[mat-icon-button] {
   border: none !important;
   box-shadow: none !important;
 }
+
 .tradingview-widget-container {
   width: 100%;
   height: 450px;
@@ -89,19 +95,21 @@ button[mat-icon-button] {
   background: transparent;
   
   iframe {
-    background: transparent !important;
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
-    display: block !important;
+    background: transparent !important;
   }
 }
+
 .tradingview-widget-container,
 .tradingview-widget-container__widget {
+  box-sizing: border-box;
+  display: block !important;
   width: 100% !important;
   max-width: 100% !important;
-  display: block !important;
-  box-sizing: border-box;
 }
+
 .theme-dark .profile-overview .tradingview-widget-container,
 .theme-dark .profile-overview .tradingview-widget-container__widget,
 .theme-dark .profile-overview .tradingview-widget-container iframe {
@@ -134,30 +142,30 @@ button[mat-icon-button] {
 
 .premium-inputs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: flex-start;
-  flex-wrap: wrap;
 }
 
 .premium-date-field {
+  flex: 1 1 240px;
   width: 100%;
   min-width: 200px;
   max-width: 280px;
-  flex: 1 1 240px;
 }
 
 .premium-until-edit {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: flex-start;
-  flex-wrap: wrap;
 }
 
 .premium-until-field {
+  flex: 1 1 260px;
   width: 100%;
   min-width: 240px;
   max-width: 320px;
-  flex: 1 1 260px;
 }
 
 .premium-until-actions {
@@ -247,7 +255,7 @@ table.mat-mdc-table {
  .mat-column-premium {
    min-width: 240px;
  }
- .mat-column-premiumUntil { min-width: 280px; }
+
  .mat-column-username { min-width: 120px; }
  .mat-column-email { min-width: 200px; }
  .mat-column-roles { min-width: 160px; }

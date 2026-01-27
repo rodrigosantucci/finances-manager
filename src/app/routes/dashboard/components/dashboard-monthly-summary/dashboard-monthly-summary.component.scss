@@ -37,12 +37,15 @@
   .metrics-row {
     gap: 8px;
   }
+
   .metrics-row .metric {
     flex: 1 1 120px;
   }
+
   .metrics-row .metric .metric-label {
     font-size: 13px;
   }
+
   .metrics-row .metric .metric-value {
     font-size: 1.05em;
   }

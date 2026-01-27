@@ -87,13 +87,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto !important;
   margin-right: auto !important;
+  margin-left: auto !important;
 }
 
 #widget-actions button[mat-mini-fab] .mat-icon,
 #widget-actions a[mat-mini-fab] .mat-icon {
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   margin: 0 !important;
@@ -128,11 +128,12 @@
 }
 
 #widget-actions mat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
   font-size: 20px;
+  height: 20px;
   text-align: center;
 }
 
@@ -151,15 +152,15 @@ mat-card-content {
 }
 
 :host ::ng-deep .cdk-overlay-pane .mtx-select-panel {
-  max-width: 95vw !important;
   width: auto !important;
+  max-width: 95vw !important;
   overflow-x: hidden !important;
 }
 
 :host ::ng-deep .cdk-overlay-pane .ng-dropdown-panel {
   width: auto !important;
-  max-width: 95vw !important;
   min-width: auto !important;
+  max-width: 95vw !important;
   overflow-x: hidden !important;
 }
 
@@ -240,6 +241,7 @@ mat-card-content {
 
   #widget-actions mat-icon {
     font-size: 18px;
+    height: 18px;
   }
 
   mat-card {
@@ -282,6 +284,7 @@ mat-card-content {
 
   #widget-actions mat-icon {
     font-size: 16px;
+    height: 16px;
   }
 
   mat-card {

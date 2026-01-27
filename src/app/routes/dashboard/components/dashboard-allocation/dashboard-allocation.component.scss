@@ -38,10 +38,10 @@ mat-card .allocation-row {
   position: relative;
   width: 85%;
   height: 10px;
+  margin: 0 auto;
   overflow: hidden;
   background-color: color-mix(in oklab, var(--mat-sys-primary-container) 40%, transparent);
   border-radius: 4px;
-  margin: 0 auto;
 }
 
 .allocation-fill {
@@ -83,6 +83,7 @@ mat-card .allocation-row {
     grid-template-columns: 1fr 3fr auto;
     gap: 8px;
   }
+
   .allocation-bar {
     width: 90%;
   }
@@ -94,10 +95,12 @@ mat-card .allocation-row {
     row-gap: 6px;
     align-items: start;
   }
+
   .allocation-bar {
-    height: 12px;
     width: 100%;
+    height: 12px;
   }
+
   .allocation-value {
     text-align: right;
   }

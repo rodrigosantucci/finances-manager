@@ -7,18 +7,46 @@
       width: 100%;
     }
   }
+
   .action-buttons {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
     width: 100%;
   }
+
   .action-primary {
-    width: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .smart-import-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px; /* Garante um tamanho mínimo para o botão */
+    padding: 0 16px; /* Ajuste o padding conforme necessário para o tamanho do botão */
+
+    mat-icon {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      font-size: 24px;
+      height: 24px;
+    }
+  }
+
+  button[mat-icon-button] mat-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    font-size: 24px;
+    height: 24px;
   }
 }

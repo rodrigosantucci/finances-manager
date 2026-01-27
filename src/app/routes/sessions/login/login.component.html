@@ -1,6 +1,6 @@
 <div class="d-flex w-full h-full justify-center align-items-center">
   <mat-card class="m-auto" style="max-width: 380px">
-    <mat-card-header class="m-b-24">
+    <mat-card-header class="m-b-16">
       <mat-card-title class="text-center">
         <div>
           <img
@@ -67,7 +67,7 @@
 
         <mat-checkbox formControlName="rememberMe">{{ 'remember_me' | translate }}</mat-checkbox>
 
-        <button class="w-full m-y-16" mat-flat-button [disabled]="!!loginForm.invalid" [loading]="isSubmitting" (click)="login()">
+        <button class="w-full m-y-8" mat-flat-button [disabled]="!!loginForm.invalid" [loading]="isSubmitting" (click)="login()">
           @if (!isSubmitting) {
             {{ 'login' | translate }}
           }

@@ -1,7 +1,6 @@
-// src/app/modules/settings/settings.service.ts
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { catchError, switchMap, take, map, tap } from 'rxjs/operators';
 import { AuthService } from '@core/authentication/auth.service';
 import { User } from '@core/authentication/interface';
@@ -48,6 +47,8 @@ export class SettingsService {
 
   private readonly apiUsuariosPrefix = '/api/usuarios/';
   private readonly apiAvatarsPrefix = '/api/avatars/';
+
+  public aiSettingsUpdated = new Subject<void>();
 
   constructor() {}
 
@@ -127,6 +128,7 @@ export class SettingsService {
     this.storage.set('ai.backendEndpoint', settings.aiBackendEndpoint ?? null);
     this.storage.set('ai.active.openai', settings.activeOpenAI ?? null);
     this.storage.set('ai.active.gemini', settings.activeGemini ?? null);
+    this.aiSettingsUpdated.next(); // Emitir evento após a atualização
     return true;
   }
 

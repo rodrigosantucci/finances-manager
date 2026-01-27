@@ -171,9 +171,7 @@ button[mat-icon-button] {
 
 }
 
-button[mat-icon-button] .mat-icon {
-  margin: 0 !important;
-}
+
 
 .mat-mdc-button-base:not(.mat-mdc-icon-button, .mat-mdc-fab, .mat-mdc-mini-fab) {
   padding: 8px 16px;
@@ -192,24 +190,19 @@ button[mat-icon-button] .mat-icon {
 }
 
 .mat-mdc-button-base .mat-icon {
-  margin-right: 6px;
-  position: static !important;
-  left: auto !important;
-  right: auto !important;
+  margin: 0 !important;
 }
 
 .mat-mdc-button-base .mdc-button__label > .mat-icon:only-child {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin-left: auto !important;
   margin-right: auto !important;
+  margin-left: auto !important;
 }
 
 /* Garantir centralização para estruturas onde o mat-icon não é filho direto do label */
 .mat-mdc-button-base .mat-icon:only-child {
-  margin-right: auto !important;
-  margin-left: auto !important;
 }
 
 /* Navegadores com suporte a :has mantêm a intenção explicitamente */
@@ -221,16 +214,9 @@ button[mat-icon-button] .mat-icon {
 }
 
 button[mat-icon-button] .mat-icon {
-  position: static !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
 }
 
-.mat-mdc-mini-fab .mat-icon,
-.mat-mdc-fab .mat-icon {
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
+
 
 button[mat-mini-fab] .mat-icon,
 a[mat-mini-fab] .mat-icon {
@@ -239,6 +225,7 @@ a[mat-mini-fab] .mat-icon {
   justify-content: center !important;
   margin: 0 !important;
 }
+
 .mat-mdc-raised-button:not([disabled]) {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
@@ -295,8 +282,8 @@ a[mat-mini-fab] .mat-icon {
 /* Centralizar o ícone dentro do contêiner interno dos FABs */
 .mat-mdc-mini-fab .mdc-fab__icon,
 .mat-mdc-fab .mdc-fab__icon {
-  margin-left: auto !important;
   margin-right: auto !important;
+  margin-left: auto !important;
 }
 
 .action-buttons-group {

@@ -1,5 +1,10 @@
 {
   "menu": {
+    "Dashboard": "Dashboard",
+    "Estatisticas": "Assets Data",
+    "AssistenteIA": "AI Assistant",
+    "Utilidades": "Tools",
+    "Historico": "History",
     "dashboard": "Dashboard",
     "design": "Design",
     "design.colors": "Color System",
@@ -99,6 +104,7 @@
     "range_page_label_2": "{{startIndex}} - {{endIndex}} of {{length}}"
   },
   "en_us": "English",
+  "pt-br": "Portuguese (Brazil)",
   "zh_cn": "Simplified Chinese",
   "zh_tw": "Traditional Chinese",
   "system": "System",
@@ -140,4 +146,487 @@
   "have_an_account": "Already have an account",
   "restore_defaults": "Restore defaults",
   "invalid_credentials": "Invalid username or password."
+  ,
+  "common": {
+    "no_data": "No data available",
+    "loading_data": "Loading data...",
+    "load_error_message": "Failed to load data. Try again later.",
+    "retry": "Try Again",
+    "add_transaction": "Add transaction",
+    "import_json": "Import JSON",
+    "total": "Total",
+    "ticker_not_editable": "Ticker not editable",
+    "actions": "Actions",
+    "ticker": "Ticker",
+    "name": "Name",
+    "quantity": "Quantity",
+    "average_price": "Average Price",
+    "current_price": "Current Price",
+    "invested_value": "Invested Value",
+    "current_value": "Current Value",
+    "profit_loss": "Profit/Loss",
+    "variation": "Variation",
+    "variation_percent": "Variation Percent",
+    "tooltip": {
+      "save_edit": "Save edit",
+      "cancel_edit": "Cancel edit",
+      "invalid_ticker": "Invalid ticker"
+    },
+    "action_unavailable": "Action unavailable",
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "clean": "Clear",
+    "required": "Required",
+    "search": "Search",
+    "help_import": "Import Help"
+  },
+  "forgot": {
+    "title": "Forgot my password",
+    "link": "Forgot my password",
+    "messages": {
+      "reset_instructions_sent": "Reset instructions sent to your email."
+    },
+    "errors": {
+      "reset_email_failed": "Could not send the reset email."
+    }
+  },
+  "search": {
+    "placeholder": "Search...",
+    "close": "Close search",
+    "page": "Page",
+    "asset": "Asset",
+    "no_results": "No items found."
+  },
+  "dashboard": {
+    "evolution": {
+      "title": "Portfolio Evolution",
+      "no_data": "No data available for the period"
+    },
+    "summary": {
+      "title": "Summary"
+    },
+    "alert": {
+      "new": "New!",
+      "see_more": "See more!"
+    },
+    "distribution": {
+      "title": "Portfolio Allocation",
+      "tooltip": "Percentage and value by asset type",
+      "empty": "No distribution calculated at the moment."
+    },
+    "dividends": {
+      "title": "Dividend Calendar",
+      "tooltip": "Dividend calendar"
+    },
+    "positions": {
+      "title": "Top Positions"
+    },
+    "table": {
+      "asset_type": "Asset Type",
+      "percent": "Percent",
+      "total_value": "Total Value"
+    },
+    "stats": {
+      "total_invested": "Total Invested",
+      "total_profit_loss": "Total Profit/Loss",
+      "total_exterior": "Total Abroad"
+    },
+    "actions": {
+      "new_transaction": "New Transaction",
+      "import": "Import",
+      "refresh": "Refresh",
+      "updating": "Updating..."
+    },
+    "periods": {
+      "1M": "1M",
+      "3M": "3M",
+      "6M": "6M",
+      "1Y": "1Y",
+      "5Y": "5Y"
+    },
+    "period_selector_aria": "Select period",
+    "errors": {
+      "user_id_unavailable_update_quotes": "User ID not available to update quotes.",
+      "no_tickers_found": "No tickers found in portfolio.",
+      "update_quotes_failed": "Error updating quotes.",
+      "fetch_tickers_failed": "Error fetching tickers.",
+      "user_id_unavailable": "Error: User ID not available.",
+      "load_failed_context": "Error loading {{context}}.",
+      "invalid_category": "Error: Invalid category ({{category}}).",
+      "register_transaction_failed": "Error registering transaction.",
+      "invalid_ticker_for_category": "Error: Invalid ticker for asset in category {{category}}.",
+      "save_invalid_data_or_category": "Error saving: invalid data or category.",
+      "save_ticker_not_defined": "Error saving: asset ticker not defined.",
+      "save_asset_failed": "Error saving asset.",
+      "delete_asset_failed": "Error deleting asset.",
+      "user_id_unavailable_delete": "Error: User ID not available for deletion.",
+      "no_file_selected": "No file selected.",
+      "select_json_file": "Please select a JSON file.",
+      "read_json_failed": "Error reading JSON file: {{message}}",
+      "invalid_json_format": "Invalid JSON file format.",
+      "user_id_unavailable_for_upload": "User ID not available.",
+      "upload_failed_with_message": "Upload error: {{message}}",
+      "unknown_import_error": "Unknown error importing transaction.",
+      "file_read_failed": "Error reading file.",
+      "file_process_failed": "Error processing file."
+    },
+    "messages": {
+      "update_success": "Data updated successfully!",
+      "transaction_registered_success": "Transaction registered successfully!",
+      "asset_updated_success": "Asset updated successfully!",
+      "asset_deleted_success": "Asset deleted successfully!",
+      "import_success_but_summary_failed": "Transaction imported successfully, but the summary could not be displayed. Check the console for more details."
+    },
+    "warnings": {
+      "duplicate_ticker_in_category": "Warning: Ticker {{ticker}} duplicated in category {{category}}."
+    },
+    "dialogs": {
+      "confirm_delete_title": "Confirm Deletion",
+      "confirm_delete_message": "Are you sure you want to delete asset {{ticker}}?",
+      "transaction_summary": {
+        "title": "Transaction Summary",
+        "details_title": "Transaction Details:",
+        "no_transactions": "No transactions to display.",
+        "balance": "Balance",
+        "columns": {
+          "date": "Date",
+          "asset": "Asset",
+          "type": "Type",
+          "quantity": "Quantity",
+          "value": "Value"
+        }
+      }
+    }
+  },
+  "allocation": {
+    "fixed_income": "Fixed Income",
+    "equity": "Equities",
+    "foreign": "Foreign",
+    "bitcoin": "Bitcoin"
+  },
+  "charts": {
+    "global_distribution_aria": "Global distribution chart",
+    "actions_distribution_aria": "Stocks distribution chart",
+    "funds_distribution_aria": "Funds distribution chart",
+    "cash_distribution_aria": "Cash distribution chart",
+    "assets_distribution_aria": "International assets distribution chart"
+  },
+  "stocks": {
+    "title": "Stocks",
+    "empty": "No assets found in Stocks.",
+    "tooltip": {
+      "table": "Table with your stock assets",
+      "edit": "Edit stock",
+      "delete": "Delete stock"
+    },
+    "aria": {
+      "save_edit": "Save stock edit",
+      "cancel_edit": "Cancel stock edit"
+    },
+    "no_data": "No data available for stocks"
+  },
+  "funds": {
+    "title": "Funds",
+    "empty": "No assets found in Funds.",
+    "tooltip": {
+      "table": "Table with your funds",
+      "edit": "Edit fund",
+      "delete": "Delete fund"
+    },
+    "aria": {
+      "save_edit": "Save fund edit",
+      "cancel_edit": "Cancel fund edit"
+    },
+    "no_data": "No data available for funds"
+  },
+  "cash": {
+    "title": "Cash",
+    "empty": "No assets found in Cash.",
+    "tooltip": {
+      "table": "Liquidity reserves and equivalents",
+      "edit": "Edit cash",
+      "delete": "Delete cash"
+    },
+    "aria": {
+      "save_edit": "Save cash edit",
+      "cancel_edit": "Cancel cash edit"
+    },
+    "no_data": "No data available for cash"
+  },
+  "intl_assets": {
+    "title": "International Assets",
+    "empty": "No assets found in International Assets.",
+    "tooltip": {
+      "table": "Assets priced in foreign currency",
+      "edit": "Edit asset",
+      "delete": "Delete asset"
+    },
+    "aria": {
+      "save_edit": "Save asset edit",
+      "cancel_edit": "Cancel asset edit"
+    },
+    "no_data": "No data available for assets"
+  },
+  "historico": {
+    "title": "Portfolio History",
+    "table": {
+      "date_record": "Record Date",
+      "value_stocks": "Stocks Value",
+      "value_funds": "Funds Value",
+      "value_cash": "Cash Value",
+      "value_intl_assets": "International Assets Value",
+      "value_total": "Total Value",
+      "assets": "Assets"
+    },
+    "actions": {
+      "download_csv": "Download assets CSV"
+    },
+    "paginator": {
+      "aria": "Select portfolio history page"
+    },
+    "errors": {
+      "user_id_unavailable": "Error: User ID not available.",
+      "load_transactions_failed": "Error loading transactions history."
+    }
+  },
+  "settings": {
+    "update_avatar": "Update avatar",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "confirm_password": "Confirm Password",
+      "strategy": "Strategy",
+      "profile": "Profile"
+    },
+    "placeholders": {
+      "name": "Your name",
+      "email": "Your email",
+      "new_password_optional": "New password (optional)",
+      "confirm_password": "Confirm new password"
+    },
+    "ai": {
+      "title": "AI Settings",
+      "provider": "AI Provider",
+      "gemini_api_key": "Gemini API Key",
+      "openai_api_key": "OpenAI API Key",
+      "backend_endpoint": "AI Backend Endpoint",
+      "placeholders": {
+        "gemini_api_key": "Paste your Gemini key",
+        "openai_api_key": "Paste your OpenAI key",
+        "backend_endpoint": "e.g., https://yourserver.com/api"
+      },
+      "actions": {
+        "open_portal": "Open API Keys portal"
+      }
+    }
+  },
+  "transaction": {
+    "title": "New Transaction",
+    "fields": {
+      "transaction": "Transaction",
+      "asset_type": "Asset Type",
+      "ticker": "Ticker",
+      "title_name": "Title Name",
+      "quote": "Quote",
+      "description": "Description",
+      "quantity": "Quantity",
+      "broker": "Broker",
+      "transaction_date": "Transaction Date",
+      "average_price": "Average Price",
+      "transaction_value": "Transaction Value"
+    },
+    "hints": {
+      "operation_type": "Operation type (Buy/Sell)",
+      "select_asset_type": "Select the asset type",
+      "ticker_examples": "e.g., PETR4, ITUB3",
+      "title_hint": "Title IPCA+7%",
+      "quote_hint": "e.g., 5.30 for $5.30",
+      "description_hint": "Full asset name",
+      "quantity_example": "e.g., 100",
+      "date_example": "e.g., 04/18/2025",
+      "average_price_example": "e.g., 14.50",
+      "transaction_value_example": "e.g., 1,450.00"
+    },
+    "errors": {
+      "select_transaction_type": "Select the transaction type",
+      "select_asset_type": "Select the asset type",
+      "ticker_required": "Enter the ticker",
+      "min_char_1": "Minimum 1 character",
+      "max_char_10": "Maximum 10 characters",
+      "positive_value_example_55": "Enter a positive value (e.g., 5.5)",
+      "positive_value_example_530": "Enter a positive value (e.g., 5.30)",
+      "quantity_required": "Enter the quantity",
+      "min_1": "Minimum 1",
+      "select_broker": "Select the broker",
+      "date_required": "Enter the date",
+      "average_price_required": "Enter the average price",
+      "min_001": "Minimum 0.01",
+      "transaction_value_required": "Enter the transaction value"
+    },
+    "placeholders": {
+      "ticker": "e.g., PETR4",
+      "title_example": "e.g., IPCA+7% Bond",
+      "quote_example": "e.g., 5.30",
+      "description_example": "e.g., Company Name"
+    },
+    "actions": {
+      "save_transaction": "Save transaction"
+    },
+    "messages": {
+      "asset_type_not_selected": "Asset type not selected.",
+      "invalid_asset_type": "Invalid asset type.",
+      "created_success": "Transaction created successfully!",
+      "create_error": "Error creating transaction.",
+      "fill_required_or_fix_errors": "Fill required fields or fix the errors."
+    }
+  },
+  "assistant": {
+    "title": "AI Assistant",
+    "tabs": {
+      "fundamentals": "Fundamental Analysis",
+      "technical": "Technical Analysis",
+      "personal_goals": "Personal Goals Analysis"
+    },
+    "actions": {
+      "generate_fundamentals": "Generate Fundamental Analysis",
+      "generate_technical": "Generate Technical Analysis",
+      "generate_personal": "Generate Personal Analysis",
+      "delete_analysis": "Delete analysis",
+      "reload_data_tip": "Reload data (Current/Selected)",
+      "reload_data": "Reload data"
+    },
+    "common": {
+      "overall_grade": "Overall Grade",
+      "analysis_date": "Analysis Date",
+      "grade": "Grade"
+    },
+    "labels": {
+      "overview": "Overview",
+      "general_outlook": "General Outlook",
+      "five_forces": "Five Forces",
+      "entry_barriers": "Entry Barriers",
+      "rivalry": "Rivalry",
+      "disruption": "Disruption",
+      "company_specific": "Company Specific",
+      "company_interaction": "Company Interaction",
+      "brands": "Brands",
+      "indicators": "Indicators",
+      "recommendations": "Recommendations",
+      "competitive_factor": "Competitive Factor",
+      "questions_answers": "Questions and Answers"
+    },
+    "questions": {
+      "question": "Question",
+      "answer": "Answer"
+    },
+    "fundamentals": {
+      "price_ceiling": "Price Ceiling"
+    },
+    "technical": {
+      "last_quarter_profit": "Last Quarter Profit",
+      "dividend_yield": "Dividend Yield",
+      "gross_debt": "Gross Debt",
+      "book_value": "Book Value"
+    },
+    "personal": {
+      "strategy_suggested": "Suggested Strategy",
+      "allocation_suggested": "Suggested Allocation",
+      "performance_estimates": "Performance and Estimates",
+      "expected_annual_return": "Expected Annual Return",
+      "expected_volatility": "Expected Volatility",
+      "analysis_period": "Analysis Period",
+      "estimate_1y": "1-Year Estimate",
+      "estimate_5y": "5-Year Estimate",
+      "estimate_10y": "10-Year Estimate",
+      "qa_title": "Questions and Answers"
+    },
+    "errors": {
+      "select_date_to_load": "Select a date to load the analysis.",
+      "generate_failed": "Failed to generate analysis. Try again.",
+      "delete_failed": "Failed to delete analysis."
+    },
+    "messages": {
+      "generating_analysis": "Analysis is being generated. Please wait and refresh the page.",
+      "delete_success": "Analysis deleted successfully."
+    },
+    "ai": {
+      "errors": {
+        "configuration_missing": "AI configuration missing. Set provider and API key in Profile > Settings.",
+        "invalid_or_expired_keys": "Invalid or expired API key. Update your credentials in Profile > Settings."
+      }
+    },
+    "no_data": {
+      "fundamentals": "No data or date available for Fundamentals Analysis.",
+      "technical": "No data or date available for Technical Analysis.",
+      "personal": "No data or date available for Personal Goals."
+    }
+  },
+  "assets_stats": {
+    "title": "Assets Data",
+    "select_asset": "Select the asset",
+    "errors": {
+      "select_asset": "Select an asset to display the widgets.",
+      "timeout": "Timeout loading widgets. Check your connection.",
+      "some_widgets_failed": "Some widgets failed to load. Check the console."
+    },
+    "messages": {
+      "widgets_cleared": "Widgets cleared successfully."
+    }
+  },
+  "utilities": {
+    "tools": {
+      "title": "Tools",
+      "ceiling_price_calc": "Ceiling Price Calculator",
+      "contribution_allocator": "Contribution Allocator",
+      "investment_simulator": "Investment Simulator"
+    },
+    "contribution_allocator": {
+      "total_amount_label": "Total Amount to Contribute ($)",
+      "categories_distribution_label": "Categories Distribution (%):",
+      "instructions": "Drag the chart or use the sliders to adjust the percentage",
+      "stocks_label": "Stocks:",
+      "funds_label": "Funds:",
+      "treasury_label": "Treasury Bonds:",
+      "intl_label": "International Assets:",
+      "sum_must_be_100": "The sum of categories must be exactly 100%.",
+      "calculate": "Calculate",
+      "results_title": "Contribution Distribution",
+      "result_stocks": "Stocks:",
+      "result_funds": "Funds:",
+      "result_treasury": "Treasury Bonds:",
+      "result_intl": "International Assets:",
+      "download_png": "Download PNG",
+      "download_pdf": "Download PDF"
+    },
+    "investment_simulator": {
+      "investment_type_label": "Investment Type:",
+      "select_placeholder": "Select...",
+      "simulate": "Simulate",
+      "results_title": "Simulation Results",
+      "total_invested": "Total Invested:"
+    },
+    "ceiling_price_calc": {
+      "ticker_label": "Stock Code (Ticker)",
+      "dividends_label": "Average Annual Dividends ($)",
+      "eps_label": "Earnings per Share ($)",
+      "growth_rate_label": "Growth Rate (%)",
+      "market_price_label": "Current Market Price ($)",
+      "calculate": "Calculate",
+      "results_title": "Results",
+      "price_ceiling": "Ceiling Price:",
+      "margin_safety": "Margin of Safety:",
+      "status": "Status:",
+      "download_png": "Download PNG",
+      "download_pdf": "Download PDF"
+    }
+  },
+  "historico_filters": {
+    "data_range": "Date range",
+    "start_label": "Start date",
+    "end_label": "End date",
+    "apply": "Apply"
+  }
 }

@@ -27,7 +27,9 @@
       "@testing": ["testing"],
       "@testing/*": ["testing/*"],
       "@env": ["environments"],
-      "@env/*": ["environments/*"]
+      "@env/*": ["environments/*"],
+      "@app": ["app"],
+      "@app/*": ["app/*"]
     },
     "useDefineForClassFields": false,
     "esModuleInterop": true

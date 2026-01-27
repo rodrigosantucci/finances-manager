@@ -254,7 +254,7 @@ input[type="range"]::-moz-range-thumb:hover {
   font-weight: 500;
   color: white;
   cursor: pointer;
-  background-color: var(--mat-sys-primary);
+  background-color: var(--mat-sys-primary) !important;
   border: none;
   border-radius: 0.25rem;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
