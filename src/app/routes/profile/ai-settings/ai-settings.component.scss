@@ -1,5 +1,3 @@
-
-
 mat-card,
 .mat-mdc-card,
 .mdc-card,
@@ -58,4 +56,22 @@ mat-card-content,
 
 .status-toggle.mat-checked .mat-slide-toggle-thumb {
   background-color: darkgreen !important;
+}
+
+.mat-form-field-suffix-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mat-form-field-suffix-wrapper .mat-icon-button {
+  height: 24px;
+  width: 24px;
+  line-height: 24px;
+}
+
+.mat-form-field-suffix-wrapper .mat-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
 }
