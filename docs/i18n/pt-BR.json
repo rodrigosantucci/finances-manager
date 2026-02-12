@@ -179,8 +179,8 @@
     "save": "Salvar",
     "clean": "Limpar",
     "required": "Obrigatório",
-    "search": "Buscar",
-    "help_import": "Ajuda de Importação"
+    "search": "Buscar"
+
   },
   "forgot": {
     "title": "Esqueci minha senha",
@@ -237,7 +237,8 @@
       "new_transaction": "Nova Transação",
       "import": "Importar",
       "refresh": "Atualizar",
-      "updating": "Atualizando..."
+      "updating": "Atualizando...",
+      "smart_import": "Smart Import"
     },
     "periods": {
       "1M": "1 mês",
@@ -298,6 +299,12 @@
           "value": "Valor"
         }
       }
+    },
+    "smart_import": {
+      "title": "Smart Import",
+      "drag_drop_message": "Clique ou arraste o arquivo aqui",
+      "formats_accepted": "Formatos aceitos: PDF, XLS, XLSX, CSV, TXT",
+      "max_size": "Tamanho máximo: 10MB"
     }
   },
   "allocation": {
