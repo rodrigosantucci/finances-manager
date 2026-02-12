@@ -2,7 +2,7 @@ import { Injectable, OnDestroy, inject } from '@angular/core';
 import { BehaviorSubject, Subject, Subscription, share, timer } from 'rxjs';
 
 import { LocalStorageService, SessionStorageService } from '@shared';
-import { currentTimestamp, filterObject } from './helpers';
+import { currentTimestamp, filterObject, base64 } from './helpers';
 import { Token } from './interface';
 import { BaseToken } from './token';
 import { TokenFactory } from './token-factory.service';
@@ -66,6 +66,19 @@ export class TokenService implements OnDestroy {
 
   getRefreshToken() {
     return this.token?.refresh_token;
+  }
+
+  getUserId(): number | undefined {
+    const accessToken = this.token?.access_token;
+    if (accessToken) {
+      try {
+        const payload = JSON.parse(base64.decode(accessToken.split('.')[1]));
+        return payload.sub || payload.userId; // Assuming 'sub' or 'userId' in JWT payload
+      } catch (e) {
+        console.error('Error decoding access token:', e);
+      }
+    }
+    return undefined;
   }
 
   ngOnDestroy(): void {
