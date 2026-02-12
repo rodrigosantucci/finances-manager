@@ -68,24 +68,7 @@ export class TokenService implements OnDestroy {
     return this.token?.refresh_token;
   }
 
-  getUserId(): number | undefined {
-    const accessToken = this.token?.access_token;
-    if (accessToken) {
-      try {
-        const payload = JSON.parse(base64.decode(accessToken.split('.')[1]));
-        const userIdCandidate = payload.sub || payload.userId;
-        const userId = Number(userIdCandidate); // Attempt to convert to number
-        if (!isNaN(userId)) { // Check if the conversion resulted in a valid number
-          return userId;
-        } else {
-          console.warn('TokenService: User ID in JWT payload is not a valid number:', userIdCandidate);
-        }
-      } catch (e) {
-        console.error('Error decoding access token:', e);
-      }
-    }
-    return undefined;
-  }
+  
 
   ngOnDestroy(): void {
     this.clearRefresh();

@@ -229,28 +229,6 @@ export class AuthService {
         if (!isEmptyObject(this.user$.getValue() as any)) {
           return of(this.user$.getValue());
         } else {
-          console.error('AuthService: Não foi possível obter dados do utilizador. Implementar busca da API ou garantir que a API de login retorne os dados.');
-          const userId = this.tokenService.getUserId();
-          if (userId) {
-            return this.loginService.user(userId).pipe(
-              tap(user => {
-                if (user && !isEmptyObject(user as any)) {
-                  this.saveUserData(user);
-                  this.user$.next(user);
-                } else {
-                  console.warn('AuthService: Dados do utilizador da API inválidos ou incompletos.');
-                  this.clearUserData();
-                  this.user$.next({});
-                }
-              }),
-              catchError(error => {
-                console.error('AuthService: Erro ao buscar dados do utilizador da API:', error);
-                this.clearUserData();
-                this.user$.next({});
-                return of({});
-              })
-            );
-          }
           return of(this.user$.getValue());
         }
       }

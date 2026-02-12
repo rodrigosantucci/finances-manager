@@ -11,6 +11,7 @@ import { SmartImportModalComponent } from '../smart-import-modal/smart-import-mo
 import { SettingsService } from '@app/routes/profile/settings/settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
+import { AssistantService } from '@app/routes/ia/assistant/assistant.service';
 
 @Component({
   selector: 'app-dashboard-actions',
@@ -30,6 +31,7 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
 
   private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly assistantService = inject(AssistantService);
   private settingsSubscription!: Subscription;
 
   constructor(private dialog: MatDialog) {}
@@ -75,6 +77,21 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
       position: { right: '0px' },
       panelClass: 'smart-import-modal-panel', // Classe CSS para estilização adicional
       autoFocus: false,
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        console.log('File uploaded:', result);
+        this.snackBar.open('Processando arquivo com IA...', 'Fechar', { duration: 3000 });
+        this.assistantService.processFileWithAI(result).subscribe({
+          next: (response: any) => {
+            this.snackBar.open('Arquivo processado com sucesso!', 'Fechar', { duration: 5000 });
+            this.refreshData.emit(); // Refresh dashboard data after successful import
+          },
+          error: (error: any) => {
+            console.error('Erro ao processar arquivo com IA:', error);
+            this.snackBar.open('Erro ao processar arquivo com IA. Verifique suas chaves de API e tente novamente.', 'Fechar', { duration: 5000 });
+          }
+        });
+      }
     });
   }
 }

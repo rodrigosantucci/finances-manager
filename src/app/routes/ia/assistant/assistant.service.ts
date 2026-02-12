@@ -126,4 +126,11 @@ export class AssistantService {
   deleteAnalyticsByUserAndType(usuarioId: number, tipo: string): Observable<any> {
     return this.http.delete(`${this.getAnalyticsUrl()}/${usuarioId}/${tipo}`);
   }
+
+  processFileWithAI(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    return this.http.post(`${this.getAnalyticsUrl()}/smart-import`, formData, { headers: this.getAIHeaders() });
+  }
 }
