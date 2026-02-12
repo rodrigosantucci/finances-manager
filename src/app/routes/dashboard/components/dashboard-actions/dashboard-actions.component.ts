@@ -25,8 +25,8 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
   @Output() refreshData = new EventEmitter<void>();
   @Input() showCard = true;
 
-  isSmartImportEnabled: boolean = false;
-  smartImportTooltip: string = '';
+  isSmartImportEnabled = false;
+  smartImportTooltip = '';
 
   private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(MatSnackBar);

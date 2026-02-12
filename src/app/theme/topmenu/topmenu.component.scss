@@ -28,16 +28,10 @@
   }
 
   .mat-icon.menu-icon {
-    width: 1.125rem;
-    height: 1.125rem;
-    margin-right: 0.5rem;
     font-size: 1.125rem;
     line-height: 1.125rem;
 
-    [dir='rtl'] & {
-      margin-right: auto;
-      margin-left: 0.5rem;
-    }
+    
   }
 
   .mat-icon.menu-caret {
@@ -53,13 +47,7 @@
   .menu-badge {
     @include badge.badge();
 
-    margin-left: 0.5rem;
-    font-size: 0.75rem;
-
-    [dir='rtl'] & {
-      margin-right: 0.5rem;
-      margin-left: auto;
-    }
+    
   }
 
   .menu-badge {

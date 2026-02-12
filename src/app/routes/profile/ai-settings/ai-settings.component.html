@@ -28,9 +28,10 @@
             <input matInput [type]="showOpenAIKey ? 'text' : 'password'" placeholder="sk-..." formControlName="openaiApiKey" />
             <div matSuffix class="mat-form-field-suffix-wrapper">
               <button mat-icon-button type="button" (click)="toggleKeyVisibility('openai')" [attr.aria-label]="showOpenAIKey ? 'Ocultar chave' : 'Exibir chave'">
-                <mat-icon>{{ showOpenAIKey ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              <mat-icon *ngIf="isInvalid('openaiApiKey')" color="warn" (click)="clearKey('openai')">close</mat-icon>
+    <mat-icon>{{ showOpenAIKey ? 'visibility_off' : 'visibility' }}</mat-icon>
+  </button>
+  
+
             </div>
 
             @if (aiForm.get('openaiApiKey')?.invalid && formSubmitted) {
@@ -59,7 +60,7 @@
               <button mat-icon-button type="button" (click)="toggleKeyVisibility('gemini')" [attr.aria-label]="showGeminiKey ? 'Ocultar chave' : 'Exibir chave'">
                 <mat-icon>{{ showGeminiKey ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
-              <mat-icon *ngIf="isInvalid('geminiApiKey')" color="warn" (click)="clearKey('gemini')">close</mat-icon>
+
             </div>
             @if (aiForm.get('geminiApiKey')?.invalid && formSubmitted) {
               <mat-error>{{ getAIKeyErrorMessage('geminiApiKey') }}</mat-error>

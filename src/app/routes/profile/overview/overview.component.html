@@ -67,8 +67,8 @@
                     <div class="premium-until-edit">
                       <mat-form-field appearance="outline" class="premium-until-field">
                         <input matInput [matDatepicker]="pickerPremiumUntil" [value]="premiumUntilInput" (dateChange)="premiumUntilInput = $event.value" />
-                        <mat-datepicker-toggle matSuffix [for]="pickerPremiumUntil"></mat-datepicker-toggle>
-                        <mat-datepicker #pickerPremiumUntil></mat-datepicker>
+                        <mat-datepicker-toggle matSuffix [for]="pickerPremiumUntil" />
+                        <mat-datepicker #pickerPremiumUntil />
                       </mat-form-field>
                       <div class="premium-until-actions">
                         <button mat-icon-button color="primary" (click)="confirmActivatePremium(user)" matTooltip="Salvar" aria-label="Salvar">
@@ -95,7 +95,7 @@
                       </button>
                     </div>
                   </ng-container>
-                  <ng-template #premiumEditingTpl></ng-template>
+                  <ng-template #premiumEditingTpl />
                 </td>
               </ng-container>
               <ng-container matColumnDef="actions">
@@ -122,7 +122,7 @@
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
               </table>
             </div>
-            <mat-paginator [pageSize]="5" [pageSizeOptions]="[5]" showFirstLastButtons class="m-t-8"></mat-paginator>
+            <mat-paginator [pageSize]="5" [pageSizeOptions]="[5]" showFirstLastButtons class="m-t-8" />
           </mat-card-content>
         </mat-card>
       </div>

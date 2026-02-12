@@ -43,7 +43,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
             </div>
           </div>
         </mat-list-item>
-        <mat-divider></mat-divider>
+        <mat-divider />
         @for (n of pageNotifications; track n) {
           <mat-list-item>
             <mat-icon class="m-x-16" matListItemIcon>{{ n.tipoIcon || 'info' }}</mat-icon>

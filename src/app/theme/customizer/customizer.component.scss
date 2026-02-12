@@ -7,9 +7,20 @@
   align-items: center !important;
   justify-content: center !important;
 
-  mat-icon {
-    font-size: 24px;
-    height: 24px;
+  button.mat-fab {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+
+    mat-icon {
+      font-size: 24px !important;
+      height: 24px !important;
+      width: 24px !important;
+      padding: 0 !important;
+    }
   }
 
   [dir='rtl'] & {

@@ -18,7 +18,7 @@
   <mat-card class="table-card">
     <mat-card-content>
       <div class="filters-row">
-        <app-date-range-filter (apply)="onApplyDateRange($event)"></app-date-range-filter>
+        <app-date-range-filter (apply)="onApplyDateRange($event)" />
       </div>
       <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="w-100">
         <ng-container matColumnDef="dataRegistro">

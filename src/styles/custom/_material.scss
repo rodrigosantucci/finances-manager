@@ -149,10 +149,8 @@ table.mat-mdc-table {
 
 .mat-mdc-button-base .mdc-button__label {
   display: inline-flex !important;
-  flex: 1 1 auto;
   align-items: center !important;
   justify-content: center !important;
-  width: 100% !important;
   text-align: center;
 }
 
@@ -199,6 +197,9 @@ button[mat-icon-button] {
   justify-content: center !important;
   margin-right: auto !important;
   margin-left: auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0 !important;
 }
 
 /* Garantir centralização para estruturas onde o mat-icon não é filho direto do label */
@@ -257,18 +258,18 @@ a[mat-mini-fab] .mat-icon {
 }
 
 .mat-mdc-icon-button .mat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: auto !important;
 }
 
 .mat-mdc-mini-fab .mat-icon,
 .mat-mdc-fab .mat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: auto !important;
 }
 
 /* Garantir centralização horizontal dos conteúdos dos FABs */

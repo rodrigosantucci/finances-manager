@@ -59,7 +59,7 @@ export class AiSettingsComponent implements OnInit, OnDestroy {
   hasValidGemini = false;
   hasValidOpenAI = false;
   isLoginLoading = false;
-  formSubmitted: boolean = false;
+  formSubmitted = false;
   showGeminiKey = false;
   showOpenAIKey = false;
   private messageHandler = (event: MessageEvent) => this.onPopupMessage(event);

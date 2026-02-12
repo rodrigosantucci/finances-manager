@@ -16,7 +16,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 export class SmartImportModalComponent {
   @Output() fileUploaded = new EventEmitter<File>();
 
-  isDragging: boolean = false;
+  isDragging = false;
   selectedFile: File | null = null;
 
   readonly acceptedFileTypes = [
