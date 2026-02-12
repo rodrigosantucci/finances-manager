@@ -252,16 +252,16 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
       this.aiKeysAvailable = false;
       return;
     }
-    this.http.get<{openai: boolean | string, gemini: boolean | string}>(`/api/usuarios/${this.currentUserId}/llm/keys`).pipe(
-      catchError(() => of({ openai: false, gemini: false }))
+    this.http.get<{ valid: boolean }>(`/api/usuarios/${this.currentUserId}/llm/keys/validate`).pipe(
+      catchError(() => of({ valid: false }))
     ).subscribe(res => {
-      const openaiValid = typeof res.openai === 'boolean' ? res.openai : (!!res.openai && /^sk-[A-Za-z0-9-]{20,}$/.test(String(res.openai)));
-      const geminiValid = typeof res.gemini === 'boolean' ? res.gemini : (!!res.gemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(String(res.gemini)));
+      const backendValid = res.valid;
+
       const lsOpenai = (this.localStorage.get('ai.key.openai') as string | null) ?? (this.localStorage.get('ai.openaiKey') as string | null);
       const lsGemini = (this.localStorage.get('ai.key.gemini') as string | null) ?? (this.localStorage.get('ai.geminiKey') as string | null);
       const lsOpenaiValid = !!lsOpenai && /^sk-[A-Za-z0-9-]{20,}$/.test(lsOpenai);
       const lsGeminiValid = !!lsGemini && /^AIza[0-9A-Za-z-_]{20,40}$/.test(lsGemini);
-      this.aiKeysAvailable = !!openaiValid || !!geminiValid || lsOpenaiValid || lsGeminiValid;
+      this.aiKeysAvailable = backendValid || lsOpenaiValid || lsGeminiValid;
     });
   }
 
