@@ -73,7 +73,13 @@ export class TokenService implements OnDestroy {
     if (accessToken) {
       try {
         const payload = JSON.parse(base64.decode(accessToken.split('.')[1]));
-        return payload.sub || payload.userId; // Assuming 'sub' or 'userId' in JWT payload
+        const userIdCandidate = payload.sub || payload.userId;
+        const userId = Number(userIdCandidate); // Attempt to convert to number
+        if (!isNaN(userId)) { // Check if the conversion resulted in a valid number
+          return userId;
+        } else {
+          console.warn('TokenService: User ID in JWT payload is not a valid number:', userIdCandidate);
+        }
       } catch (e) {
         console.error('Error decoding access token:', e);
       }

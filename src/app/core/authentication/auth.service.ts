@@ -56,8 +56,14 @@ export class AuthService {
         this.tokenService.set({ access_token: response.token } as Token, rememberMe);
 
         if (response.user) {
-          this.saveUserData(response.user, rememberMe);
-          this.user$.next(response.user);
+          if (response.user.id && typeof response.user.id === 'number') {
+            this.saveUserData(response.user, rememberMe);
+            this.user$.next(response.user);
+          } else {
+            console.warn('AuthService: Login bem-sucedido, mas o ID do usuário retornado pela API é inválido ou não numérico.', response.user);
+            this.clearUserData();
+            this.user$.next({});
+          }
         } else {
           this.clearUserData();
           this.user$.next({});

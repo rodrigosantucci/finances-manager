@@ -21,7 +21,7 @@ export class BreadcrumbComponent implements OnInit {
   navItems: string[] = [];
 
   trackByNavItem(index: number, item: string) {
-    return item;
+    return index + item;
   }
 
   ngOnInit() {

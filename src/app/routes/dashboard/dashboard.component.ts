@@ -210,14 +210,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   topPositionsColumns: string[] = ['ticker', 'categoria', 'valorAtual'];
 
-  chartInstance0: ApexCharts | undefined;
+
   chartInstance1: ApexCharts | undefined;
   chartInstance2: ApexCharts | undefined;
   chartInstance3: ApexCharts | undefined;
   chartInstance4: ApexCharts | undefined;
   chartInstance5: ApexCharts | undefined;
 
-  @ViewChild('headerChart') chartElement0!: ElementRef<HTMLDivElement>;
+
   @ViewChild('chart1') chartElement1!: ElementRef<HTMLDivElement>;
   @ViewChild('chart2') chartElement2!: ElementRef<HTMLDivElement>;
   @ViewChild('chart3') chartElement3!: ElementRef<HTMLDivElement>;
@@ -308,7 +308,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               this.cdr.markForCheck(); // Força a detecção de mudanças
 
               // Chama o novo método para inicializar todos os gráficos
-              this.initAllCharts();
+              // this.initAllCharts(); // Removed
             } else {
               console.error(
                 'ID do usuário não disponível para recarregar dados após atualização de cotações.'
@@ -340,66 +340,71 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Novo método para inicializar todos os gráficos
-  private initAllCharts(): void {
-    setTimeout(() => {
-      // HeaderChart e Chart1 (Patrimônio) agora são gerenciados pelo DashboardChartsComponent
-      
-      this.acoesChart$?.subscribe({
-        next: options => {
-          if (this.chartElement2 && this.chartElement2.nativeElement) {
-            this.initChart(this.chartElement2, options, 'chart2');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de ações:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
+  private initializeAllCharts(): void {
+    this.patrimoniochart$?.subscribe({
+      next: options => {
+        if (this.chartElement1 && this.chartElement1.nativeElement) {
+          this.initChart(this.chartElement1, options, 'chart1');
+        }
+      },
+      error: err => {
+        console.error('Erro ao inicializar gráfico de patrimônio:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      this.fundosChart$?.subscribe({
-        next: options => {
-          if (this.chartElement3 && this.chartElement3.nativeElement) {
-            this.initChart(this.chartElement3, options, 'chart3');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de fundos:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
+    this.acoesChart$?.subscribe({
+      next: options => {
+        if (this.chartElement2 && this.chartElement2.nativeElement) {
+          this.initChart(this.chartElement2, options, 'chart2');
+        }
+      },
+      error: err => {
+        console.error('Erro ao inicializar gráfico de ações:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      this.caixaChart$?.subscribe({
-        next: options => {
-          if (this.chartElement4 && this.chartElement4.nativeElement) {
-            this.initChart(this.chartElement4, options, 'chart4');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de caixa:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
+    this.fundosChart$?.subscribe({
+      next: options => {
+        if (this.chartElement3 && this.chartElement3.nativeElement) {
+          this.initChart(this.chartElement3, options, 'chart3');
+        }
+      },
+      error: err => {
+        console.error('Erro ao inicializar gráfico de fundos:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      this.assetsChart$?.subscribe({
-        next: options => {
-          if (this.chartElement5 && this.chartElement5.nativeElement) {
-            this.initChart(this.chartElement5, options, 'chart5');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de assets:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
+    this.caixaChart$?.subscribe({
+      next: options => {
+        if (this.chartElement4 && this.chartElement4.nativeElement) {
+          this.initChart(this.chartElement4, options, 'chart4');
+        }
+      },
+      error: err => {
+        console.error('Erro ao inicializar gráfico de caixa:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
 
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    }, 100);
+    this.assetsChart$?.subscribe({
+      next: options => {
+        if (this.chartElement5 && this.chartElement5.nativeElement) {
+          this.initChart(this.chartElement5, options, 'chart5');
+        }
+      },
+      error: err => {
+        console.error('Erro ao inicializar gráfico de assets:', err);
+        this.hasError = true;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   ngOnInit() {
@@ -475,89 +480,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => {
-      this.attachTableFeatures();
-      this.headerChart$?.subscribe({
-        next: options => {
-          if (this.chartElement0 && this.chartElement0.nativeElement) {
-            this.initChart(this.chartElement0, options, 'headerChart');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de cabeçalho:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.patrimoniochart$?.subscribe({
-        next: options => {
-          if (this.chartElement1 && this.chartElement1.nativeElement) {
-            this.initChart(this.chartElement1, options, 'chart1');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de patrimônio:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.acoesChart$?.subscribe({
-        next: options => {
-          if (this.chartElement2 && this.chartElement2.nativeElement) {
-            this.initChart(this.chartElement2, options, 'chart2');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de ações:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.fundosChart$?.subscribe({
-        next: options => {
-          if (this.chartElement3 && this.chartElement3.nativeElement) {
-            this.initChart(this.chartElement3, options, 'chart3');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de fundos:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.caixaChart$?.subscribe({
-        next: options => {
-          if (this.chartElement4 && this.chartElement4.nativeElement) {
-            this.initChart(this.chartElement4, options, 'chart4');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de caixa:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.assetsChart$?.subscribe({
-        next: options => {
-          if (this.chartElement5 && this.chartElement5.nativeElement) {
-            this.initChart(this.chartElement5, options, 'chart5');
-          }
-        },
-        error: err => {
-          console.error('Erro ao inicializar gráfico de assets:', err);
-          this.hasError = true;
-          this.cdr.markForCheck();
-        },
-      });
-
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    }, 100);
+    this.attachTableFeatures();
   }
 
   private attachTableFeatures(): void {
@@ -658,7 +581,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroyChart(this.chartInstance3, 'chart3');
     this.destroyChart(this.chartInstance4, 'chart4');
     this.destroyChart(this.chartInstance5, 'chart5');
-    this.destroyChart(this.chartInstance0, 'headerChart');
+    this.destroyChart(this.chartInstance1, 'headerChart');
   }
 
   private destroyChart(chartInstance: ApexCharts | undefined, chartId: string): void {
@@ -761,6 +684,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
+          this.initializeAllCharts();
         })
       )
       .subscribe(([patrimonioHistorico, distribuicao, acoes, fundos, caixa, assets]) => {
@@ -1647,7 +1571,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     let instance: ApexCharts | undefined;
     switch (chartId) {
       case 'headerChart':
-        instance = this.chartInstance0;
+        instance = this.chartInstance1;
         break;
       case 'chart1':
         instance = this.chartInstance1;
@@ -1675,7 +1599,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       newInstance.render();
       switch (chartId) {
         case 'headerChart':
-          this.chartInstance0 = newInstance;
+          this.chartInstance1 = newInstance;
           break;
         case 'chart1':
           this.chartInstance1 = newInstance;
@@ -1710,7 +1634,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       title: { style: { color: textPrimary } },
       tooltip: { theme: tooltipTheme as any },
     };
-    this.chartInstance0?.updateOptions(commonOptions as any, true, true);
     this.chartInstance1?.updateOptions(commonOptions as any, true, true);
     this.chartInstance2?.updateOptions(commonOptions as any, true, true);
     this.chartInstance3?.updateOptions(commonOptions as any, true, true);
