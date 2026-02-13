@@ -18,17 +18,10 @@
     "ghpages:publish:win": "npm run build:web -- --output-path docs --base-href /finances-manager/ && copy src\\404.html docs\\404.html && echo > docs\\.nojekyll && xcopy docs\\browser\\* docs\\ /E /I /H /K /Y && rmdir /s /q docs\\browser && npx --yes gh-pages -d docs --dotfiles",
     "ghpages:publish:linux": "npm run build:web -- --output-path docs --base-href /finances-manager/ && cp src/404.html docs/404.html && cp -r docs/browser/* docs/ && rm -rf docs/browser && npx --yes gh-pages -d docs --dotfiles",
 
-    
-    "cap:resources": "npx cap sync && npx capacitor-assets generate --assetPath \"src/assets\"",
-    "cap:build:android": "npm run cap:resources && npx cap sync android && cd android && gradlew.bat assembleDebug",
-    "cap:sync:ios": "npm run cap:resources && npx cap sync ios",
 
     
     "release:web": "npm run ghpages:publish:win",
-    "release:web:linux": "npm run ghpages:publish:linux",
-    "release:android": "npm run build:web && npm run cap:build:android",
-    "release:full:win": "npm run ghpages:publish:win && npm run cap:build:android && copy android\\app\\build\\outputs\\apk\\debug\\app-debug.apk docs\\dpt-investimentos.apk",
-    "release:full:linux": "npm run ghpages:publish:linux && npm run cap:build:android && cp android/app/build/outputs/apk/debug/app-debug.apk docs/dpt-investimentos.apk"
+    "release:web:linux": "npm run ghpages:publish:linux"
   },
   "private": true,
   "dependencies": {
