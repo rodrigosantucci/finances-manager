@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">DPT - Investimentos</string>
-    <string name="title_activity_main">DPT - Investimentos</string>
-    <string name="package_name">com.dpt.financesmanager</string>
-    <string name="custom_url_scheme">com.dpt.financesmanager</string>
-</resources>
