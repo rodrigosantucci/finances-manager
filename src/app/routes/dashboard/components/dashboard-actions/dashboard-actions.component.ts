@@ -10,8 +10,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { SmartImportModalComponent } from '../smart-import-modal/smart-import-modal.component';
 import { SettingsService } from '@app/routes/profile/settings/settings.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
+import { Subscription, of } from 'rxjs';
 import { AssistantService } from '@app/routes/ia/assistant/assistant.service';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '@core';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard-actions',
@@ -32,6 +35,8 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
   private readonly settingsService = inject(SettingsService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly assistantService = inject(AssistantService);
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private settingsSubscription!: Subscription;
 
   constructor(private dialog: MatDialog) {}
@@ -50,17 +55,24 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
   }
 
   checkSmartImportStatus(): void {
-    const aiSettings = this.settingsService.getAISettings();
-    const hasOpenAIKey = aiSettings.openaiApiKey && aiSettings.openaiApiKey.length > 0;
-    const hasGeminiKey = aiSettings.geminiApiKey && aiSettings.geminiApiKey.length > 0;
-
-    if (hasOpenAIKey || hasGeminiKey) {
-      this.isSmartImportEnabled = true;
-      this.smartImportTooltip = '';
-    } else {
+    const userId = this.authService.user().value?.id;
+    if (!userId) {
       this.isSmartImportEnabled = false;
-      this.smartImportTooltip = 'Para usar o Smart Import, configure suas chaves de API OpenAI ou Gemini nas configurações de IA.';
+      this.smartImportTooltip = 'Nenhuma API Key encontrada. Só é possível usar funcionalidades de IA com ao menos uma API Key preenchida.';
+      return;
     }
+
+    this.http.get<{ openaiValid: boolean; geminiValid: boolean; openaiMessage: string; geminiMessage: string }>(`/api/usuarios/${userId}/llm/keys/validate`).pipe(
+      catchError(() => of({ openaiValid: false, geminiValid: false, openaiMessage: '', geminiMessage: '' }))
+    ).subscribe(res => {
+      if (res.openaiValid || res.geminiValid) {
+        this.isSmartImportEnabled = true;
+        this.smartImportTooltip = '';
+      } else {
+        this.isSmartImportEnabled = false;
+        this.smartImportTooltip = 'Para usar o Smart Import, configure suas chaves de API OpenAI ou Gemini nas configurações de IA.';
+      }
+    });
   }
 
   openSmartImport() {
