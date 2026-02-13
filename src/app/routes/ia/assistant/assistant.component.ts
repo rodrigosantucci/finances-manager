@@ -255,7 +255,9 @@ export class IaAssistantComponent implements OnInit, AfterViewInit, OnDestroy {
     this.http.get<{ openaiValid: boolean; geminiValid: boolean; openaiMessage: string; geminiMessage: string }>(`/api/usuarios/${this.currentUserId}/llm/keys/validate`).pipe(
       catchError(() => of({ openaiValid: false, geminiValid: false, openaiMessage: '', geminiMessage: '' }))
     ).subscribe(res => {
+      console.warn('API LLM Keys Validate Response (assistant):', res);
       this.aiKeysAvailable = res.openaiValid || res.geminiValid;
+      console.warn('aiKeysAvailable (assistant):', this.aiKeysAvailable);
     });
   }
 

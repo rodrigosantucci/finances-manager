@@ -65,6 +65,7 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
     this.http.get<{ openaiValid: boolean; geminiValid: boolean; openaiMessage: string; geminiMessage: string }>(`/api/usuarios/${userId}/llm/keys/validate`).pipe(
       catchError(() => of({ openaiValid: false, geminiValid: false, openaiMessage: '', geminiMessage: '' }))
     ).subscribe(res => {
+      console.warn('API LLM Keys Validate Response (dashboard-actions):', res);
       if (res.openaiValid || res.geminiValid) {
         this.isSmartImportEnabled = true;
         this.smartImportTooltip = '';
@@ -72,6 +73,7 @@ export class DashboardActionsComponent implements OnInit, OnDestroy {
         this.isSmartImportEnabled = false;
         this.smartImportTooltip = 'Para usar o Smart Import, configure suas chaves de API OpenAI ou Gemini nas configurações de IA.';
       }
+      console.warn('isSmartImportEnabled (dashboard-actions):', this.isSmartImportEnabled);
     });
   }
 
