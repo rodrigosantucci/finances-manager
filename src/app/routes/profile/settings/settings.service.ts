@@ -104,21 +104,29 @@ export class SettingsService {
     );
   }
 
-  getAISettings(): AIAccessSettings {
-    const provider = this.storage.get('ai.provider') as AIProvider | null;
-    const geminiApiKey = (this.storage.get('ai.geminiKey') as string | null) ?? (this.storage.get('ai.key.gemini') as string | null);
-    const openaiApiKey = (this.storage.get('ai.openaiKey') as string | null) ?? (this.storage.get('ai.key.openai') as string | null);
-    const aiBackendEndpoint = this.storage.get('ai.backendEndpoint') as string | null;
-    const activeOpenAI = !!this.storage.get('ai.active.openai');
-    const activeGemini = !!this.storage.get('ai.active.gemini');
-    return {
-      provider,
-      geminiApiKey,
-      openaiApiKey,
-      aiBackendEndpoint,
-      activeOpenAI,
-      activeGemini,
-    };
+  getAISettings(userId: number): Observable<AIAccessSettings> {
+    const url = `${this.apiUsuariosPrefix}${userId}/llm/keys/validate`;
+    return this.http.get<{ openaiValid: boolean; geminiValid: boolean; openaiMessage: string; geminiMessage: string }>(url).pipe(
+      map(res => ({
+        activeOpenAI: res.openaiValid,
+        activeGemini: res.geminiValid,
+        openaiApiKey: null, // The validation endpoint does not return the keys
+        geminiApiKey: null, // The validation endpoint does not return the keys
+        provider: null,
+        aiBackendEndpoint: null,
+      })),
+      catchError(error => {
+        console.error('SettingsService: Erro ao validar chaves de IA:', error);
+        return of({
+          activeOpenAI: false,
+          activeGemini: false,
+          openaiApiKey: null,
+          geminiApiKey: null,
+          provider: null,
+          aiBackendEndpoint: null,
+        });
+      })
+    );
   }
 
   updateAISettings(settings: AIAccessSettings): boolean {
