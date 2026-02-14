@@ -48,7 +48,7 @@ export class ForgotPasswordComponent {
     if (this.form.invalid) return;
     this.isSubmitting = true;
     const body = { email: this.email.value };
-    this.http.post('/api/usuarios/resetar-senha', body).subscribe({
+    this.http.post('/api/usuarios/solicitar-reset-senha', body).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.snackBar.open(this.translate.instant('forgot.messages.reset_instructions_sent'), this.translate.instant('close'), { duration: 5000 });
